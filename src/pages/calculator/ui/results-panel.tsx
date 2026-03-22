@@ -773,67 +773,69 @@ export function ResultsPanel({
             </div>
           </div>
 
-          <div className="results-section">
-            <h3 className="results-section-title">Источник спецификации прогонов</h3>
-            <div className="mode-toggle">
-              <button
-                className={`mode-button ${purlinSpecificationSource === 'sort' ? 'active' : ''}`}
-                onClick={() => onPurlinSpecificationSourceChange('sort')}
-              >
-                Сортовой
-              </button>
-              <button
-                className={`mode-button ${purlinSpecificationSource === 'lstk' ? 'active' : ''}`}
-                onClick={() => onPurlinSpecificationSourceChange('lstk')}
-              >
-                ЛСТК
-              </button>
-            </div>
-          </div>
-
-          <div className="results-section">
-            <h3 className="results-section-title">Режим выбора профиля прогона</h3>
-            <div className="mode-toggle">
-              <button
-                className={`mode-button ${purlinSelectionMode === 'auto' ? 'active' : ''}`}
-                onClick={() => onPurlinSelectionModeChange('auto')}
-              >
-                Авто
-              </button>
-              <button
-                className={`mode-button ${purlinSelectionMode === 'manual' ? 'active' : ''}`}
-                onClick={() => onPurlinSelectionModeChange('manual')}
-              >
-                Ручной выбор
-              </button>
-            </div>
-
-            {purlinSelectionMode === 'manual' && (
-              <div className="selection-row" style={{ marginTop: 10 }}>
-                <label className="field" style={{ marginBottom: 0 }}>
-                  <span className="field-label">Профиль для спецификации</span>
-                  <select
-                    className="field-select"
-                    value={manualPurlinSelectedIndex}
-                    disabled={manualPurlinOptions.length === 0}
-                    onChange={(event) => {
-                      const selectedIndex = Number(event.target.value)
-                      if (purlinSpecificationSource === 'sort') {
-                        onSortPurlinSelect(selectedIndex)
-                        return
-                      }
-                      onLstkPurlinSelect(selectedIndex)
-                    }}
-                  >
-                    {manualPurlinOptions.map((candidate, index) => (
-                      <option key={`${candidate.family}-${candidate.profile}-${candidate.steelGrade}-${index}`} value={index}>
-                        {`${index + 1}. ${candidate.family ?? '-'} / ${candidate.profile} / ${candidate.steelGrade}`}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+          <div className="results-section-row">
+            <div className="results-section">
+              <h3 className="results-section-title">Источник спецификации прогонов</h3>
+              <div className="mode-toggle">
+                <button
+                  className={`mode-button ${purlinSpecificationSource === 'sort' ? 'active' : ''}`}
+                  onClick={() => onPurlinSpecificationSourceChange('sort')}
+                >
+                  Сортовой
+                </button>
+                <button
+                  className={`mode-button ${purlinSpecificationSource === 'lstk' ? 'active' : ''}`}
+                  onClick={() => onPurlinSpecificationSourceChange('lstk')}
+                >
+                  ЛСТК
+                </button>
               </div>
-            )}
+            </div>
+
+            <div className="results-section">
+              <h3 className="results-section-title">Режим выбора профиля прогона</h3>
+              <div className="mode-toggle">
+                <button
+                  className={`mode-button ${purlinSelectionMode === 'auto' ? 'active' : ''}`}
+                  onClick={() => onPurlinSelectionModeChange('auto')}
+                >
+                  Авто
+                </button>
+                <button
+                  className={`mode-button ${purlinSelectionMode === 'manual' ? 'active' : ''}`}
+                  onClick={() => onPurlinSelectionModeChange('manual')}
+                >
+                  Ручной выбор
+                </button>
+              </div>
+
+              {purlinSelectionMode === 'manual' && (
+                <div className="selection-row" style={{ marginTop: 10 }}>
+                  <label className="field" style={{ marginBottom: 0 }}>
+                    <span className="field-label">Профиль для спецификации</span>
+                    <select
+                      className="field-select"
+                      value={manualPurlinSelectedIndex}
+                      disabled={manualPurlinOptions.length === 0}
+                      onChange={(event) => {
+                        const selectedIndex = Number(event.target.value)
+                        if (purlinSpecificationSource === 'sort') {
+                          onSortPurlinSelect(selectedIndex)
+                          return
+                        }
+                        onLstkPurlinSelect(selectedIndex)
+                      }}
+                    >
+                      {manualPurlinOptions.map((candidate, index) => (
+                        <option key={`${candidate.family}-${candidate.profile}-${candidate.steelGrade}-${index}`} value={index}>
+                          {`${index + 1}. ${candidate.family ?? '-'} / ${candidate.profile} / ${candidate.steelGrade}`}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              )}
+            </div>
           </div>
 
           {renderPurlinCandidatesTable('Сортовой прокат — Топ 10', purlinResult?.sortSteelTop10 ?? [], 10)}
