@@ -35,6 +35,16 @@ const COLUMN_GROUPS: ReadonlyArray<{ key: ColumnGroupKey; title: string }> = [
   { key: 'middle', title: 'Средняя колонна — Подбор профилей' },
 ]
 
+const WIND_REGION_BY_KPA = new Map<number, string>([
+  [0.23, 'I'],
+  [0.3, 'II'],
+  [0.38, 'III'],
+  [0.48, 'IV'],
+  [0.6, 'V'],
+  [0.73, 'VI'],
+  [0.85, 'VII'],
+])
+
 function formatNumber(value: number, fractionDigits = 2): string {
   return value.toLocaleString('ru-RU', {
     minimumFractionDigits: 0,
@@ -55,6 +65,26 @@ function formatThousandsRub(value: number): string {
 
 function formatStepLimitMm(value: number, zeroLabel = 'авто'): string {
   return value > 0 ? formatNumber(value, 0) : zeroLabel
+}
+
+function resolveWindRegionLabel(windLoadKpa: number | undefined): string {
+  if (windLoadKpa === undefined) {
+    return '-'
+  }
+
+  const exactMatch = [...WIND_REGION_BY_KPA.entries()].find(
+    ([kpa]) => Math.abs(kpa - windLoadKpa) < 0.001,
+  )
+
+  return exactMatch?.[1] ?? 'по таблице города'
+}
+
+function resolveSnowRegionLabel(snowLoadKpa: number | undefined): string {
+  if (snowLoadKpa === undefined) {
+    return '-'
+  }
+
+  return `${formatNumber(snowLoadKpa, 2)} (из справочника)`
 }
 
 function resolveCandidateCostRub(candidate: CandidateResult): number | null {
@@ -513,6 +543,8 @@ function renderGeneralSpecificationOverview(
   const selectedPurlinLabel = selectedCandidate
     ? `${selectedCandidate.family ?? '-'} / ${selectedCandidate.profile}`
     : 'Не выбран'
+  const snowRegionKpa = purlinResult?.loadSummary.snowRegionKpa
+  const windRegionKpa = purlinResult?.loadSummary.windRegionKpa
 
   return (
     <div className="results-section results-section--summary-sheet">
@@ -583,6 +615,22 @@ function renderGeneralSpecificationOverview(
         <div className="load-tile">
           <span>Снеговой мешок</span>
           <strong>{input.snowBagMode}</strong>
+        </div>
+        <div className="load-tile">
+          <span>Снеговой район</span>
+          <strong>{resolveSnowRegionLabel(snowRegionKpa)}</strong>
+        </div>
+        <div className="load-tile">
+          <span>Ветровой район</span>
+          <strong>{resolveWindRegionLabel(windRegionKpa)}</strong>
+        </div>
+        <div className="load-tile">
+          <span>Снеговая нагрузка</span>
+          <strong>{snowRegionKpa !== undefined ? `${formatNumber(snowRegionKpa, 2)} кПа` : '-'}</strong>
+        </div>
+        <div className="load-tile">
+          <span>Ветровая нагрузка</span>
+          <strong>{windRegionKpa !== undefined ? `${formatNumber(windRegionKpa, 2)} кПа` : '-'}</strong>
         </div>
         <div className="load-tile">
           <span>Подбор колонн</span>
