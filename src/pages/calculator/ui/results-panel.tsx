@@ -4,6 +4,7 @@ import type { ColumnCalculationResult } from '@/domain/column/model/calculate-co
 import type { ColumnGroupKey } from '@/domain/column/model/column-output'
 import type { PurlinCalculationResult } from '@/domain/purlin/model/calculate-purlin'
 import type { UnifiedInputState } from '../model/unified-input'
+import { MethodologyPanel } from './methodology-panel'
 
 interface ResultsPanelProps {
   input: UnifiedInputState
@@ -643,7 +644,7 @@ export function ResultsPanel({
   onLstkPurlinSelect,
 }: ResultsPanelProps) {
   const activeErrors =
-    activeTab === 'summary'
+    activeTab === 'summary' || activeTab === 'methodology'
       ? [
           { scope: 'Прогоны', message: purlinError },
           { scope: 'Колонны', message: columnError },
@@ -701,6 +702,8 @@ export function ResultsPanel({
             selectedLstkPurlinIndex,
           )}
         </div>
+      ) : activeTab === 'methodology' ? (
+        <MethodologyPanel input={input} purlinResult={purlinResult} columnResult={columnResult} />
       ) : activeTab === 'purlin' ? (
         <div className="tab-pane animate-in">
           <div className="results-section">

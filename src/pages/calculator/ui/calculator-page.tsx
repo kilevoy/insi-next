@@ -176,6 +176,13 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
               Сводная
             </button>
             <button
+              className={`tab ${activeTab === 'methodology' ? 'active' : ''}`}
+              data-testid="tab-methodology"
+              onClick={() => setActiveTab('methodology')}
+            >
+              Методика
+            </button>
+            <button
               className={`tab ${activeTab === 'column' ? 'active' : ''}`}
               data-testid="tab-column"
               onClick={() => setActiveTab('column')}
