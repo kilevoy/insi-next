@@ -1568,6 +1568,10 @@ textarea {
   border: 1px solid #ccd4dd;
 }
 
+.tab--utility {
+  min-width: 132px;
+}
+
 .topbar-actions {
   display: flex;
   flex: 1;
@@ -1576,6 +1580,14 @@ textarea {
   margin-left: 28px;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.topbar-utility-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto;
 }
 
 .theme-toggle {
@@ -1633,6 +1645,13 @@ textarea {
   flex-direction: column;
   align-items: flex-end;
   gap: 10px;
+}
+
+.methodology-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .methodology-lead {
@@ -1702,6 +1721,10 @@ textarea {
   background: linear-gradient(180deg, color-mix(in srgb, var(--tile-bg) 82%, #f8d9bf 18%), var(--panel-bg));
 }
 
+.methodology-card--accent-soft {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tile-bg) 72%, #dceefc 28%), var(--panel-bg));
+}
+
 .methodology-list,
 .methodology-steps {
   display: grid;
@@ -1716,6 +1739,32 @@ textarea {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.methodology-terms-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.methodology-term-card {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid var(--tile-border);
+  border-radius: 8px;
+  background: var(--tile-bg);
+}
+
+.methodology-term-card strong {
+  font-size: 0.88rem;
+  color: var(--accent-strong);
+}
+
+.methodology-term-card span {
+  color: var(--soft-ink);
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 .methodology-mini-tile {
@@ -1991,6 +2040,20 @@ textarea {
   margin-top: 4px;
 }
 
+.methodology-list--compact {
+  gap: 6px;
+}
+
+.results-print-action--accent {
+  border-color: #1b78c2;
+  background: #1b78c2;
+  color: #ffffff;
+}
+
+.results-print-action--accent:hover {
+  background: #0f5e9a;
+}
+
 .mode-toggle {
   border-radius: 6px;
   border-color: var(--toggle-border);
@@ -2129,6 +2192,10 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .methodology-terms-grid {
+    grid-template-columns: 1fr;
+  }
+
   .methodology-actions {
     width: 100%;
     align-items: stretch;
@@ -2140,6 +2207,12 @@ textarea {
 
   .methodology-sketch-body {
     grid-template-columns: 1fr;
+  }
+
+  .topbar-utility-group {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
   }
 }
 

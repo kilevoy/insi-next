@@ -1,4 +1,5 @@
-﻿import type { ColumnCalculationResult } from '@/domain/column/model/calculate-column'
+﻿import { useRef } from 'react'
+import type { ColumnCalculationResult } from '@/domain/column/model/calculate-column'
 import type { PurlinCalculationResult } from '@/domain/purlin/model/calculate-purlin'
 import type { UnifiedInputState } from '../model/unified-input'
 
@@ -23,6 +24,17 @@ function resolveRoofHeightFormula(roofType: string): string {
 
 function resolveCurrentGeometry(input: UnifiedInputState): string {
   return `${formatNumber(input.spanM, 2)} x ${formatNumber(input.buildingLengthM, 2)} x ${formatNumber(input.buildingHeightM, 2)} м`
+}
+
+function resolveMassDrivers(input: UnifiedInputState): string[] {
+  return [
+    `Пролет ${formatNumber(input.spanM, 2)} м: чем больше пролет, тем выше моменты и требования к сечению.`,
+    `Шаг рам ${formatNumber(input.frameStepM, 2)} м и шаг фахверка ${formatNumber(input.fakhverkStepM, 2)} м: влияют на число элементов и длину расчетных веток.`,
+    `Город ${input.city} и тип местности ${input.terrainType}: определяют снеговой и ветровой фон.`,
+    `Кровля ${input.roofType} с уклоном ${formatNumber(input.roofSlopeDeg, 1)}°: влияет на высоту колонн и распределение нагрузок.`,
+    `Снеговой мешок ${input.snowBagMode}: может резко увеличить расчетную нагрузку на отдельные прогоны.`,
+    `Источник прогонов ${input.purlinSpecificationSource === 'sort' ? 'Сортовой' : 'ЛСТК'}: меняет саму модель массы и принцип ранжирования.`,
+  ]
 }
 
 function renderLoadSketch(title: string, subtitle: string, items: string[]) {
@@ -58,12 +70,273 @@ function renderLoadSketch(title: string, subtitle: string, items: string[]) {
 }
 
 export function MethodologyPanel({ input, purlinResult, columnResult }: MethodologyPanelProps) {
+  const methodologyRef = useRef<HTMLDivElement | null>(null)
   const roofFormula = resolveRoofHeightFormula(input.roofType)
   const currentGeometry = resolveCurrentGeometry(input)
+  const massDrivers = resolveMassDrivers(input)
+
+  const handleStandalonePrint = () => {
+    if (!methodologyRef.current) {
+      return
+    }
+
+    const clone = methodologyRef.current.cloneNode(true) as HTMLDivElement
+    clone.querySelectorAll('[data-print-hide="true"]').forEach((node) => node.remove())
+
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=1280,height=900')
+    if (!printWindow) {
+      window.print()
+      return
+    }
+
+    const html = `
+      <!doctype html>
+      <html lang="ru">
+        <head>
+          <meta charset="utf-8" />
+          <title>Пояснительная записка</title>
+          <style>
+            body {
+              margin: 0;
+              padding: 24px;
+              font-family: 'Segoe UI', Arial, sans-serif;
+              color: #1f2a34;
+              background: #ffffff;
+            }
+            .sheet {
+              max-width: 1120px;
+              margin: 0 auto;
+            }
+            .sheet * {
+              box-sizing: border-box;
+            }
+            .methodology-print-note {
+              display: flex !important;
+              justify-content: space-between;
+              gap: 24px;
+              margin-bottom: 16px;
+              padding-bottom: 12px;
+              border-bottom: 1px solid #d8dde2;
+            }
+            .methodology-print-note div {
+              display: grid;
+              gap: 4px;
+            }
+            .methodology-print-note strong {
+              font-size: 16px;
+            }
+            .methodology-print-note span,
+            .results-inline-note,
+            .methodology-check-card p,
+            .methodology-formula-card p,
+            .methodology-sketch-head span {
+              color: #5d6874;
+            }
+            .results-section-title {
+              margin: 0 0 12px;
+              font-size: 12px;
+              text-transform: uppercase;
+              letter-spacing: 0.12em;
+              color: #42515e;
+            }
+            .summary-hero,
+            .methodology-section-grid,
+            .methodology-mini-grid,
+            .methodology-sketch-grid,
+            .methodology-columns,
+            .methodology-formula-grid,
+            .methodology-checks,
+            .load-grid {
+              display: grid;
+              gap: 10px;
+            }
+            .summary-hero,
+            .methodology-checks,
+            .methodology-formula-grid {
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .methodology-section-grid,
+            .methodology-sketch-grid,
+            .methodology-columns,
+            .load-grid {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .methodology-mini-grid {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .summary-metric-card,
+            .methodology-card,
+            .methodology-mini-tile,
+            .methodology-column,
+            .methodology-formula-card,
+            .methodology-check-card,
+            .load-tile,
+            .methodology-sketch-card {
+              border: 1px solid #d8dde2;
+              border-radius: 8px;
+              background: #ffffff;
+            }
+            .summary-metric-card,
+            .methodology-card,
+            .methodology-formula-card,
+            .methodology-check-card,
+            .load-tile,
+            .methodology-mini-tile,
+            .methodology-column {
+              padding: 12px;
+            }
+            .summary-metric-card--accent {
+              background: #1b78c2;
+              border-color: #1b78c2;
+              color: #ffffff;
+            }
+            .summary-metric-card span,
+            .methodology-mini-tile span,
+            .methodology-check-card span,
+            .load-tile span,
+            .methodology-formula-card span {
+              display: block;
+              margin-bottom: 6px;
+              font-size: 11px;
+              text-transform: uppercase;
+              letter-spacing: 0.08em;
+              color: #6a7480;
+            }
+            .summary-metric-card--accent span,
+            .summary-metric-card--accent strong {
+              color: #ffffff;
+            }
+            .summary-metric-card strong,
+            .load-tile strong {
+              font-size: 18px;
+            }
+            .methodology-card h4,
+            .methodology-card h5 {
+              margin: 0 0 10px;
+            }
+            .methodology-list,
+            .methodology-steps,
+            .methodology-sketch-list {
+              margin: 0;
+              padding-left: 18px;
+              line-height: 1.55;
+            }
+            .methodology-formula {
+              margin-top: 12px;
+              padding: 10px 12px;
+              border-left: 3px solid #be6d3a;
+              background: #f8fafc;
+              border-radius: 6px;
+            }
+            .methodology-formula-card code {
+              display: block;
+              padding: 8px 10px;
+              border-radius: 6px;
+              background: #f5f7fa;
+              overflow-x: auto;
+            }
+            .methodology-sketch-head {
+              padding: 12px;
+              border-bottom: 1px solid #d8dde2;
+            }
+            .methodology-sketch-body {
+              display: grid;
+              grid-template-columns: minmax(220px, 0.95fr) minmax(0, 1.05fr);
+              gap: 12px;
+              padding: 12px;
+            }
+            .methodology-sketch-roof {
+              position: relative;
+              min-height: 180px;
+              border-radius: 8px;
+              border: 1px dashed #ccd4dd;
+              background: #f8fafc;
+            }
+            .methodology-sketch-rafters {
+              position: absolute;
+              left: 50%;
+              top: 54px;
+              width: 150px;
+              height: 52px;
+              transform: translateX(-50%);
+            }
+            .methodology-sketch-rafters span {
+              position: absolute;
+              top: 0;
+              width: 84px;
+              height: 4px;
+              border-radius: 999px;
+              background: #be6d3a;
+            }
+            .methodology-sketch-rafters span:first-child {
+              left: 0;
+              transform: rotate(-18deg);
+              transform-origin: left center;
+            }
+            .methodology-sketch-rafters span:last-child {
+              right: 0;
+              transform: rotate(18deg);
+              transform-origin: right center;
+            }
+            .methodology-sketch-column,
+            .methodology-sketch-beam {
+              position: absolute;
+              background: #6a7480;
+            }
+            .methodology-sketch-column {
+              bottom: 28px;
+              width: 8px;
+              height: 82px;
+              border-radius: 999px;
+            }
+            .methodology-sketch-column--left { left: 46px; }
+            .methodology-sketch-column--right { right: 46px; }
+            .methodology-sketch-beam {
+              left: 50%;
+              bottom: 106px;
+              width: 144px;
+              height: 6px;
+              border-radius: 999px;
+              transform: translateX(-50%);
+            }
+            .methodology-sketch-arrow {
+              position: absolute;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 28px;
+              padding: 0 8px;
+              border-radius: 999px;
+              background: #ffffff;
+              border: 1px solid #d8dde2;
+              font-size: 11px;
+              font-weight: 700;
+            }
+            .methodology-sketch-arrow--left { top: 14px; left: 14px; }
+            .methodology-sketch-arrow--center { top: 14px; left: 50%; transform: translateX(-50%); }
+            .methodology-sketch-arrow--right { top: 54px; right: 14px; }
+            @media print {
+              body { padding: 0; }
+              .sheet { max-width: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="sheet">${clone.innerHTML}</div>
+        </body>
+      </html>
+    `
+
+    printWindow.document.open()
+    printWindow.document.write(html)
+    printWindow.document.close()
+    printWindow.focus()
+    printWindow.print()
+  }
 
   return (
     <div className="tab-pane animate-in">
-      <section className="results-section results-section--summary-sheet methodology-sheet">
+      <section className="results-section results-section--summary-sheet methodology-sheet" ref={methodologyRef}>
         <div className="methodology-print-note">
           <div>
             <strong>Пояснительная записка</strong>
@@ -85,15 +358,20 @@ export function MethodologyPanel({ input, purlinResult, columnResult }: Methodol
             </p>
           </div>
 
-          <div className="methodology-actions">
+          <div className="methodology-actions" data-print-hide="true">
             <div className="methodology-badges">
               <span className="methodology-badge">Excel parity</span>
               <span className="methodology-badge">Pure domain kernels</span>
               <span className="methodology-badge">СП 20 / workbook tables</span>
             </div>
-            <button className="results-print-action" onClick={() => window.print()}>
-              Печать / PDF
-            </button>
+            <div className="methodology-actions-row">
+              <button className="results-print-action" onClick={() => window.print()}>
+                Печать / PDF
+              </button>
+              <button className="results-print-action results-print-action--accent" onClick={handleStandalonePrint}>
+                Экспорт пояснительной
+              </button>
+            </div>
           </div>
         </div>
 
@@ -168,6 +446,47 @@ export function MethodologyPanel({ input, purlinResult, columnResult }: Methodol
                 <strong>Цены по категориям профиля и маркам стали</strong>
               </div>
             </div>
+          </section>
+        </div>
+
+        <div className="methodology-section-grid">
+          <section className="methodology-card">
+            <h4>Термины и обозначения</h4>
+            <div className="methodology-terms-grid">
+              <div className="methodology-term-card">
+                <strong>N</strong>
+                <span>Осевая сила в колонне, кН.</span>
+              </div>
+              <div className="methodology-term-card">
+                <strong>M</strong>
+                <span>Изгибающий момент, кН·м.</span>
+              </div>
+              <div className="methodology-term-card">
+                <strong>Hactual</strong>
+                <span>Фактическая рабочая длина/высота элемента в группе.</span>
+              </div>
+              <div className="methodology-term-card">
+                <strong>Hmax</strong>
+                <span>Максимальная высота в группе, по которой выбирается профиль в инженерном режиме.</span>
+              </div>
+              <div className="methodology-term-card">
+                <strong>q</strong>
+                <span>Линейная нагрузка на прогон, зависящая от шага и площади нагрузки.</span>
+              </div>
+              <div className="methodology-term-card">
+                <strong>Utilization</strong>
+                <span>Коэффициент использования; допустимое значение для прошедшего кандидата ≤ 1.0.</span>
+              </div>
+            </div>
+          </section>
+
+          <section className="methodology-card methodology-card--accent-soft">
+            <h4>Что влияет на массу сильнее всего</h4>
+            <ul className="methodology-list methodology-list--compact">
+              {massDrivers.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
           </section>
         </div>
 

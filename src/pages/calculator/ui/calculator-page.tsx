@@ -176,13 +176,6 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
               Сводная
             </button>
             <button
-              className={`tab ${activeTab === 'methodology' ? 'active' : ''}`}
-              data-testid="tab-methodology"
-              onClick={() => setActiveTab('methodology')}
-            >
-              Методика
-            </button>
-            <button
               className={`tab ${activeTab === 'column' ? 'active' : ''}`}
               data-testid="tab-column"
               onClick={() => setActiveTab('column')}
@@ -198,21 +191,31 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
             </button>
           </div>
 
-          <div className="theme-toggle" role="group" aria-label="Переключение темы">
+          <div className="topbar-utility-group">
             <button
-              className={`theme-button ${themeMode === 'light' ? 'active' : ''}`}
-              data-testid="theme-light"
-              onClick={() => setThemeMode('light')}
+              className={`tab tab--utility ${activeTab === 'methodology' ? 'active' : ''}`}
+              data-testid="tab-methodology"
+              onClick={() => setActiveTab('methodology')}
             >
-              Светлая
+              Методика
             </button>
-            <button
-              className={`theme-button ${themeMode === 'dark' ? 'active' : ''}`}
-              data-testid="theme-dark"
-              onClick={() => setThemeMode('dark')}
-            >
-              Тёмная
-            </button>
+
+            <div className="theme-toggle" role="group" aria-label="Переключение темы">
+              <button
+                className={`theme-button ${themeMode === 'light' ? 'active' : ''}`}
+                data-testid="theme-light"
+                onClick={() => setThemeMode('light')}
+              >
+                Светлая
+              </button>
+              <button
+                className={`theme-button ${themeMode === 'dark' ? 'active' : ''}`}
+                data-testid="theme-dark"
+                onClick={() => setThemeMode('dark')}
+              >
+                Тёмная
+              </button>
+            </div>
           </div>
         </div>
       </header>
