@@ -1504,6 +1504,30 @@ textarea {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.load-grid--summary .load-tile {
+  background: color-mix(in srgb, var(--tile-bg) 88%, var(--panel-bg) 12%);
+  border-color: var(--tile-border);
+}
+
+.load-grid--summary .load-tile span {
+  color: var(--soft-ink);
+}
+
+.load-grid--summary .load-tile strong {
+  color: var(--ink);
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.load-grid--summary .load-tile--total {
+  background: color-mix(in srgb, var(--tile-bg) 72%, var(--accent-soft) 28%);
+  border-color: color-mix(in srgb, var(--tile-border) 72%, var(--accent) 28%);
+}
+
+.load-grid--summary .load-tile--total strong {
+  color: var(--accent-strong);
+}
+
 .load-grid--purlin .load-tile {
   padding: 6px 8px;
   gap: 2px;
