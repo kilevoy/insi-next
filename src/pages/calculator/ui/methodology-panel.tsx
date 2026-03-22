@@ -37,38 +37,6 @@ function resolveMassDrivers(input: UnifiedInputState): string[] {
   ]
 }
 
-function renderLoadSketch(title: string, subtitle: string, items: string[]) {
-  return (
-    <div className="methodology-sketch-card">
-      <div className="methodology-sketch-head">
-        <strong>{title}</strong>
-        <span>{subtitle}</span>
-      </div>
-
-      <div className="methodology-sketch-body">
-        <div className="methodology-sketch-roof">
-          <span className="methodology-sketch-arrow methodology-sketch-arrow--left">↓ снег</span>
-          <span className="methodology-sketch-arrow methodology-sketch-arrow--center">↓ покрытие</span>
-          <span className="methodology-sketch-arrow methodology-sketch-arrow--right">→ ветер</span>
-          <div className="methodology-sketch-rafters">
-            <span />
-            <span />
-          </div>
-          <div className="methodology-sketch-column methodology-sketch-column--left" />
-          <div className="methodology-sketch-column methodology-sketch-column--right" />
-          <div className="methodology-sketch-beam" />
-        </div>
-
-        <ul className="methodology-sketch-list">
-          {items.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  )
-}
-
 export function MethodologyPanel({ input, purlinResult, columnResult }: MethodologyPanelProps) {
   const methodologyRef = useRef<HTMLDivElement | null>(null)
   const roofFormula = resolveRoofHeightFormula(input.roofType)
@@ -129,7 +97,9 @@ export function MethodologyPanel({ input, purlinResult, columnResult }: Methodol
             .results-inline-note,
             .methodology-check-card p,
             .methodology-formula-card p,
-            .methodology-sketch-head span {
+            .methodology-term-card span,
+            .methodology-mini-tile span,
+            .load-tile span {
               color: #5d6874;
             }
             .results-section-title {
@@ -142,10 +112,10 @@ export function MethodologyPanel({ input, purlinResult, columnResult }: Methodol
             .summary-hero,
             .methodology-section-grid,
             .methodology-mini-grid,
-            .methodology-sketch-grid,
             .methodology-columns,
             .methodology-formula-grid,
             .methodology-checks,
+            .methodology-terms-grid,
             .load-grid {
               display: grid;
               gap: 10px;
@@ -156,12 +126,10 @@ export function MethodologyPanel({ input, purlinResult, columnResult }: Methodol
               grid-template-columns: repeat(3, minmax(0, 1fr));
             }
             .methodology-section-grid,
-            .methodology-sketch-grid,
             .methodology-columns,
-            .load-grid {
-              grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-            .methodology-mini-grid {
+            .load-grid,
+            .methodology-mini-grid,
+            .methodology-terms-grid {
               grid-template-columns: repeat(2, minmax(0, 1fr));
             }
             .summary-metric-card,
@@ -170,19 +138,11 @@ export function MethodologyPanel({ input, purlinResult, columnResult }: Methodol
             .methodology-column,
             .methodology-formula-card,
             .methodology-check-card,
-            .load-tile,
-            .methodology-sketch-card {
+            .methodology-term-card,
+            .load-tile {
               border: 1px solid #d8dde2;
               border-radius: 8px;
               background: #ffffff;
-            }
-            .summary-metric-card,
-            .methodology-card,
-            .methodology-formula-card,
-            .methodology-check-card,
-            .load-tile,
-            .methodology-mini-tile,
-            .methodology-column {
               padding: 12px;
             }
             .summary-metric-card--accent {
@@ -215,8 +175,7 @@ export function MethodologyPanel({ input, purlinResult, columnResult }: Methodol
               margin: 0 0 10px;
             }
             .methodology-list,
-            .methodology-steps,
-            .methodology-sketch-list {
+            .methodology-steps {
               margin: 0;
               padding-left: 18px;
               line-height: 1.55;
@@ -235,86 +194,13 @@ export function MethodologyPanel({ input, purlinResult, columnResult }: Methodol
               background: #f5f7fa;
               overflow-x: auto;
             }
-            .methodology-sketch-head {
-              padding: 12px;
-              border-bottom: 1px solid #d8dde2;
+            .methodology-term-card strong { color: #8d4b22; }
+            .methodology-term-card span,
+            .methodology-check-card p,
+            .methodology-formula-card p {
+              font-size: 13px;
+              line-height: 1.5;
             }
-            .methodology-sketch-body {
-              display: grid;
-              grid-template-columns: minmax(220px, 0.95fr) minmax(0, 1.05fr);
-              gap: 12px;
-              padding: 12px;
-            }
-            .methodology-sketch-roof {
-              position: relative;
-              min-height: 180px;
-              border-radius: 8px;
-              border: 1px dashed #ccd4dd;
-              background: #f8fafc;
-            }
-            .methodology-sketch-rafters {
-              position: absolute;
-              left: 50%;
-              top: 54px;
-              width: 150px;
-              height: 52px;
-              transform: translateX(-50%);
-            }
-            .methodology-sketch-rafters span {
-              position: absolute;
-              top: 0;
-              width: 84px;
-              height: 4px;
-              border-radius: 999px;
-              background: #be6d3a;
-            }
-            .methodology-sketch-rafters span:first-child {
-              left: 0;
-              transform: rotate(-18deg);
-              transform-origin: left center;
-            }
-            .methodology-sketch-rafters span:last-child {
-              right: 0;
-              transform: rotate(18deg);
-              transform-origin: right center;
-            }
-            .methodology-sketch-column,
-            .methodology-sketch-beam {
-              position: absolute;
-              background: #6a7480;
-            }
-            .methodology-sketch-column {
-              bottom: 28px;
-              width: 8px;
-              height: 82px;
-              border-radius: 999px;
-            }
-            .methodology-sketch-column--left { left: 46px; }
-            .methodology-sketch-column--right { right: 46px; }
-            .methodology-sketch-beam {
-              left: 50%;
-              bottom: 106px;
-              width: 144px;
-              height: 6px;
-              border-radius: 999px;
-              transform: translateX(-50%);
-            }
-            .methodology-sketch-arrow {
-              position: absolute;
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              min-height: 28px;
-              padding: 0 8px;
-              border-radius: 999px;
-              background: #ffffff;
-              border: 1px solid #d8dde2;
-              font-size: 11px;
-              font-weight: 700;
-            }
-            .methodology-sketch-arrow--left { top: 14px; left: 14px; }
-            .methodology-sketch-arrow--center { top: 14px; left: 50%; transform: translateX(-50%); }
-            .methodology-sketch-arrow--right { top: 54px; right: 14px; }
             @media print {
               body { padding: 0; }
               .sheet { max-width: none; }
@@ -491,22 +377,31 @@ export function MethodologyPanel({ input, purlinResult, columnResult }: Methodol
         </div>
 
         <section className="methodology-card">
-          <h4>Схема действия нагрузок</h4>
-          <div className="methodology-sketch-grid">
-            {renderLoadSketch('Прогоны', 'Вертикальная и фасадная ветка', [
-              'снеговая нагрузка по району',
-              'постоянная нагрузка от покрытия',
-              'эксплуатационная нагрузка',
-              'ветер по кровле и фасаду',
-              'добавка от снегового мешка',
-            ])}
-            {renderLoadSketch('Колонны', 'Осевая сила и момент', [
-              'ветровое давление по высоте',
-              'нагрузки от кровли и стен',
-              'снеговая нагрузка по району',
-              'крановые воздействия',
-              'связевая схема и расчетные длины',
-            ])}
+          <h4>Какие нагрузки формируются в расчете</h4>
+          <div className="methodology-columns">
+            <div className="methodology-column">
+              <h5>Для прогонов</h5>
+              <ul className="methodology-list">
+                <li>Снеговая нагрузка по району и коэффициентам ответственности.</li>
+                <li>Ветровая нагрузка по району, типу местности и высоте здания.</li>
+                <li>Постоянная нагрузка от покрытия.</li>
+                <li>Эксплуатационная нагрузка.</li>
+                <li>Дополнительная нагрузка от снегового мешка, если он включен.</li>
+                <li>Фасадная ветровая составляющая для ряда проверок сортового прогона.</li>
+              </ul>
+            </div>
+
+            <div className="methodology-column">
+              <h5>Для колонн</h5>
+              <ul className="methodology-list">
+                <li>Снеговая и ветровая нагрузка по городу.</li>
+                <li>Нагрузки от кровельного и стенового ограждения.</li>
+                <li>Высотные и аэродинамические коэффициенты.</li>
+                <li>Осевая сила N и изгибающий момент M как итог расчетного контекста.</li>
+                <li>Дополнительные крановые воздействия, если они включены.</li>
+                <li>Влияние схемы связей и расчетных длин по рабочим осям.</li>
+              </ul>
+            </div>
           </div>
 
           <div className="load-grid load-grid--summary methodology-load-grid">

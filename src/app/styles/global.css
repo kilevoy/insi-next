@@ -1796,155 +1796,6 @@ textarea {
   margin-bottom: 12px;
 }
 
-.methodology-sketch-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.methodology-sketch-card {
-  border: 1px solid var(--tile-border);
-  border-radius: 10px;
-  background: var(--tile-bg);
-  overflow: hidden;
-}
-
-.methodology-sketch-head {
-  display: grid;
-  gap: 4px;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--tile-border);
-}
-
-.methodology-sketch-head strong {
-  color: var(--ink);
-  font-size: 0.94rem;
-}
-
-.methodology-sketch-head span {
-  color: var(--soft-ink);
-  font-size: 0.78rem;
-}
-
-.methodology-sketch-body {
-  display: grid;
-  grid-template-columns: minmax(220px, 0.95fr) minmax(0, 1.05fr);
-  gap: 12px;
-  padding: 14px;
-}
-
-.methodology-sketch-roof {
-  position: relative;
-  min-height: 180px;
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--panel-bg) 70%, transparent), color-mix(in srgb, var(--tile-bg) 88%, transparent)),
-    linear-gradient(90deg, rgba(27, 120, 194, 0.08), transparent);
-  border: 1px dashed var(--tile-border);
-}
-
-.methodology-sketch-rafters {
-  position: absolute;
-  left: 50%;
-  top: 54px;
-  width: 150px;
-  height: 52px;
-  transform: translateX(-50%);
-}
-
-.methodology-sketch-rafters span {
-  position: absolute;
-  top: 0;
-  width: 84px;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--accent);
-}
-
-.methodology-sketch-rafters span:first-child {
-  left: 0;
-  transform: rotate(-18deg);
-  transform-origin: left center;
-}
-
-.methodology-sketch-rafters span:last-child {
-  right: 0;
-  transform: rotate(18deg);
-  transform-origin: right center;
-}
-
-.methodology-sketch-column,
-.methodology-sketch-beam {
-  position: absolute;
-  background: color-mix(in srgb, var(--chrome-border) 75%, var(--ink) 25%);
-}
-
-.methodology-sketch-column {
-  bottom: 28px;
-  width: 8px;
-  height: 82px;
-  border-radius: 999px;
-}
-
-.methodology-sketch-column--left {
-  left: 46px;
-}
-
-.methodology-sketch-column--right {
-  right: 46px;
-}
-
-.methodology-sketch-beam {
-  left: 50%;
-  bottom: 106px;
-  width: 144px;
-  height: 6px;
-  border-radius: 999px;
-  transform: translateX(-50%);
-}
-
-.methodology-sketch-arrow {
-  position: absolute;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 28px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--panel-bg) 78%, var(--accent-soft) 22%);
-  border: 1px solid var(--tile-border);
-  color: var(--ink);
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.methodology-sketch-arrow--left {
-  top: 14px;
-  left: 14px;
-}
-
-.methodology-sketch-arrow--center {
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.methodology-sketch-arrow--right {
-  top: 54px;
-  right: 14px;
-}
-
-.methodology-sketch-list {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding-left: 18px;
-  color: var(--ink);
-  font-size: 0.84rem;
-  line-height: 1.55;
-}
-
 .methodology-column {
   padding: 14px;
   border: 1px solid var(--tile-border);
@@ -2173,7 +2024,6 @@ textarea {
   .methodology-section-grid,
   .methodology-columns,
   .methodology-checks,
-  .methodology-sketch-grid,
   .methodology-formula-grid {
     grid-template-columns: 1fr;
   }
@@ -2203,10 +2053,6 @@ textarea {
 
   .methodology-badges {
     justify-content: flex-start;
-  }
-
-  .methodology-sketch-body {
-    grid-template-columns: 1fr;
   }
 
   .topbar-utility-group {
