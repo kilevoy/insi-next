@@ -11,6 +11,18 @@ const UTILIZATION_INVALID_VALUE = 999_999
 const PLATEAU_SHIFT_THRESHOLD = 3
 const Z_RUN_CONNECTOR_KG = 1.72
 const BRACE_UNIT_MASS_KG_PER_M = 9.6
+const TWO_TPS_ALLOWED_COVERINGS = new Set<string>([
+  'наше 100 мм',
+  'наше 150 мм',
+  'наше 200 мм',
+  'наше 250 мм',
+  'наше 150 мм 1 слой гвл',
+  'наше 150 мм 2 слоя гвл',
+  'наше 200 мм 1 слой гвл',
+  'наше 200 мм 2 слоя гвл',
+  'наше 250 мм 1 слой гвл',
+  'наше 250 мм 2 слоя гвл',
+])
 
 export interface LstkProfile {
   profile: string
@@ -31,6 +43,7 @@ interface LstkPreparedContext {
   responsibilityFactor: number
   roofSideMultiplier: number
   panelThicknessFilterMm: number
+  hasLayeredAssemblyCovering: boolean
   frameBayCount: number
   manualMinStepMm: number
 }
@@ -161,6 +174,10 @@ function resolvePanelThicknessFilterMm(coveringType: string): number {
   return match ? Number(match[1]) : 0
 }
 
+function hasLayeredAssemblyCovering(coveringType: string): boolean {
+  return TWO_TPS_ALLOWED_COVERINGS.has(normalizeModeText(coveringType))
+}
+
 function resolveAllowedMaxStepMm(input: PurlinInput, derivedContext: PurlinDerivedContext): number {
   if (input.manualMaxStepMm > 0) {
     return input.manualMaxStepMm
@@ -185,6 +202,7 @@ function buildPreparedContext(input: PurlinInput, derivedContext: PurlinDerivedC
     responsibilityFactor: resolveResponsibilityFactor(input.responsibilityLevel),
     roofSideMultiplier: resolveRoofSideMultiplier(input.roofType),
     panelThicknessFilterMm: resolvePanelThicknessFilterMm(input.coveringType),
+    hasLayeredAssemblyCovering: hasLayeredAssemblyCovering(input.coveringType),
     frameBayCount: resolveFrameBayCount(input),
     manualMinStepMm: input.manualMinStepMm,
   }
@@ -241,8 +259,10 @@ function evaluateProfileAtStep(
 
   if (
     config.requiresPanelFilter &&
-    preparedContext.panelThicknessFilterMm > 0 &&
-    preparedContext.panelThicknessFilterMm !== profile.requiredPanelThicknessMm
+    (
+      !preparedContext.hasLayeredAssemblyCovering ||
+      preparedContext.panelThicknessFilterMm !== profile.requiredPanelThicknessMm
+    )
   ) {
     return {
       objectiveValue: PROFILE_OBJECTIVE_INVALID_VALUE,
