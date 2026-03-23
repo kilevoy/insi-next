@@ -42,7 +42,7 @@ interface LstkStepEvaluation {
 }
 
 function normalizeModeText(value: string): string {
-  return value.trim().toLowerCase()
+  return value.trim().toLowerCase().replaceAll('ё', 'е')
 }
 
 function resolveLstkPriceRubPerKg(input: PurlinInput, family: string): number {

@@ -87,4 +87,31 @@ describe('purlin MP350 2TPS selection', () => {
     expect(candidates[1]?.stepMm).toBe(baselineCandidates[1]?.stepMm)
     expect(candidates[2]?.stepMm).toBe(baselineCandidates[2]?.stepMm)
   })
+
+  it('treats поперек and поперёк snow bag labels as equivalent for MP350', () => {
+    const baseScenario = {
+      ...defaultPurlinInput,
+      spanM: 18,
+      frameStepM: 5,
+      fakhverkSpacingM: 5,
+      snowBagMode: 'поперек здания',
+      heightDifferenceM: 2,
+      adjacentBuildingSizeM: 4,
+    }
+    const variantScenario = {
+      ...baseScenario,
+      snowBagMode: 'поперёк здания',
+    }
+
+    const baseContext = buildPurlinDerivedContext(baseScenario)
+    const variantContext = buildPurlinDerivedContext(variantScenario)
+    const baseCandidates = calculateMp350FamilyCandidates(baseScenario, baseContext)
+    const variantCandidates = calculateMp350FamilyCandidates(variantScenario, variantContext)
+
+    expect(baseCandidates.length).toBeGreaterThan(0)
+    expect(variantCandidates).toHaveLength(baseCandidates.length)
+    expect(variantCandidates[0]?.profile).toBe(baseCandidates[0]?.profile)
+    expect(variantCandidates[0]?.stepMm).toBe(baseCandidates[0]?.stepMm)
+    expect(variantCandidates[0]?.totalMassKg).toBeCloseTo(baseCandidates[0]?.totalMassKg ?? 0, 10)
+  })
 })

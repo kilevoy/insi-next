@@ -211,7 +211,9 @@ export function calculatePurlinAutoMaxStepMm(
   })
 
   if (!matchingRow) {
-    throw new Error(`No auto-step row matched lookup value ${lookupValue}`)
+    // Keep calculation resilient for overload scenarios: no matching auto-step
+    // means no selectable step, and downstream ranking should return empty lists.
+    return 0
   }
 
   return matchingRow.stepMm

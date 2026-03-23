@@ -63,5 +63,33 @@ describe('purlin sort steel input normalization', () => {
     expect(candidates[0]?.stepMm).toBe(baseline[0]?.stepMm)
     expect(candidates[0]?.objectiveValue).toBeCloseTo(baseline[0]?.objectiveValue ?? 0, 10)
   })
+
+  it('treats поперек and поперёк snow bag labels as the same mode', () => {
+    const baseScenario = {
+      ...defaultPurlinInput,
+      spanM: 18,
+      frameStepM: 5,
+      fakhverkSpacingM: 5,
+      snowBagMode: 'поперек здания',
+      heightDifferenceM: 2,
+      adjacentBuildingSizeM: 4,
+    }
+    const variantScenario = {
+      ...baseScenario,
+      snowBagMode: 'поперёк здания',
+    }
+
+    const baseContext = buildPurlinDerivedContext(baseScenario)
+    const variantContext = buildPurlinDerivedContext(variantScenario)
+    const baseCandidates = calculateSortSteelTopCandidates(baseScenario, baseContext)
+    const variantCandidates = calculateSortSteelTopCandidates(variantScenario, variantContext)
+
+    expect(baseCandidates.length).toBeGreaterThan(0)
+    expect(variantCandidates).toHaveLength(baseCandidates.length)
+    expect(variantCandidates[0]?.profile).toBe(baseCandidates[0]?.profile)
+    expect(variantCandidates[0]?.stepMm).toBe(baseCandidates[0]?.stepMm)
+    expect(variantCandidates[0]?.totalMassKg).toBeCloseTo(baseCandidates[0]?.totalMassKg ?? 0, 10)
+    expect(variantCandidates[0]?.objectiveValue).toBeCloseTo(baseCandidates[0]?.objectiveValue ?? 0, 10)
+  })
 })
 

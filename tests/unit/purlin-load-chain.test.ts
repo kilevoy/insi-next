@@ -59,4 +59,14 @@ describe('purlin load chain', () => {
     expect(calculatePurlinDesignLoad(scenario, context)).toBeCloseTo(2.4917373287, 10)
     expect(calculatePurlinAutoMaxStepMm(scenario, context)).toBe(2550)
   })
+
+  it('returns zero auto max step instead of throwing when lookup value exceeds table capacity', () => {
+    const scenario = {
+      ...defaultPurlinInput,
+      responsibilityLevel: '5',
+    }
+    const context = buildPurlinDerivedContext(scenario)
+
+    expect(calculatePurlinAutoMaxStepMm(scenario, context)).toBe(0)
+  })
 })

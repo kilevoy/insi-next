@@ -19,6 +19,8 @@ const ELASTIC_MODULUS_MPA = 2.06 * 10 ** 5
 const DEFLECTION_ELASTIC_MODULUS_KN_PER_M2 = 2.06 * 10 ** 8
 const INVALID_OBJECTIVE = 999_999_999_999
 const NO_VALUE = 'нет'
+const SNOW_BAG_ALONG_BUILDING = 'вдоль здания'
+const SNOW_BAG_ACROSS_BUILDING = 'поперек здания'
 const DUAL_SLOPE_ROOF = 'двускатная'
 
 type SortSteelCandidate = (typeof purlinSortSteelProfiles)[number]
@@ -56,6 +58,10 @@ function findExactIndex(values: readonly number[], target: number): number {
   return values.findIndex((value) => Math.abs(value - target) < 1e-9)
 }
 
+function normalizeModeText(value: string): string {
+  return value.trim().toLowerCase().replaceAll('ё', 'е')
+}
+
 function resolvePriceRubPerKg(candidate: SortSteelCandidate, input: PurlinInput): number {
   if (candidate.priceCategory === 'i_beam') {
     return candidate.steelGrade === 'С255Б' ? input.iBeamS255PriceRubPerKg : input.iBeamS355PriceRubPerKg
@@ -69,11 +75,11 @@ function resolvePriceRubPerKg(candidate: SortSteelCandidate, input: PurlinInput)
 }
 
 function resolveRoofSideMultiplier(roofType: string): number {
-  return roofType.trim().toLowerCase() === DUAL_SLOPE_ROOF ? 2 : 1
+  return normalizeModeText(roofType) === DUAL_SLOPE_ROOF ? 2 : 1
 }
 
 function resolveTieRowsCount(value: string): number {
-  const normalized = value.trim().toLowerCase()
+  const normalized = normalizeModeText(value)
 
   if (normalized === NO_VALUE) {
     return 0
@@ -97,13 +103,15 @@ function resolvePurlinTotalLengthPerStepM(input: PurlinInput, stepMm: number): n
 }
 
 function resolveSnowbagLengthM(input: PurlinInput, derivedContext: PurlinDerivedContext): number {
-  if (input.snowBagMode === NO_VALUE) {
+  const snowBagMode = normalizeModeText(input.snowBagMode)
+
+  if (snowBagMode === NO_VALUE) {
     return input.spanM
   }
 
   const preliminaryFactor =
     1 +
-    (0.4 * (input.snowBagMode === 'вдоль здания' ? input.spanM : input.buildingLengthM) +
+    (0.4 * (snowBagMode === SNOW_BAG_ALONG_BUILDING ? input.spanM : input.buildingLengthM) +
       0.4 * input.adjacentBuildingSizeM) /
       input.heightDifferenceM
 
@@ -119,7 +127,7 @@ function resolveSnowbagLengthM(input: PurlinInput, derivedContext: PurlinDerived
             16,
           )
 
-  if (input.snowBagMode === 'поперек здания') {
+  if (snowBagMode === SNOW_BAG_ACROSS_BUILDING) {
     return Math.ceil(baseLengthM / input.frameStepM) * input.frameStepM
   }
 
@@ -127,7 +135,7 @@ function resolveSnowbagLengthM(input: PurlinInput, derivedContext: PurlinDerived
 }
 
 function resolveBuildingMassLengthM(input: PurlinInput, derivedContext: PurlinDerivedContext): number {
-  return input.snowBagMode === 'поперек здания'
+  return normalizeModeText(input.snowBagMode) === SNOW_BAG_ACROSS_BUILDING
     ? resolveSnowbagLengthM(input, derivedContext)
     : input.buildingLengthM
 }
