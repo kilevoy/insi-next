@@ -67,13 +67,6 @@ function formatRub(value: number): string {
   return `${Math.round(value).toLocaleString('ru-RU')}`
 }
 
-function formatThousandsRub(value: number): string {
-  return value.toLocaleString('ru-RU', {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  })
-}
-
 function formatStepLimitMm(value: number, zeroLabel = 'авто'): string {
   return value > 0 ? formatNumber(value, 0) : zeroLabel
 }
@@ -222,26 +215,26 @@ function renderPurlinCandidatesTable(title: string, candidates: CandidateResult[
                 <th>Сталь</th>
                 <th>Шаг, мм</th>
                 <th>Масса, кг</th>
-                <th>Стоимость, тыс. руб.</th>
                 <th>К-т исп.</th>
+                <th>Стоимость, руб.</th>
               </tr>
             </thead>
             <tbody>
-              {displayList.map((candidate, index) => (
-                <tr key={`${candidate.profile}-${candidate.steelGrade}-${index}`}>
-                  <td>{index + 1}</td>
-                  <td>{candidate.profile}</td>
-                  <td>{candidate.steelGrade}</td>
-                  <td>{candidate.stepMm ? formatNumber(candidate.stepMm, 0) : '-'}</td>
-                  <td>{formatNumber(candidate.totalMassKg, 0)}</td>
-                  <td>
-                    {candidate.excelMetrics?.displayCostThousandsRub === undefined
-                      ? '-'
-                      : formatThousandsRub(candidate.excelMetrics.displayCostThousandsRub)}
-                  </td>
-                  <td>{formatNumber(candidate.utilization, 3)}</td>
-                </tr>
-              ))}
+              {displayList.map((candidate, index) => {
+                const candidateCostRub = resolveCandidateCostRub(candidate)
+
+                return (
+                  <tr key={`${candidate.profile}-${candidate.steelGrade}-${index}`}>
+                    <td>{index + 1}</td>
+                    <td>{candidate.profile}</td>
+                    <td>{candidate.steelGrade}</td>
+                    <td>{candidate.stepMm ? formatNumber(candidate.stepMm, 0) : '-'}</td>
+                    <td>{formatNumber(candidate.totalMassKg, 0)}</td>
+                    <td>{formatNumber(candidate.utilization, 3)}</td>
+                    <td>{candidateCostRub === null ? '-' : formatRub(candidateCostRub)}</td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -257,13 +250,13 @@ function renderPurlinCandidatesTable(title: string, candidates: CandidateResult[
                 <th>Масса 1 п.м., кг</th>
                 <th>Масса / шаг, кг</th>
                 <th>Масса / здание, кг</th>
-                <th>Стоимость, руб.</th>
                 <th>С раскосами, кг</th>
                 <th>Черный, кг</th>
                 <th>Оцинк., кг</th>
                 <th>Длина, м</th>
                 <th>Масса 1 м, кг</th>
                 <th>К-т исп.</th>
+                <th>Стоимость, руб.</th>
               </tr>
             </thead>
             <tbody>
@@ -283,13 +276,13 @@ function renderPurlinCandidatesTable(title: string, candidates: CandidateResult[
                     </td>
                     <td>{candidate.excelMetrics?.massPerStepKg === undefined ? '-' : formatNumber(candidate.excelMetrics.massPerStepKg, 4)}</td>
                     <td>{formatNumber(candidate.totalMassKg, 3)}</td>
-                    <td>{candidateCostRub === null ? '-' : formatRub(candidateCostRub)}</td>
                     <td>{candidate.excelMetrics?.massWithBracesKg === undefined ? '-' : formatNumber(candidate.excelMetrics.massWithBracesKg, 4)}</td>
                     <td>{candidate.excelMetrics?.blackMassKg == null ? '-' : formatNumber(candidate.excelMetrics.blackMassKg, 3)}</td>
                     <td>{candidate.excelMetrics?.galvanizedMassKg == null ? '-' : formatNumber(candidate.excelMetrics.galvanizedMassKg, 3)}</td>
                     <td>{candidate.excelMetrics?.developedLengthM === undefined ? '-' : formatNumber(candidate.excelMetrics.developedLengthM, 3)}</td>
                     <td>{candidate.excelMetrics?.massPerMeterKg === undefined ? '-' : formatNumber(candidate.excelMetrics.massPerMeterKg, 4)}</td>
                     <td>{formatNumber(candidate.utilization, 4)}</td>
+                    <td>{candidateCostRub === null ? '-' : formatRub(candidateCostRub)}</td>
                   </tr>
                 )
               })}
