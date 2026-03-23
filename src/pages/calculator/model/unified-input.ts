@@ -348,7 +348,7 @@ export function normalizeLoadedInput(raw: unknown): UnifiedInputState {
     profileSheet: normalizeCatalogValue(parsed.profileSheet, PROFILE_SHEET_OPTIONS, defaultUnifiedInput.profileSheet),
     wallProfileSheet: normalizeCatalogValue(parsed.wallProfileSheet, PROFILE_SHEET_OPTIONS, defaultUnifiedInput.wallProfileSheet),
     snowBagMode: normalizeSnowBagMode(parsed.snowBagMode),
-    tiesSetting: normalizeCatalogValue(parsed.tiesSetting, [defaultUnifiedInput.tiesSetting, '1', '2', '3'], defaultUnifiedInput.tiesSetting),
+    tiesSetting: defaultUnifiedInput.tiesSetting,
     braceSpacingM: Number.isFinite(Number(parsed.braceSpacingM)) && Number(parsed.braceSpacingM) > 0
       ? Number(parsed.braceSpacingM)
       : defaultUnifiedInput.braceSpacingM,

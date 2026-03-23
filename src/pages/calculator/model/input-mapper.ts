@@ -1,6 +1,6 @@
 import type { ColumnInput } from '@/domain/column/model/column-input'
 import type { PurlinInput } from '@/domain/purlin/model/purlin-input'
-import type { UnifiedInputState } from './unified-input'
+import { defaultUnifiedInput, type UnifiedInputState } from './unified-input'
 import { DEFAULT_NORMATIVE_MODE } from './unified-input-options'
 
 export function mapToPurlinInput(state: UnifiedInputState): PurlinInput {
@@ -24,7 +24,7 @@ export function mapToPurlinInput(state: UnifiedInputState): PurlinInput {
     manualMaxStepMm: state.manualMaxStepMm,
     manualMinStepMm: state.manualMinStepMm,
     maxUtilizationRatio: state.maxUtilizationRatio,
-    tiesSetting: state.tiesSetting,
+    tiesSetting: defaultUnifiedInput.tiesSetting,
     braceSpacingM: state.braceSpacingM,
     snowRetentionPurlin: state.snowRetentionPurlin,
     barrierPurlin: state.barrierPurlin,

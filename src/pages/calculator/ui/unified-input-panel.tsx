@@ -4,7 +4,7 @@ import {
   MAX_SUPPORTED_WIND_SPAN_M,
   MIN_SUPPORTED_BUILDING_HEIGHT_M,
 } from '@/shared/config/calculation-limits'
-import { defaultUnifiedInput, type UnifiedInputState } from '../model/unified-input'
+import type { UnifiedInputState } from '../model/unified-input'
 import {
   PRESENCE_OPTIONS,
   PROFILE_SHEET_OPTIONS,
@@ -313,23 +313,6 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
             />
           </div>
         )}
-
-        <div className="field-row">
-          <label className="field">
-            <span className="field-label">Tie Rows</span>
-            <select
-              className="field-select"
-              value={input.tiesSetting === defaultUnifiedInput.tiesSetting ? 'none' : input.tiesSetting}
-              onChange={(event) => onChange('tiesSetting', event.target.value === 'none' ? defaultUnifiedInput.tiesSetting : event.target.value)}
-            >
-              {['none', '1', '2', '3'].map((option) => (
-                <option key={option} value={option}>
-                  {option === 'none' ? 'No ties' : option}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
 
         <div className="field-row">
           <label className="field">
