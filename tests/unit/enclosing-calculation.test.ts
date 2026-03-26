@@ -29,7 +29,10 @@ describe('enclosing calculation', () => {
 
     expect(class1.totals.panelsRub).toBe(12753079)
     expect(class1.walls.fasteners[0]?.lengthMm).toBe(140)
+    expect(class1.walls.fasteners[0]?.unitPriceRub).toBeCloseTo(51.9, 1)
     expect(class1.roof.fasteners[0]?.lengthMm).toBe(240)
+    expect(class1.roof.fasteners[0]?.unitPriceRub).toBeCloseTo(145.7, 1)
+    expect(class1.walls.fasteners[1]?.unitPriceRub).toBe(4)
     expect(class1.walls.accessories.length).toBeGreaterThan(0)
     expect(class1.roof.accessories.length).toBeGreaterThan(0)
   })
@@ -49,6 +52,8 @@ describe('enclosing calculation', () => {
     const serialized = JSON.stringify(result)
     expect(serialized.includes('concrete')).toBe(false)
     expect(result.classes['class-1-gost'].walls.fasteners[0]?.item).toContain('стеновых панелей')
+    expect(result.notes.some((note) => note.toLowerCase().includes('оценоч'))).toBe(false)
+    expect(result.notes.some((note) => note.includes('№12.4'))).toBe(true)
   })
 
   it('maps unified input to enclosing input and resolves openings area', () => {
