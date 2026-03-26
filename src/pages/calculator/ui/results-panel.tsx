@@ -787,6 +787,10 @@ function renderEnclosingOverview(
                 <span>Вес, кг</span>
                 <strong>{formatNumber(walls.totals.panelMassKg, 2)}</strong>
               </div>
+              <div className="load-tile load-tile--total">
+                <span>Стоимость, руб.</span>
+                <strong>{formatRub(walls.totals.sectionRub)}</strong>
+              </div>
             </div>
             <p className="results-inline-note" style={{ marginTop: 8 }}>
               Стеновые панели приняты в горизонтальном монтаже; рабочая ширина фиксирована 1000 мм.
@@ -931,6 +935,10 @@ function renderEnclosingOverview(
                 <span>Вес, кг</span>
                 <strong>{formatNumber(roof.totals.panelMassKg, 2)}</strong>
               </div>
+              <div className="load-tile load-tile--total">
+                <span>Стоимость, руб.</span>
+                <strong>{formatRub(roof.totals.sectionRub)}</strong>
+              </div>
             </div>
           </div>
 
@@ -1064,6 +1072,14 @@ function renderEnclosingOverview(
               <div className="summary-metric-card summary-metric-card--accent">
                 <span>{`${activeClass.label}: стоимость`}</span>
                 <strong>{`${formatRub(activeClass.totals.classRub)} руб.`}</strong>
+              </div>
+              <div className="summary-metric-card">
+                <span>Стены, руб.</span>
+                <strong>{formatRub(walls.totals.sectionRub)}</strong>
+              </div>
+              <div className="summary-metric-card">
+                <span>Кровля, руб.</span>
+                <strong>{formatRub(roof.totals.sectionRub)}</strong>
               </div>
               <div className="summary-metric-card">
                 <span>Вес панелей, кг</span>
