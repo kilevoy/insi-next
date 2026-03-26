@@ -715,7 +715,6 @@ function renderEnclosingOverview(
     const activeClass = enclosingResult.classes[selectedClassKey]
     const walls = activeClass.walls
     const roof = activeClass.roof
-    const wallPanelRow = walls.panelSpecification[0]
 
     return (
       <div className="tab-pane animate-in" data-testid="enclosing-panel">
@@ -771,7 +770,7 @@ function renderEnclosingOverview(
               </div>
             </div>
             <p className="results-inline-note" style={{ marginTop: 8 }}>
-              Рабочая ширина стеновой панели подобрана автоматически из 1000/1160/1190 мм по экономичной раскладке. Выбрано: {wallPanelRow?.workingWidthMm ?? '-'} мм.
+              Для расчета стеновых панелей принята фиксированная рабочая ширина 1000 мм.
             </p>
           </div>
 

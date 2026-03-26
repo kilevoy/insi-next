@@ -21,8 +21,8 @@ describe('enclosing calculation', () => {
     const class1 = result.classes['class-1-gost']
     expect(class1.walls.panelSpecification[0]?.mark).toBe('МП ТСП-Z')
     expect(class1.walls.panelSpecification[0]?.panelLengthM).toBeCloseTo(10, 2)
-    expect(class1.walls.panelSpecification[0]?.panelsCount).toBe(128)
-    expect(class1.walls.panelSpecification[0]?.workingWidthMm).toBe('1190')
+    expect(class1.walls.panelSpecification[0]?.panelsCount).toBe(153)
+    expect(class1.walls.panelSpecification[0]?.workingWidthMm).toBe('1000')
     expect(class1.walls.panelSpecification[0]?.unitMassKgPerM2).toBeCloseTo(18.35, 2)
     expect(class1.walls.panelSpecification[0]?.unitPriceRubPerM2).toBe(3905)
     expect(class1.roof.panelSpecification[0]?.mark).toBe('МП ТСП-К')

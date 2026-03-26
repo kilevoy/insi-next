@@ -18,7 +18,6 @@ import {
 const STEEL_DENSITY_KG_PER_M3 = 7850
 const FACING_STEEL_THICKNESS_M = 0.0005
 const PANEL_WORKING_WIDTH_M = 1
-const WALL_PANEL_WORKING_WIDTH_OPTIONS_MM = [1000, 1160, 1190] as const
 
 const ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2 = 500
 
@@ -153,40 +152,6 @@ function calcPanelsCount(areaM2: number, panelLengthM: number, panelWorkingWidth
     return 0
   }
   return Math.max(1, Math.ceil(areaM2 / panelArea))
-}
-
-function resolveEconomicalWallWorkingWidthMm(params: {
-  wallAreaNetM2: number
-  wallPanelLengthM: number
-}): number {
-  const variants = WALL_PANEL_WORKING_WIDTH_OPTIONS_MM.map((widthMm) => {
-    const workingWidthM = widthMm / 1000
-    const panelsCount = calcPanelsCount(params.wallAreaNetM2, params.wallPanelLengthM, workingWidthM)
-    const purchasedAreaM2 = panelsCount * workingWidthM * Math.max(params.wallPanelLengthM, 0.1)
-    const wasteAreaM2 = Math.max(0, purchasedAreaM2 - params.wallAreaNetM2)
-
-    return {
-      widthMm,
-      panelsCount,
-      purchasedAreaM2,
-      wasteAreaM2,
-    }
-  })
-
-  const best = variants.sort((left, right) => {
-    if (left.purchasedAreaM2 !== right.purchasedAreaM2) {
-      return left.purchasedAreaM2 - right.purchasedAreaM2
-    }
-    if (left.wasteAreaM2 !== right.wasteAreaM2) {
-      return left.wasteAreaM2 - right.wasteAreaM2
-    }
-    if (left.panelsCount !== right.panelsCount) {
-      return left.panelsCount - right.panelsCount
-    }
-    return right.widthMm - left.widthMm
-  })[0]
-
-  return best?.widthMm ?? 1000
 }
 
 function calcAccessoryRow(
@@ -474,10 +439,7 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
   const openingsAreaM2 = Math.max(0, input.openingsAreaM2)
   const wallAreaNetM2 = Math.max(0, wallAreaGrossM2 - openingsAreaM2)
   const roofPanelLengthM = resolveRoofPanelLengthM(input)
-  const selectedWallWorkingWidthMm = resolveEconomicalWallWorkingWidthMm({
-    wallAreaNetM2,
-    wallPanelLengthM: input.buildingHeightM,
-  })
+  const selectedWallWorkingWidthMm = 1000
 
   const derivedAccessoryPriceRubPerM2 =
     ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2 * enclosingAccessoriesReference.flatSheetMultiplier
@@ -503,7 +465,7 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
     'Panel quantities are calculated by an enlarged layout scheme.',
     `Accessories are calculated by price formula: flat sheet price x ${enclosingAccessoriesReference.flatSheetMultiplier} (base ${ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2} RUB/m2).`,
     'Fastener prices use price list №12.4 (Harpoon for sandwich panels) and price list №7 (4.8x28 for accessories).',
-    `Wall panel working width ${selectedWallWorkingWidthMm} mm is selected automatically from 1000/1160/1190 by economical layout.`,
+    'Wall panel working width is fixed at 1000 mm.',
   ]
   if (wallFastener.requestedThicknessMm !== wallFastener.resolvedThicknessMm) {
     notes.push(
