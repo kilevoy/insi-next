@@ -10,7 +10,6 @@ import type {
 import {
   ENCLOSING_CLASS_KEYS,
   enclosingAccessoriesReference,
-  enclosingFastenerReference,
   enclosingPanelPriceRubPerM2,
   type EnclosingClassKey,
 } from './enclosing-reference.generated'
@@ -39,6 +38,64 @@ const WALL_FASTENER_RATE_PER_M2 = 2.5
 const ROOF_FASTENER_RATE_PER_M2 = 3.5
 const WALL_ACCESSORY_FASTENER_RATE_PER_M = 3
 const ROOF_ACCESSORY_FASTENER_RATE_PER_M = 3.5
+
+const WALL_FASTENER_LENGTH_MM_BY_THICKNESS_ATR: Record<number, number> = {
+  50: 115,
+  60: 115,
+  80: 140,
+  100: 170,
+  120: 190,
+  150: 210,
+  170: 240,
+  180: 240,
+  200: 285,
+  250: 305,
+}
+const ROOF_FASTENER_LENGTH_MM_BY_THICKNESS_ATR: Record<number, number> = {
+  50: 140,
+  60: 170,
+  80: 190,
+  100: 190,
+  120: 210,
+  150: 240,
+  170: 285,
+  180: 285,
+  200: 285,
+  250: 305,
+}
+
+const WALL_JOINT_COVER_FI11_DEV_WIDTH_M = 0.208
+const WALL_OUTER_CORNER_FI10_DEV_WIDTH_M_BY_THICKNESS: Record<number, number> = {
+  50: 0.416,
+  80: 0.469,
+  100: 0.469,
+  120: 0.5,
+  150: 0.625,
+  200: 0.664,
+  250: 0.75,
+}
+
+const ROOF_RIDGE_FI28_DEV_WIDTH_M = 0.416
+const ROOF_RIDGE_FI29_DEV_WIDTH_M = 0.178
+const ROOF_EAVE_FI35_DEV_WIDTH_M_BY_THICKNESS: Record<number, number> = {
+  50: 0.178,
+  80: 0.208,
+  100: 0.25,
+  120: 0.25,
+  150: 0.312,
+  200: 0.312,
+  250: 0.36,
+}
+const ROOF_EAVE_CORNER_FI7_DEV_WIDTH_M = 0.156
+const ROOF_END_FI34_DEV_WIDTH_M_BY_THICKNESS: Record<number, number> = {
+  50: 0.625,
+  80: 0.625,
+  100: 0.625,
+  120: 0.625,
+  150: 0.625,
+  200: 0.834,
+  250: 0.834,
+}
 
 function toRadians(degrees: number): number {
   return (degrees * Math.PI) / 180
@@ -96,6 +153,12 @@ function resolveNearestThickness(availableThicknesses: number[], requestedThickn
     })
 }
 
+function resolveClosestNotLess(availableValues: number[], requestedValue: number): number {
+  const sorted = availableValues.slice().sort((left, right) => left - right)
+  const resolved = sorted.find((value) => value >= requestedValue)
+  return resolved ?? sorted[sorted.length - 1] ?? 0
+}
+
 function resolvePricedThickness(
   table: Record<number, number>,
   requestedThicknessMm: number,
@@ -116,7 +179,7 @@ function resolveFastenerLengthByThickness(table: Record<number, number>, request
   const thicknesses = Object.keys(table).map(Number)
   const resolvedThicknessMm = table[requestedThicknessMm]
     ? requestedThicknessMm
-    : resolveNearestThickness(thicknesses, requestedThicknessMm)
+    : resolveClosestNotLess(thicknesses, requestedThicknessMm)
 
   return {
     requestedThicknessMm,
@@ -129,13 +192,19 @@ function resolveFastenerPriceByLength(table: Record<number, number>, requestedLe
   const lengths = Object.keys(table).map(Number)
   const resolvedLengthMm = table[requestedLengthMm]
     ? requestedLengthMm
-    : resolveNearestThickness(lengths, requestedLengthMm)
+    : resolveClosestNotLess(lengths, requestedLengthMm)
 
   return {
     requestedLengthMm,
     resolvedLengthMm,
     unitPriceRub: table[resolvedLengthMm] ?? table[lengths[0] ?? 0] ?? 0,
   }
+}
+
+function resolveDevelopedWidthByThickness(table: Record<number, number>, requestedThicknessMm: number): number {
+  const thicknesses = Object.keys(table).map(Number)
+  const resolvedThicknessMm = resolveClosestNotLess(thicknesses, requestedThicknessMm)
+  return table[resolvedThicknessMm] ?? 0
 }
 
 function calcFacingSteelMassKgPerM2(): number {
@@ -207,8 +276,7 @@ function buildSectionSpecification(params: {
   priceTable: Record<number, number>
   accessoryRows: EnclosingAccessoryRow[]
   panelWorkingWidthM?: number
-  panelFastenerLengthMm: number
-  panelFastenerPriceRub: number
+  panelFastenerLengthByThicknessMm: Record<number, number>
   panelFastenerRate: number
   accessoryFastenerRate: number
   notes: string[]
@@ -246,6 +314,24 @@ function buildSectionSpecification(params: {
 
   const accessories = params.accessoryRows
   const accessoryLengthM = accessories.reduce((sum, row) => sum + row.requiredLengthM, 0)
+  const panelFastener = resolveFastenerLengthByThickness(
+    params.panelFastenerLengthByThicknessMm,
+    priced.resolvedThicknessMm,
+  )
+  const panelFastenerPrice = resolveFastenerPriceByLength(
+    HARPOON_PANEL_FASTENER_PRICE_RUB_BY_LENGTH_MM,
+    panelFastener.lengthMm,
+  )
+  if (panelFastener.requestedThicknessMm !== panelFastener.resolvedThicknessMm) {
+    params.notes.push(
+      `${params.classLabel}: для крепежа раздела ${params.section === 'walls' ? 'стены' : 'кровля'} применена ближайшая большая толщина ${panelFastener.resolvedThicknessMm} мм вместо ${panelFastener.requestedThicknessMm} мм.`,
+    )
+  }
+  if (panelFastenerPrice.requestedLengthMm !== panelFastenerPrice.resolvedLengthMm) {
+    params.notes.push(
+      `${params.classLabel}: для крепежа раздела ${params.section === 'walls' ? 'стены' : 'кровля'} применена ближайшая большая длина ${panelFastenerPrice.resolvedLengthMm} мм вместо ${panelFastenerPrice.requestedLengthMm} мм (по доступным позициям прайса).`,
+    )
+  }
 
   const fasteners: EnclosingFastenerRow[] = [
     {
@@ -253,25 +339,25 @@ function buildSectionSpecification(params: {
       section: params.section,
       item:
         params.section === 'walls'
-          ? 'Саморез для крепления стеновых панелей к металлокаркасу'
-          : 'Саморез для крепления кровельных панелей к металлокаркасу',
+          ? 'Самонарезающий винт с ЭПДМ-прокладкой для МП ТСП-Z (по АТР ТСП)'
+          : 'Самонарезающий винт с ЭПДМ-прокладкой для МП ТСП-К (по АТР ТСП)',
       unit: 'шт',
       quantity: Math.ceil(params.areaM2 * params.panelFastenerRate),
-      lengthMm: params.panelFastenerLengthMm,
-      unitPriceRub: params.panelFastenerPriceRub,
-      totalRub: roundRub(Math.ceil(params.areaM2 * params.panelFastenerRate) * params.panelFastenerPriceRub),
-      note: 'Норма крепежа на 1 м2, цена по прайсу №12.4 (Гарпун).',
+      lengthMm: panelFastener.lengthMm,
+      unitPriceRub: panelFastenerPrice.unitPriceRub,
+      totalRub: roundRub(Math.ceil(params.areaM2 * params.panelFastenerRate) * panelFastenerPrice.unitPriceRub),
+      note: 'Длина подбирается строго по АТР ТСП; цена по прайсу №12.4 (Гарпун).',
     },
     {
       key: `${params.classKey}-${params.section}-accessory-fastener`,
       section: params.section,
-      item: 'Саморез для крепления доборных элементов',
+      item: 'Саморез Ø4,8х19(28) с ЭПДМ-прокладкой для крепления фасонных изделий (по АТР ТСП)',
       unit: 'шт',
       quantity: Math.ceil(accessoryLengthM * params.accessoryFastenerRate),
       lengthMm: ACCESSORY_FASTENER_LENGTH_MM,
       unitPriceRub: ACCESSORY_FASTENER_PRICE_RUB,
       totalRub: roundRub(Math.ceil(accessoryLengthM * params.accessoryFastenerRate) * ACCESSORY_FASTENER_PRICE_RUB),
-      note: 'Норма крепежа на 1 м.п., цена по прайсу №7 (4,8x28 ROOFRetail).',
+      note: 'Норма крепежа на 1 м.п., тип по АТР ТСП (поз. Ø4,8х19(28)).',
     },
   ]
 
@@ -301,10 +387,6 @@ function buildClassSpecification(params: {
   roofPanelLengthM: number
   derivedAccessoryPriceRubPerM2: number
   selectedWallWorkingWidthMm: number
-  wallFastenerLengthMm: number
-  wallFastenerPriceRub: number
-  roofFastenerLengthMm: number
-  roofFastenerPriceRub: number
   notes: string[]
 }): EnclosingClassSpecification {
   const classLabel = params.classKey === 'class-1-gost' ? 'Класс 1' : 'Класс 2'
@@ -319,17 +401,17 @@ function buildClassSpecification(params: {
     calcAccessoryRow(
       `${params.classKey}-walls-joint-cover`,
       'walls',
-      'Нащельник стыка стеновых панелей',
+      'Нащельник стыка ФИ11 (узел 1.2.3, АТР ТСП)',
       wallJointLengthM,
-      0.25,
+      WALL_JOINT_COVER_FI11_DEV_WIDTH_M,
       params.derivedAccessoryPriceRubPerM2,
     ),
     calcAccessoryRow(
       `${params.classKey}-walls-outer-corner`,
       'walls',
-      'Угол наружный стеновой',
+      'Угловой элемент наружный ФИ10хA (узел 1.5.2/1.5.4, АТР ТСП)',
       4 * params.input.buildingHeightM,
-      0.3,
+      resolveDevelopedWidthByThickness(WALL_OUTER_CORNER_FI10_DEV_WIDTH_M_BY_THICKNESS, params.input.wallPanelThicknessMm),
       params.derivedAccessoryPriceRubPerM2,
     ),
   ].filter((row): row is EnclosingAccessoryRow => row !== null)
@@ -340,27 +422,43 @@ function buildClassSpecification(params: {
 
   const roofAccessories = [
     calcAccessoryRow(
-      `${params.classKey}-roof-ridge`,
+      `${params.classKey}-roof-ridge-fi28`,
       'roof',
-      'Планка конька',
+      'Стыковочный элемент конька ФИ28 (узел 3.2, АТР ТСП)',
       isGableRoof(params.input.roofType) ? params.input.buildingLengthM : 0,
-      0.5,
+      ROOF_RIDGE_FI28_DEV_WIDTH_M,
       params.derivedAccessoryPriceRubPerM2,
     ),
     calcAccessoryRow(
-      `${params.classKey}-roof-eave`,
+      `${params.classKey}-roof-ridge-fi29`,
       'roof',
-      'Планка карнизная',
+      'Стыковочный элемент конька ФИ29 (узел 3.2, АТР ТСП)',
+      isGableRoof(params.input.roofType) ? params.input.buildingLengthM : 0,
+      ROOF_RIDGE_FI29_DEV_WIDTH_M,
+      params.derivedAccessoryPriceRubPerM2,
+    ),
+    calcAccessoryRow(
+      `${params.classKey}-roof-eave-fi35`,
+      'roof',
+      'Стыковочный элемент карниза ФИ35хA (узел 3.4.4/3.4.6, АТР ТСП)',
       2 * params.input.buildingLengthM,
-      0.3,
+      resolveDevelopedWidthByThickness(ROOF_EAVE_FI35_DEV_WIDTH_M_BY_THICKNESS, params.input.roofPanelThicknessMm),
+      params.derivedAccessoryPriceRubPerM2,
+    ),
+    calcAccessoryRow(
+      `${params.classKey}-roof-eave-fi7`,
+      'roof',
+      'Угловой элемент карниза ФИ7 (узел 3.4.4/3.4.6, АТР ТСП)',
+      2 * params.input.buildingLengthM,
+      ROOF_EAVE_CORNER_FI7_DEV_WIDTH_M,
       params.derivedAccessoryPriceRubPerM2,
     ),
     calcAccessoryRow(
       `${params.classKey}-roof-end`,
       'roof',
-      'Планка торцевая',
+      'Стыковочный элемент торца ФИ34хA (узел 3.4.3, АТР ТСП)',
       roofEdgeLengthM,
-      0.3,
+      resolveDevelopedWidthByThickness(ROOF_END_FI34_DEV_WIDTH_M_BY_THICKNESS, params.input.roofPanelThicknessMm),
       params.derivedAccessoryPriceRubPerM2,
     ),
   ].filter((row): row is EnclosingAccessoryRow => row !== null)
@@ -381,8 +479,7 @@ function buildClassSpecification(params: {
     priceTable: enclosingPanelPriceRubPerM2[params.classKey].wallZLock,
     accessoryRows: wallAccessories,
     panelWorkingWidthM: wallWorkingWidthM,
-    panelFastenerLengthMm: params.wallFastenerLengthMm,
-    panelFastenerPriceRub: params.wallFastenerPriceRub,
+    panelFastenerLengthByThicknessMm: WALL_FASTENER_LENGTH_MM_BY_THICKNESS_ATR,
     panelFastenerRate: WALL_FASTENER_RATE_PER_M2,
     accessoryFastenerRate: WALL_ACCESSORY_FASTENER_RATE_PER_M,
     notes: params.notes,
@@ -404,8 +501,7 @@ function buildClassSpecification(params: {
     unit: 'м2',
     priceTable: enclosingPanelPriceRubPerM2[params.classKey].roofK,
     accessoryRows: roofAccessories,
-    panelFastenerLengthMm: params.roofFastenerLengthMm,
-    panelFastenerPriceRub: params.roofFastenerPriceRub,
+    panelFastenerLengthByThicknessMm: ROOF_FASTENER_LENGTH_MM_BY_THICKNESS_ATR,
     panelFastenerRate: ROOF_FASTENER_RATE_PER_M2,
     accessoryFastenerRate: ROOF_ACCESSORY_FASTENER_RATE_PER_M,
     notes: params.notes,
@@ -439,52 +535,16 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
   const derivedAccessoryPriceRubPerM2 =
     ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2 * enclosingAccessoriesReference.flatSheetMultiplier
 
-  const wallFastener = resolveFastenerLengthByThickness(
-    enclosingFastenerReference.metalHarpoonToSteelUpTo12_5mm.wallZLockLengthMmByThickness,
-    input.wallPanelThicknessMm,
-  )
-  const roofFastener = resolveFastenerLengthByThickness(
-    enclosingFastenerReference.metalHarpoonToSteelUpTo12_5mm.roofKLengthMmByThickness,
-    input.roofPanelThicknessMm,
-  )
-  const wallFastenerPrice = resolveFastenerPriceByLength(
-    HARPOON_PANEL_FASTENER_PRICE_RUB_BY_LENGTH_MM,
-    wallFastener.lengthMm,
-  )
-  const roofFastenerPrice = resolveFastenerPriceByLength(
-    HARPOON_PANEL_FASTENER_PRICE_RUB_BY_LENGTH_MM,
-    roofFastener.lengthMm,
-  )
-
   const notes: string[] = [
     'Panel quantities are calculated by an enlarged layout scheme.',
     `Accessories are calculated by price formula: flat sheet price x ${enclosingAccessoriesReference.flatSheetMultiplier} (base ${ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2} RUB/m2).`,
     `Accessories are converted to pieces with fixed stock length ${ACCESSORY_STOCK_LENGTH_M} m.`,
     'Wall accessories include only panel joints and outer corners (no openings considered).',
-    'Fastener prices use price list №12.4 (Harpoon for sandwich panels) and price list №7 (4.8x28 for accessories).',
+    'Fastener lengths for MP ТСП-Z and MP ТСП-К are selected strictly by ATR recommendations.',
+    'Fastener prices use price list №12.4 (Harpoon for sandwich panels) and price list №7 (4.8x28 for accessories). If exact screw length is absent in price list, the next larger available length is used.',
     'Wall panel working width is fixed at 1000 mm.',
     `Wall panels are assumed to be mounted horizontally; panel length is taken as frame step (${input.frameStepM} m).`,
   ]
-  if (wallFastener.requestedThicknessMm !== wallFastener.resolvedThicknessMm) {
-    notes.push(
-      `Для стенового крепежа использована ближайшая толщина ${wallFastener.resolvedThicknessMm} мм вместо ${wallFastener.requestedThicknessMm} мм.`,
-    )
-  }
-  if (roofFastener.requestedThicknessMm !== roofFastener.resolvedThicknessMm) {
-    notes.push(
-      `Для кровельного крепежа использована ближайшая толщина ${roofFastener.resolvedThicknessMm} мм вместо ${roofFastener.requestedThicknessMm} мм.`,
-    )
-  }
-  if (wallFastenerPrice.requestedLengthMm !== wallFastenerPrice.resolvedLengthMm) {
-    notes.push(
-      `Для стенового крепежа применена цена ближайшей длины ${wallFastenerPrice.resolvedLengthMm} мм вместо ${wallFastenerPrice.requestedLengthMm} мм.`,
-    )
-  }
-  if (roofFastenerPrice.requestedLengthMm !== roofFastenerPrice.resolvedLengthMm) {
-    notes.push(
-      `Для кровельного крепежа применена цена ближайшей длины ${roofFastenerPrice.resolvedLengthMm} мм вместо ${roofFastenerPrice.requestedLengthMm} мм.`,
-    )
-  }
 
   const classes = Object.fromEntries(
     ENCLOSING_CLASS_KEYS.map((classKey) => [
@@ -497,10 +557,6 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
         roofPanelLengthM,
         derivedAccessoryPriceRubPerM2,
         selectedWallWorkingWidthMm,
-        wallFastenerLengthMm: wallFastener.lengthMm,
-        wallFastenerPriceRub: wallFastenerPrice.unitPriceRub,
-        roofFastenerLengthMm: roofFastener.lengthMm,
-        roofFastenerPriceRub: roofFastenerPrice.unitPriceRub,
         notes,
       }),
     ]),
@@ -511,6 +567,7 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
       sourceWorkbook: 'Прайс-лист №12.1 40 55 (14.08.2025), стр. 28',
       sourceSheets: [
         'Панели МВ (класс 1/класс 2, стр. 28)',
+        'АТР ТСП: рекомендуемый перечень крепежных элементов (лист 9)',
         '№12.4 Крепежные изделия для сэндвич-панелей (стр. 31)',
         '№12.5 Элементы комплектации для сэндвич-панелей (стр. 32)',
         '№1.7 и №7 (плоский лист и крепеж доборов)',
