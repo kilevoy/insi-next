@@ -5,6 +5,7 @@ export const enclosingInputSchema = z.object({
   spanM: z.number().positive(),
   buildingLengthM: z.number().positive(),
   buildingHeightM: z.number().positive(),
+  frameStepM: z.number().positive().default(6),
   roofSlopeDeg: z.number().nonnegative(),
   wallPanelThicknessMm: z.number().positive(),
   roofPanelThicknessMm: z.number().positive(),

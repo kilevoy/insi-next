@@ -5,6 +5,7 @@ interface UnifiedInputLike {
   spanM: number
   buildingLengthM: number
   buildingHeightM: number
+  frameStepM?: number
   roofSlopeDeg: number
   wallCoveringType: string
   roofCoveringType: string
@@ -19,6 +20,7 @@ interface UnifiedInputLike {
 const DEFAULT_WALL_PANEL_THICKNESS_MM = 100
 const DEFAULT_ROOF_PANEL_THICKNESS_MM = 150
 const DEFAULT_SINGLE_DOOR_AREA_M2 = 2
+const DEFAULT_FRAME_STEP_M = 6
 
 function normalizeNonNegative(value: unknown): number {
   if (typeof value !== 'number') {
@@ -50,11 +52,14 @@ function resolveOpeningsAreaM2(input: UnifiedInputLike): number {
 }
 
 export function mapUnifiedInputToEnclosingInput(input: UnifiedInputLike): EnclosingInput {
+  const frameStepM = normalizeNonNegative(input.frameStepM)
+
   return {
     roofType: input.roofType,
     spanM: normalizeNonNegative(input.spanM),
     buildingLengthM: normalizeNonNegative(input.buildingLengthM),
     buildingHeightM: normalizeNonNegative(input.buildingHeightM),
+    frameStepM: frameStepM > 0 ? frameStepM : DEFAULT_FRAME_STEP_M,
     roofSlopeDeg: normalizeNonNegative(input.roofSlopeDeg),
     wallPanelThicknessMm: parsePanelThicknessMm(input.wallCoveringType, DEFAULT_WALL_PANEL_THICKNESS_MM),
     roofPanelThicknessMm: parsePanelThicknessMm(input.roofCoveringType, DEFAULT_ROOF_PANEL_THICKNESS_MM),

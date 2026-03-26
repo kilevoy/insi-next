@@ -8,6 +8,7 @@ describe('enclosing calculation', () => {
       spanM: 24,
       buildingLengthM: 60,
       buildingHeightM: 10,
+      frameStepM: 6,
       roofSlopeDeg: 6,
       wallPanelThicknessMm: 100,
       roofPanelThicknessMm: 150,
@@ -20,8 +21,8 @@ describe('enclosing calculation', () => {
 
     const class1 = result.classes['class-1-gost']
     expect(class1.walls.panelSpecification[0]?.mark).toBe('МП ТСП-Z')
-    expect(class1.walls.panelSpecification[0]?.panelLengthM).toBeCloseTo(10, 2)
-    expect(class1.walls.panelSpecification[0]?.panelsCount).toBe(153)
+    expect(class1.walls.panelSpecification[0]?.panelLengthM).toBeCloseTo(6, 2)
+    expect(class1.walls.panelSpecification[0]?.panelsCount).toBe(254)
     expect(class1.walls.panelSpecification[0]?.workingWidthMm).toBe('1000')
     expect(class1.walls.panelSpecification[0]?.unitMassKgPerM2).toBeCloseTo(18.35, 2)
     expect(class1.walls.panelSpecification[0]?.unitPriceRubPerM2).toBe(3905)
@@ -44,6 +45,7 @@ describe('enclosing calculation', () => {
       spanM: 24,
       buildingLengthM: 60,
       buildingHeightM: 10,
+      frameStepM: 6,
       roofSlopeDeg: 6,
       wallPanelThicknessMm: 100,
       roofPanelThicknessMm: 150,
@@ -63,6 +65,7 @@ describe('enclosing calculation', () => {
       spanM: 24,
       buildingLengthM: 60,
       buildingHeightM: 10,
+      frameStepM: 6,
       roofSlopeDeg: 6,
       wallCoveringType: 'С-П 120 мм',
       roofCoveringType: 'С-П 170 мм',
@@ -76,6 +79,7 @@ describe('enclosing calculation', () => {
 
     expect(mapped.wallPanelThicknessMm).toBe(120)
     expect(mapped.roofPanelThicknessMm).toBe(170)
+    expect(mapped.frameStepM).toBe(6)
     expect(mapped.openingsAreaM2).toBe(189)
   })
 
@@ -85,6 +89,7 @@ describe('enclosing calculation', () => {
       spanM: 24,
       buildingLengthM: 60,
       buildingHeightM: 10,
+      frameStepM: 6,
       roofSlopeDeg: 6,
       wallPanelThicknessMm: 100,
       roofPanelThicknessMm: 60,
@@ -110,5 +115,6 @@ describe('enclosing calculation', () => {
     expect(mapped.openingsAreaM2).toBe(0)
     expect(mapped.wallPanelThicknessMm).toBe(100)
     expect(mapped.roofPanelThicknessMm).toBe(150)
+    expect(mapped.frameStepM).toBe(6)
   })
 })

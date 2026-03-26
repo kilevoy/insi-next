@@ -308,9 +308,9 @@ function buildClassSpecification(params: {
   const densityKgPerM3 = params.classKey === 'class-1-gost' ? 105 : 95
 
   const wallWorkingWidthM = params.selectedWallWorkingWidthMm / 1000
-  const wallPanelsApprox = calcPanelsCount(params.wallAreaNetM2, params.input.buildingHeightM, wallWorkingWidthM)
   const perimeterM = 2 * (params.input.spanM + params.input.buildingLengthM)
-  const wallJointLengthM = Math.max(0, wallPanelsApprox - 4) * params.input.buildingHeightM
+  const wallRowsCount = Math.max(1, Math.ceil(params.input.buildingHeightM / wallWorkingWidthM))
+  const wallJointLengthM = perimeterM * Math.max(0, wallRowsCount - 1)
 
   const wallAccessories = [
     calcAccessoryRow(
@@ -377,7 +377,7 @@ function buildClassSpecification(params: {
     densityKgPerM3,
     requestedThicknessMm: params.input.wallPanelThicknessMm,
     areaM2: params.wallAreaNetM2,
-    panelLengthM: params.input.buildingHeightM,
+    panelLengthM: params.input.frameStepM,
     standard: params.classKey === 'class-1-gost' ? 'ГОСТ 32603-2021, класс 1' : 'ГОСТ 32603-2021, класс 2',
     panelType: 'Стеновая трехслойная сэндвич-панель с видимым креплением Z-Lock',
     mark: 'МП ТСП-Z',
@@ -466,6 +466,7 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
     `Accessories are calculated by price formula: flat sheet price x ${enclosingAccessoriesReference.flatSheetMultiplier} (base ${ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2} RUB/m2).`,
     'Fastener prices use price list №12.4 (Harpoon for sandwich panels) and price list №7 (4.8x28 for accessories).',
     'Wall panel working width is fixed at 1000 mm.',
+    `Wall panels are assumed to be mounted horizontally; panel length is taken as frame step (${input.frameStepM} m).`,
   ]
   if (wallFastener.requestedThicknessMm !== wallFastener.resolvedThicknessMm) {
     notes.push(

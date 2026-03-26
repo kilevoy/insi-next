@@ -771,7 +771,7 @@ function renderEnclosingOverview(
               </div>
             </div>
             <p className="results-inline-note" style={{ marginTop: 8 }}>
-              Для расчета стеновых панелей принята фиксированная рабочая ширина 1000 мм.
+              Стеновые панели приняты в горизонтальном монтаже; рабочая ширина фиксирована 1000 мм.
             </p>
           </div>
 
