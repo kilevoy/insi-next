@@ -1,4 +1,4 @@
-import { enclosingInputSchema, type EnclosingInput } from './enclosing-input'
+﻿import { enclosingInputSchema, type EnclosingInput } from './enclosing-input'
 import type {
   EnclosingAccessoryRow,
   EnclosingCalculationResult,
@@ -18,6 +18,7 @@ import {
 const STEEL_DENSITY_KG_PER_M3 = 7850
 const FACING_STEEL_THICKNESS_M = 0.0005
 const PANEL_WORKING_WIDTH_M = 1
+const WALL_PANEL_WORKING_WIDTH_OPTIONS_MM = [1000, 1160, 1190] as const
 
 const ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2 = 500
 
@@ -146,12 +147,46 @@ function calcUnitMassKgPerM2(densityKgPerM3: number, thicknessMm: number): numbe
   return coreMass + calcFacingSteelMassKgPerM2()
 }
 
-function calcPanelsCount(areaM2: number, panelLengthM: number): number {
-  const panelArea = PANEL_WORKING_WIDTH_M * Math.max(panelLengthM, 0.1)
+function calcPanelsCount(areaM2: number, panelLengthM: number, panelWorkingWidthM = PANEL_WORKING_WIDTH_M): number {
+  const panelArea = panelWorkingWidthM * Math.max(panelLengthM, 0.1)
   if (panelArea <= 0) {
     return 0
   }
   return Math.max(1, Math.ceil(areaM2 / panelArea))
+}
+
+function resolveEconomicalWallWorkingWidthMm(params: {
+  wallAreaNetM2: number
+  wallPanelLengthM: number
+}): number {
+  const variants = WALL_PANEL_WORKING_WIDTH_OPTIONS_MM.map((widthMm) => {
+    const workingWidthM = widthMm / 1000
+    const panelsCount = calcPanelsCount(params.wallAreaNetM2, params.wallPanelLengthM, workingWidthM)
+    const purchasedAreaM2 = panelsCount * workingWidthM * Math.max(params.wallPanelLengthM, 0.1)
+    const wasteAreaM2 = Math.max(0, purchasedAreaM2 - params.wallAreaNetM2)
+
+    return {
+      widthMm,
+      panelsCount,
+      purchasedAreaM2,
+      wasteAreaM2,
+    }
+  })
+
+  const best = variants.sort((left, right) => {
+    if (left.purchasedAreaM2 !== right.purchasedAreaM2) {
+      return left.purchasedAreaM2 - right.purchasedAreaM2
+    }
+    if (left.wasteAreaM2 !== right.wasteAreaM2) {
+      return left.wasteAreaM2 - right.wasteAreaM2
+    }
+    if (left.panelsCount !== right.panelsCount) {
+      return left.panelsCount - right.panelsCount
+    }
+    return right.widthMm - left.widthMm
+  })[0]
+
+  return best?.widthMm ?? 1000
 }
 
 function calcAccessoryRow(
@@ -203,6 +238,7 @@ function buildSectionSpecification(params: {
   unit: string
   priceTable: Record<number, number>
   accessoryRows: EnclosingAccessoryRow[]
+  panelWorkingWidthM?: number
   panelFastenerLengthMm: number
   panelFastenerPriceRub: number
   panelFastenerRate: number
@@ -232,7 +268,7 @@ function buildSectionSpecification(params: {
       densityKgPerM3: params.densityKgPerM3,
       areaM2: params.areaM2,
       panelLengthM: params.panelLengthM,
-      panelsCount: calcPanelsCount(params.areaM2, params.panelLengthM),
+      panelsCount: calcPanelsCount(params.areaM2, params.panelLengthM, params.panelWorkingWidthM ?? PANEL_WORKING_WIDTH_M),
       unitMassKgPerM2,
       totalMassKg: params.areaM2 * unitMassKgPerM2,
       unitPriceRubPerM2: priced.unitPriceRubPerM2,
@@ -296,6 +332,7 @@ function buildClassSpecification(params: {
   roofAreaM2: number
   roofPanelLengthM: number
   derivedAccessoryPriceRubPerM2: number
+  selectedWallWorkingWidthMm: number
   wallFastenerLengthMm: number
   wallFastenerPriceRub: number
   roofFastenerLengthMm: number
@@ -305,7 +342,8 @@ function buildClassSpecification(params: {
   const classLabel = params.classKey === 'class-1-gost' ? 'Класс 1' : 'Класс 2'
   const densityKgPerM3 = params.classKey === 'class-1-gost' ? 105 : 95
 
-  const wallPanelsApprox = calcPanelsCount(params.wallAreaNetM2, params.input.buildingHeightM)
+  const wallWorkingWidthM = params.selectedWallWorkingWidthMm / 1000
+  const wallPanelsApprox = calcPanelsCount(params.wallAreaNetM2, params.input.buildingHeightM, wallWorkingWidthM)
   const perimeterM = 2 * (params.input.spanM + params.input.buildingLengthM)
   const wallJointLengthM = Math.max(0, wallPanelsApprox - 4) * params.input.buildingHeightM
 
@@ -378,10 +416,11 @@ function buildClassSpecification(params: {
     standard: params.classKey === 'class-1-gost' ? 'ГОСТ 32603-2021, класс 1' : 'ГОСТ 32603-2021, класс 2',
     panelType: 'Стеновая трехслойная сэндвич-панель с видимым креплением Z-Lock',
     mark: 'МП ТСП-Z',
-    workingWidthMm: '1000 / 1160 / 1190',
+    workingWidthMm: String(params.selectedWallWorkingWidthMm),
     unit: 'м2',
     priceTable: enclosingPanelPriceRubPerM2[params.classKey].wallZLock,
     accessoryRows: wallAccessories,
+    panelWorkingWidthM: wallWorkingWidthM,
     panelFastenerLengthMm: params.wallFastenerLengthMm,
     panelFastenerPriceRub: params.wallFastenerPriceRub,
     panelFastenerRate: WALL_FASTENER_RATE_PER_M2,
@@ -435,6 +474,10 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
   const openingsAreaM2 = Math.max(0, input.openingsAreaM2)
   const wallAreaNetM2 = Math.max(0, wallAreaGrossM2 - openingsAreaM2)
   const roofPanelLengthM = resolveRoofPanelLengthM(input)
+  const selectedWallWorkingWidthMm = resolveEconomicalWallWorkingWidthMm({
+    wallAreaNetM2,
+    wallPanelLengthM: input.buildingHeightM,
+  })
 
   const derivedAccessoryPriceRubPerM2 =
     ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2 * enclosingAccessoriesReference.flatSheetMultiplier
@@ -457,11 +500,11 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
   )
 
   const notes: string[] = [
-    'Количество панелей рассчитано по укрупненной схеме раскладки при рабочей ширине 1000 мм.',
-    `Комплектующие рассчитаны по формуле прайса: цена плоского листа x ${enclosingAccessoriesReference.flatSheetMultiplier} (база ${ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2} руб/м2).`,
-    'Цены крепежа взяты из прайса №12.4 (Гарпун для ТСП) и прайса №7 (4,8x28 для доборных элементов).',
+    'Panel quantities are calculated by an enlarged layout scheme.',
+    `Accessories are calculated by price formula: flat sheet price x ${enclosingAccessoriesReference.flatSheetMultiplier} (base ${ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2} RUB/m2).`,
+    'Fastener prices use price list №12.4 (Harpoon for sandwich panels) and price list №7 (4.8x28 for accessories).',
+    `Wall panel working width ${selectedWallWorkingWidthMm} mm is selected automatically from 1000/1160/1190 by economical layout.`,
   ]
-
   if (wallFastener.requestedThicknessMm !== wallFastener.resolvedThicknessMm) {
     notes.push(
       `Для стенового крепежа использована ближайшая толщина ${wallFastener.resolvedThicknessMm} мм вместо ${wallFastener.requestedThicknessMm} мм.`,
@@ -493,6 +536,7 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
         roofAreaM2,
         roofPanelLengthM,
         derivedAccessoryPriceRubPerM2,
+        selectedWallWorkingWidthMm,
         wallFastenerLengthMm: wallFastener.lengthMm,
         wallFastenerPriceRub: wallFastenerPrice.unitPriceRub,
         roofFastenerLengthMm: roofFastener.lengthMm,

@@ -1,4 +1,4 @@
-import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing'
+﻿import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing'
 import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclosing-mapper'
 
 describe('enclosing calculation', () => {
@@ -21,7 +21,8 @@ describe('enclosing calculation', () => {
     const class1 = result.classes['class-1-gost']
     expect(class1.walls.panelSpecification[0]?.mark).toBe('МП ТСП-Z')
     expect(class1.walls.panelSpecification[0]?.panelLengthM).toBeCloseTo(10, 2)
-    expect(class1.walls.panelSpecification[0]?.panelsCount).toBe(153)
+    expect(class1.walls.panelSpecification[0]?.panelsCount).toBe(128)
+    expect(class1.walls.panelSpecification[0]?.workingWidthMm).toBe('1190')
     expect(class1.walls.panelSpecification[0]?.unitMassKgPerM2).toBeCloseTo(18.35, 2)
     expect(class1.walls.panelSpecification[0]?.unitPriceRubPerM2).toBe(3905)
     expect(class1.roof.panelSpecification[0]?.mark).toBe('МП ТСП-К')
@@ -53,7 +54,7 @@ describe('enclosing calculation', () => {
     expect(serialized.includes('concrete')).toBe(false)
     expect(result.classes['class-1-gost'].walls.fasteners[0]?.item).toContain('стеновых панелей')
     expect(result.notes.some((note) => note.toLowerCase().includes('оценоч'))).toBe(false)
-    expect(result.notes.some((note) => note.includes('№12.4'))).toBe(true)
+    expect(result.notes.some((note) => note.includes('12.4'))).toBe(true)
   })
 
   it('maps unified input to enclosing input and resolves openings area', () => {

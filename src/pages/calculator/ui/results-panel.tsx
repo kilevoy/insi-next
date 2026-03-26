@@ -715,6 +715,7 @@ function renderEnclosingOverview(
     const activeClass = enclosingResult.classes[selectedClassKey]
     const walls = activeClass.walls
     const roof = activeClass.roof
+    const wallPanelRow = walls.panelSpecification[0]
 
     return (
       <div className="tab-pane animate-in" data-testid="enclosing-panel">
@@ -723,7 +724,7 @@ function renderEnclosingOverview(
             <div>
               <h3 className="results-section-title">Ограждающие конструкции</h3>
               <p className="results-inline-note" style={{ marginTop: 6 }}>
-                Детальная спецификация для металлических прямостенных ангаров по панелям МП ТСП-Z и МП ТСП-К.
+                Детальная спецификация по стенам и кровле для металлических прямостенных ангаров.
               </p>
             </div>
             <button className="results-print-action" onClick={() => window.print()}>
@@ -749,54 +750,33 @@ function renderEnclosingOverview(
             </div>
           </div>
 
-          <div className="summary-hero">
-            <div className="summary-metric-card summary-metric-card--accent">
-              <span>{`${activeClass.label}: общий итог`}</span>
-              <strong>{`${formatRub(activeClass.totals.classRub)} руб.`}</strong>
+          <div className="results-section">
+            <h3 className="results-section-title">Стены</h3>
+            <div className="load-grid load-grid--summary">
+              <div className="load-tile">
+                <span>Общая площадь, м2</span>
+                <strong>{formatNumber(enclosingResult.geometry.wallAreaGrossM2, 2)}</strong>
+              </div>
+              <div className="load-tile">
+                <span>Площадь проемов, м2</span>
+                <strong>{formatNumber(enclosingResult.geometry.openingsAreaM2, 2)}</strong>
+              </div>
+              <div className="load-tile">
+                <span>Площадь нетто, м2</span>
+                <strong>{formatNumber(enclosingResult.geometry.wallAreaNetM2, 2)}</strong>
+              </div>
+              <div className="load-tile">
+                <span>Вес, кг</span>
+                <strong>{formatNumber(walls.totals.panelMassKg, 2)}</strong>
+              </div>
             </div>
-            <div className="summary-metric-card">
-              <span>Панели</span>
-              <strong>{`${formatRub(activeClass.totals.panelsRub)} руб.`}</strong>
-            </div>
-            <div className="summary-metric-card">
-              <span>Комплектующие</span>
-              <strong>{`${formatRub(activeClass.totals.accessoriesRub)} руб.`}</strong>
-            </div>
-            <div className="summary-metric-card">
-              <span>Крепеж</span>
-              <strong>{`${formatRub(activeClass.totals.fastenersRub)} руб.`}</strong>
-            </div>
-          </div>
-
-          <div className="load-grid load-grid--summary">
-            <div className="load-tile">
-              <span>Стены нетто</span>
-              <strong>{`${formatNumber(enclosingResult.geometry.wallAreaNetM2, 2)} м2`}</strong>
-            </div>
-            <div className="load-tile">
-              <span>Кровля</span>
-              <strong>{`${formatNumber(enclosingResult.geometry.roofAreaM2, 2)} м2`}</strong>
-            </div>
-            <div className="load-tile">
-              <span>Проемы</span>
-              <strong>{`${formatNumber(enclosingResult.geometry.openingsAreaM2, 2)} м2`}</strong>
-            </div>
-            <div className="load-tile">
-              <span>База плоского листа</span>
-              <strong>{`${formatRub(enclosingResult.accessories.baseFlatSheetPriceRubPerM2)} руб/м2`}</strong>
-            </div>
-            <div className="load-tile">
-              <span>Фасонка по формуле</span>
-              <strong>{`${formatRub(enclosingResult.accessories.derivedUnitPriceRubPerM2)} руб/м2`}</strong>
-            </div>
-            <div className="load-tile">
-              <span>Формула</span>
-              <strong>{enclosingResult.accessories.formula}</strong>
-            </div>
+            <p className="results-inline-note" style={{ marginTop: 8 }}>
+              Рабочая ширина стеновой панели подобрана автоматически из 1000/1160/1190 мм по экономичной раскладке. Выбрано: {wallPanelRow?.workingWidthMm ?? '-'} мм.
+            </p>
           </div>
 
           <div className="results-section">
-            <h3 className="results-section-title">Стены: спецификация панелей</h3>
+            <h3 className="results-section-title">Спецификация стеновых панелей</h3>
             <div className="table-container">
               <table className="data-table">
                 <thead>
@@ -842,7 +822,7 @@ function renderEnclosingOverview(
           </div>
 
           <div className="results-section">
-            <h3 className="results-section-title">Стены: комплектующие</h3>
+            <h3 className="results-section-title">Спецификация комплектующих (Стены)</h3>
             <div className="table-container">
               <table className="data-table">
                 <thead>
@@ -872,7 +852,7 @@ function renderEnclosingOverview(
           </div>
 
           <div className="results-section">
-            <h3 className="results-section-title">Стены: крепеж</h3>
+            <h3 className="results-section-title">Спецификация крепежа (Стены)</h3>
             <div className="table-container">
               <table className="data-table">
                 <thead>
@@ -900,7 +880,21 @@ function renderEnclosingOverview(
           </div>
 
           <div className="results-section">
-            <h3 className="results-section-title">Кровля: спецификация панелей</h3>
+            <h3 className="results-section-title">Кровля</h3>
+            <div className="load-grid load-grid--summary">
+              <div className="load-tile">
+                <span>Общая площадь, м2</span>
+                <strong>{formatNumber(enclosingResult.geometry.roofAreaM2, 2)}</strong>
+              </div>
+              <div className="load-tile">
+                <span>Вес, кг</span>
+                <strong>{formatNumber(roof.totals.panelMassKg, 2)}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="results-section">
+            <h3 className="results-section-title">Спецификация кровельных панелей</h3>
             <div className="table-container">
               <table className="data-table">
                 <thead>
@@ -946,7 +940,7 @@ function renderEnclosingOverview(
           </div>
 
           <div className="results-section">
-            <h3 className="results-section-title">Кровля: комплектующие</h3>
+            <h3 className="results-section-title">Спецификация комплектующих (Кровля)</h3>
             <div className="table-container">
               <table className="data-table">
                 <thead>
@@ -976,7 +970,7 @@ function renderEnclosingOverview(
           </div>
 
           <div className="results-section">
-            <h3 className="results-section-title">Кровля: крепеж</h3>
+            <h3 className="results-section-title">Спецификация крепежа (Кровля)</h3>
             <div className="table-container">
               <table className="data-table">
                 <thead>
@@ -1000,6 +994,28 @@ function renderEnclosingOverview(
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          <div className="results-section">
+            <h3 className="results-section-title">Итого ограждающие конструкции</h3>
+            <div className="summary-hero">
+              <div className="summary-metric-card summary-metric-card--accent">
+                <span>{`${activeClass.label}: стоимость`}</span>
+                <strong>{`${formatRub(activeClass.totals.classRub)} руб.`}</strong>
+              </div>
+              <div className="summary-metric-card">
+                <span>Вес панелей, кг</span>
+                <strong>{formatNumber(activeClass.totals.panelMassKg, 2)}</strong>
+              </div>
+              <div className="summary-metric-card">
+                <span>Панели, руб.</span>
+                <strong>{formatRub(activeClass.totals.panelsRub)}</strong>
+              </div>
+              <div className="summary-metric-card">
+                <span>Комплектующие + крепеж, руб.</span>
+                <strong>{formatRub(activeClass.totals.accessoriesRub + activeClass.totals.fastenersRub)}</strong>
+              </div>
             </div>
           </div>
 
@@ -1027,7 +1043,6 @@ function renderEnclosingOverview(
     )
   }
 }
-
 export function ResultsPanel({
   input,
   activeTab,
