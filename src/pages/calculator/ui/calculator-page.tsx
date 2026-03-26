@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import type { DomainTab } from '@/app/App'
 import { calculateColumn, type ColumnCalculationResult } from '@/domain/column/model/calculate-column'
 import { calculatePurlin, type PurlinCalculationResult } from '@/domain/purlin/model/calculate-purlin'
@@ -163,13 +163,6 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
         <div className="topbar-actions">
           <div className="tabs">
             <button
-              className={`tab ${activeTab === 'summary' ? 'active' : ''}`}
-              data-testid="tab-summary"
-              onClick={() => setActiveTab('summary')}
-            >
-              Сводная
-            </button>
-            <button
               className={`tab ${activeTab === 'column' ? 'active' : ''}`}
               data-testid="tab-column"
               onClick={() => setActiveTab('column')}
@@ -182,6 +175,13 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
               onClick={() => setActiveTab('purlin')}
             >
               Прогоны
+            </button>
+            <button
+              className={`tab ${activeTab === 'summary' ? 'active' : ''}`}
+              data-testid="tab-summary"
+              onClick={() => setActiveTab('summary')}
+            >
+              Сводная
             </button>
           </div>
 
@@ -245,5 +245,4 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
     </div>
   )
 }
-
 
