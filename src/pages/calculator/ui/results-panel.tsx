@@ -781,7 +781,6 @@ function renderEnclosingOverview(
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Тип</th>
                     <th>Марка</th>
                     <th>Ширина, мм</th>
                     <th>Ед. изм.</th>
@@ -797,7 +796,6 @@ function renderEnclosingOverview(
                 <tbody>
                   {walls.panelSpecification.map((row) => (
                     <tr key={row.key}>
-                      <td>{row.panelType}</td>
                       <td>{row.mark}</td>
                       <td>{row.workingWidthMm}</td>
                       <td>{row.unit}</td>
@@ -898,7 +896,6 @@ function renderEnclosingOverview(
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Тип</th>
                     <th>Марка</th>
                     <th>Ширина, мм</th>
                     <th>Ед. изм.</th>
@@ -917,7 +914,6 @@ function renderEnclosingOverview(
                 <tbody>
                   {roof.panelSpecification.map((row) => (
                     <tr key={row.key}>
-                      <td>{row.panelType}</td>
                       <td>{row.mark}</td>
                       <td>{row.workingWidthMm}</td>
                       <td>{row.unit}</td>
