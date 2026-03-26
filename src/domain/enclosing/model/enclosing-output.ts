@@ -29,7 +29,6 @@ export interface EnclosingAccessoryRow {
   item: string
   unit: string
   requiredLengthM: number
-  stockLengthM: number
   quantity: number
   developedWidthM: number
   unitPriceRub: number
@@ -49,13 +48,26 @@ export interface EnclosingFastenerRow {
   note?: string
 }
 
+export interface EnclosingSealantRow {
+  key: string
+  section: EnclosingSectionKey
+  item: string
+  unit: string
+  quantity: number
+  unitPriceRub: number
+  totalRub: number
+  note?: string
+}
+
 export interface EnclosingSectionSpecification {
   panelSpecification: EnclosingPanelSpecificationRow[]
   accessories: EnclosingAccessoryRow[]
+  sealants: EnclosingSealantRow[]
   fasteners: EnclosingFastenerRow[]
   totals: {
     panelsRub: number
     accessoriesRub: number
+    sealantsRub: number
     fastenersRub: number
     sectionRub: number
     panelMassKg: number
@@ -70,6 +82,7 @@ export interface EnclosingClassSpecification {
   totals: {
     panelsRub: number
     accessoriesRub: number
+    sealantsRub: number
     fastenersRub: number
     classRub: number
     panelMassKg: number

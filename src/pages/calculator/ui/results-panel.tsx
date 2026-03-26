@@ -824,10 +824,9 @@ function renderEnclosingOverview(
                   <tr>
                     <th>Наименование</th>
                     <th>Требуемая длина, м.п.</th>
-                    <th>Длина изделия, м</th>
-                    <th>Кол-во, шт</th>
                     <th>Развертка, м</th>
-                    <th>Цена, руб/шт</th>
+                    <th>Кол-во, м2</th>
+                    <th>Цена, руб/м2</th>
                     <th>Сумма, руб.</th>
                   </tr>
                 </thead>
@@ -836,9 +835,36 @@ function renderEnclosingOverview(
                     <tr key={row.key}>
                       <td>{row.item}</td>
                       <td>{formatNumber(row.requiredLengthM, 2)}</td>
-                      <td>{formatNumber(row.stockLengthM, 2)}</td>
-                      <td>{formatNumber(row.quantity, 0)}</td>
                       <td>{formatNumber(row.developedWidthM, 2)}</td>
+                      <td>{formatNumber(row.quantity, 2)}</td>
+                      <td>{formatRub(row.unitPriceRub)}</td>
+                      <td>{formatRub(row.totalRub)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="results-section">
+            <h3 className="results-section-title">Спецификация уплотнителей (Стены)</h3>
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Наименование</th>
+                    <th>Ед. изм.</th>
+                    <th>Кол-во</th>
+                    <th>Цена, руб/ед.</th>
+                    <th>Сумма, руб.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {walls.sealants.map((row) => (
+                    <tr key={row.key}>
+                      <td>{row.item}</td>
+                      <td>{row.unit}</td>
+                      <td>{formatNumber(row.quantity, 2)}</td>
                       <td>{formatRub(row.unitPriceRub)}</td>
                       <td>{formatRub(row.totalRub)}</td>
                     </tr>
@@ -936,10 +962,9 @@ function renderEnclosingOverview(
                   <tr>
                     <th>Наименование</th>
                     <th>Требуемая длина, м.п.</th>
-                    <th>Длина изделия, м</th>
-                    <th>Кол-во, шт</th>
                     <th>Развертка, м</th>
-                    <th>Цена, руб/шт</th>
+                    <th>Кол-во, м2</th>
+                    <th>Цена, руб/м2</th>
                     <th>Сумма, руб.</th>
                   </tr>
                 </thead>
@@ -948,9 +973,36 @@ function renderEnclosingOverview(
                     <tr key={row.key}>
                       <td>{row.item}</td>
                       <td>{formatNumber(row.requiredLengthM, 2)}</td>
-                      <td>{formatNumber(row.stockLengthM, 2)}</td>
-                      <td>{formatNumber(row.quantity, 0)}</td>
                       <td>{formatNumber(row.developedWidthM, 2)}</td>
+                      <td>{formatNumber(row.quantity, 2)}</td>
+                      <td>{formatRub(row.unitPriceRub)}</td>
+                      <td>{formatRub(row.totalRub)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="results-section">
+            <h3 className="results-section-title">Спецификация уплотнителей (Кровля)</h3>
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Наименование</th>
+                    <th>Ед. изм.</th>
+                    <th>Кол-во</th>
+                    <th>Цена, руб/ед.</th>
+                    <th>Сумма, руб.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {roof.sealants.map((row) => (
+                    <tr key={row.key}>
+                      <td>{row.item}</td>
+                      <td>{row.unit}</td>
+                      <td>{formatNumber(row.quantity, 2)}</td>
                       <td>{formatRub(row.unitPriceRub)}</td>
                       <td>{formatRub(row.totalRub)}</td>
                     </tr>
@@ -1004,8 +1056,8 @@ function renderEnclosingOverview(
                 <strong>{formatRub(activeClass.totals.panelsRub)}</strong>
               </div>
               <div className="summary-metric-card">
-                <span>Комплектующие + крепеж, руб.</span>
-                <strong>{formatRub(activeClass.totals.accessoriesRub + activeClass.totals.fastenersRub)}</strong>
+                <span>Комплектующие + уплотнители + крепеж, руб.</span>
+                <strong>{formatRub(activeClass.totals.accessoriesRub + activeClass.totals.sealantsRub + activeClass.totals.fastenersRub)}</strong>
               </div>
             </div>
           </div>
