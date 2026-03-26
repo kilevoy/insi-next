@@ -825,10 +825,11 @@ function renderEnclosingOverview(
                 <thead>
                   <tr>
                     <th>Наименование</th>
-                    <th>Длина, м.п.</th>
+                    <th>Требуемая длина, м.п.</th>
+                    <th>Длина изделия, м</th>
+                    <th>Кол-во, шт</th>
                     <th>Развертка, м</th>
-                    <th>Объем, м2</th>
-                    <th>Цена, руб/м2</th>
+                    <th>Цена, руб/шт</th>
                     <th>Сумма, руб.</th>
                   </tr>
                 </thead>
@@ -836,10 +837,11 @@ function renderEnclosingOverview(
                   {walls.accessories.map((row) => (
                     <tr key={row.key}>
                       <td>{row.item}</td>
-                      <td>{formatNumber(row.lengthM, 2)}</td>
+                      <td>{formatNumber(row.requiredLengthM, 2)}</td>
+                      <td>{formatNumber(row.stockLengthM, 2)}</td>
+                      <td>{formatNumber(row.quantity, 0)}</td>
                       <td>{formatNumber(row.developedWidthM, 2)}</td>
-                      <td>{formatNumber(row.quantityM2, 2)}</td>
-                      <td>{formatRub(row.unitPriceRubPerM2)}</td>
+                      <td>{formatRub(row.unitPriceRub)}</td>
                       <td>{formatRub(row.totalRub)}</td>
                     </tr>
                   ))}
@@ -943,10 +945,11 @@ function renderEnclosingOverview(
                 <thead>
                   <tr>
                     <th>Наименование</th>
-                    <th>Длина, м.п.</th>
+                    <th>Требуемая длина, м.п.</th>
+                    <th>Длина изделия, м</th>
+                    <th>Кол-во, шт</th>
                     <th>Развертка, м</th>
-                    <th>Объем, м2</th>
-                    <th>Цена, руб/м2</th>
+                    <th>Цена, руб/шт</th>
                     <th>Сумма, руб.</th>
                   </tr>
                 </thead>
@@ -954,10 +957,11 @@ function renderEnclosingOverview(
                   {roof.accessories.map((row) => (
                     <tr key={row.key}>
                       <td>{row.item}</td>
-                      <td>{formatNumber(row.lengthM, 2)}</td>
+                      <td>{formatNumber(row.requiredLengthM, 2)}</td>
+                      <td>{formatNumber(row.stockLengthM, 2)}</td>
+                      <td>{formatNumber(row.quantity, 0)}</td>
                       <td>{formatNumber(row.developedWidthM, 2)}</td>
-                      <td>{formatNumber(row.quantityM2, 2)}</td>
-                      <td>{formatRub(row.unitPriceRubPerM2)}</td>
+                      <td>{formatRub(row.unitPriceRub)}</td>
                       <td>{formatRub(row.totalRub)}</td>
                     </tr>
                   ))}

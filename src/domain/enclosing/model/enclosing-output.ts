@@ -28,10 +28,11 @@ export interface EnclosingAccessoryRow {
   section: EnclosingSectionKey
   item: string
   unit: string
-  lengthM: number
+  requiredLengthM: number
+  stockLengthM: number
+  quantity: number
   developedWidthM: number
-  quantityM2: number
-  unitPriceRubPerM2: number
+  unitPriceRub: number
   totalRub: number
   note?: string
 }

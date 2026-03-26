@@ -33,6 +33,7 @@ const HARPOON_PANEL_FASTENER_PRICE_RUB_BY_LENGTH_MM: Record<number, number> = {
 }
 const ACCESSORY_FASTENER_PRICE_RUB = 4
 const ACCESSORY_FASTENER_LENGTH_MM = 28
+const ACCESSORY_STOCK_LENGTH_M = 2
 
 const WALL_FASTENER_RATE_PER_M2 = 2.5
 const ROOF_FASTENER_RATE_PER_M2 = 3.5
@@ -165,18 +166,20 @@ function calcAccessoryRow(
   if (lengthM <= 0 || developedWidthM <= 0) {
     return null
   }
-  const quantityM2 = lengthM * developedWidthM
+  const quantity = Math.max(1, Math.ceil(lengthM / ACCESSORY_STOCK_LENGTH_M))
+  const unitPriceRub = roundRub(ACCESSORY_STOCK_LENGTH_M * developedWidthM * derivedUnitPriceRubPerM2)
   return {
     key,
     section,
     item,
-    unit: 'м.п.',
-    lengthM,
+    unit: 'шт',
+    requiredLengthM: lengthM,
+    stockLengthM: ACCESSORY_STOCK_LENGTH_M,
+    quantity,
     developedWidthM,
-    quantityM2,
-    unitPriceRubPerM2: derivedUnitPriceRubPerM2,
-    totalRub: roundRub(quantityM2 * derivedUnitPriceRubPerM2),
-    note: 'Цена фасонного изделия = цена плоского листа x 1.9',
+    unitPriceRub,
+    totalRub: roundRub(quantity * unitPriceRub),
+    note: 'Расчет в штуках фиксированной длины.',
   }
 }
 
@@ -242,7 +245,7 @@ function buildSectionSpecification(params: {
   ]
 
   const accessories = params.accessoryRows
-  const accessoryLengthM = accessories.reduce((sum, row) => sum + row.lengthM, 0)
+  const accessoryLengthM = accessories.reduce((sum, row) => sum + row.requiredLengthM, 0)
 
   const fasteners: EnclosingFastenerRow[] = [
     {
@@ -327,14 +330,6 @@ function buildClassSpecification(params: {
       'Угол наружный стеновой',
       4 * params.input.buildingHeightM,
       0.3,
-      params.derivedAccessoryPriceRubPerM2,
-    ),
-    calcAccessoryRow(
-      `${params.classKey}-walls-top-cap`,
-      'walls',
-      'Планка парапетная верхняя',
-      perimeterM,
-      0.35,
       params.derivedAccessoryPriceRubPerM2,
     ),
   ].filter((row): row is EnclosingAccessoryRow => row !== null)
@@ -464,6 +459,8 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
   const notes: string[] = [
     'Panel quantities are calculated by an enlarged layout scheme.',
     `Accessories are calculated by price formula: flat sheet price x ${enclosingAccessoriesReference.flatSheetMultiplier} (base ${ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2} RUB/m2).`,
+    `Accessories are converted to pieces with fixed stock length ${ACCESSORY_STOCK_LENGTH_M} m.`,
+    'Wall accessories include only panel joints and outer corners (no openings considered).',
     'Fastener prices use price list №12.4 (Harpoon for sandwich panels) and price list №7 (4.8x28 for accessories).',
     'Wall panel working width is fixed at 1000 mm.',
     `Wall panels are assumed to be mounted horizontally; panel length is taken as frame step (${input.frameStepM} m).`,
