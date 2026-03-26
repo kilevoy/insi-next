@@ -1,4 +1,4 @@
-﻿import { enclosingInputSchema, type EnclosingInput } from './enclosing-input'
+﻿import { enclosingInputSchema, type EnclosingInput, type EnclosingInputRaw } from './enclosing-input'
 import type {
   EnclosingAccessoryRow,
   EnclosingCalculationResult,
@@ -31,17 +31,19 @@ const HARPOON_PANEL_FASTENER_PRICE_RUB_BY_LENGTH_MM: Record<number, number> = {
   285: 188.9,
   350: 271.2,
 }
-const ACCESSORY_FASTENER_PRICE_RUB = 4
+const ACCESSORY_FASTENER_PRICE_RUB = 4.55
 const ACCESSORY_FASTENER_LENGTH_MM = 28
 const LOCK_GASKET_PACK_LENGTH_M = 30
 const LOCK_GASKET_PACK_PRICE_RUB = 90
 const ROOF_PROFILE_GASKET_PIECE_LENGTH_M = 1
 const ROOF_PROFILE_GASKET_PRICE_RUB = 55
 
-const WALL_FASTENER_RATE_PER_M2 = 2.5
-const ROOF_FASTENER_RATE_PER_M2 = 3.5
-const WALL_ACCESSORY_FASTENER_RATE_PER_M = 3
-const ROOF_ACCESSORY_FASTENER_RATE_PER_M = 3.5
+const WALL_PANEL_FASTENERS_PER_PANEL = 3
+const FACADE_FASTENER_STEP_M = 0.3
+const ROOF_PANEL_FASTENER_STEP_ACROSS_WIDTH_M = 0.5
+const ROOF_PANEL_FASTENER_STEP_EAVE_M = 0.25
+const ROOF_LAP_FASTENER_STEP_M = 0.5
+const DEFAULT_ROOF_PURLIN_STEP_M = 1.5
 
 const WALL_FASTENER_LENGTH_MM_BY_THICKNESS_ATR: Record<number, number> = {
   50: 115,
@@ -238,6 +240,19 @@ function calcPanelsCount(areaM2: number, panelLengthM: number, panelWorkingWidth
   return Math.max(1, Math.ceil(areaM2 / panelArea))
 }
 
+function calcRoofFastenersPerSupportLine(panelWorkingWidthM = PANEL_WORKING_WIDTH_M): number {
+  return Math.max(2, Math.floor(panelWorkingWidthM / ROOF_PANEL_FASTENER_STEP_ACROSS_WIDTH_M) + 1)
+}
+
+function calcRoofFastenersPerEaveLine(panelWorkingWidthM = PANEL_WORKING_WIDTH_M): number {
+  return Math.max(3, Math.floor(panelWorkingWidthM / ROOF_PANEL_FASTENER_STEP_EAVE_M) + 1)
+}
+
+function calcRoofSupportLinesPerPanel(panelLengthM: number, purlinStepM: number): number {
+  const safeStepM = purlinStepM > 0 ? purlinStepM : DEFAULT_ROOF_PURLIN_STEP_M
+  return Math.max(2, Math.ceil(panelLengthM / safeStepM) + 1)
+}
+
 function calcAccessoryRow(
   key: string,
   section: 'walls' | 'roof',
@@ -338,8 +353,9 @@ function buildSectionSpecification(params: {
   sealantRows: EnclosingSealantRow[]
   panelWorkingWidthM?: number
   panelFastenerLengthByThicknessMm: Record<number, number>
-  panelFastenerRate: number
-  accessoryFastenerRate: number
+  panelFastenerQuantity: number
+  accessoryFastenerQuantity: number
+  extraFastenerRows?: EnclosingFastenerRow[]
   notes: string[]
 }): EnclosingSectionSpecification {
   const priced = resolvePricedThickness(params.priceTable, params.requestedThicknessMm)
@@ -375,7 +391,6 @@ function buildSectionSpecification(params: {
 
   const accessories = params.accessoryRows
   const sealants = params.sealantRows
-  const accessoryLengthM = accessories.reduce((sum, row) => sum + row.requiredLengthM, 0)
   const panelFastener = resolveFastenerLengthByThickness(
     params.panelFastenerLengthByThicknessMm,
     priced.resolvedThicknessMm,
@@ -404,24 +419,27 @@ function buildSectionSpecification(params: {
           ? 'Самонарезающий винт с ЭПДМ-прокладкой для МП ТСП-Z (по АТР ТСП)'
           : 'Самонарезающий винт с ЭПДМ-прокладкой для МП ТСП-К (по АТР ТСП)',
       unit: 'шт',
-      quantity: Math.ceil(params.areaM2 * params.panelFastenerRate),
+      quantity: params.panelFastenerQuantity,
       lengthMm: panelFastener.lengthMm,
       unitPriceRub: panelFastenerPrice.unitPriceRub,
-      totalRub: roundRub(Math.ceil(params.areaM2 * params.panelFastenerRate) * panelFastenerPrice.unitPriceRub),
-      note: 'Длина подбирается строго по АТР ТСП; цена по прайсу №12.4 (Гарпун).',
+      totalRub: roundRub(params.panelFastenerQuantity * panelFastenerPrice.unitPriceRub),
+      note: 'Количество и длина подбираются по АТР/техкаталогу ТСП; цена по прайсу №12.4 (Гарпун).',
     },
     {
       key: `${params.classKey}-${params.section}-accessory-fastener`,
       section: params.section,
       item: 'Саморез Ø4,8х19(28) с ЭПДМ-прокладкой для крепления фасонных изделий (по АТР ТСП)',
       unit: 'шт',
-      quantity: Math.ceil(accessoryLengthM * params.accessoryFastenerRate),
+      quantity: params.accessoryFastenerQuantity,
       lengthMm: ACCESSORY_FASTENER_LENGTH_MM,
       unitPriceRub: ACCESSORY_FASTENER_PRICE_RUB,
-      totalRub: roundRub(Math.ceil(accessoryLengthM * params.accessoryFastenerRate) * ACCESSORY_FASTENER_PRICE_RUB),
-      note: 'Норма крепежа на 1 м.п., тип по АТР ТСП (поз. Ø4,8х19(28)).',
+      totalRub: roundRub(params.accessoryFastenerQuantity * ACCESSORY_FASTENER_PRICE_RUB),
+      note: 'Шаг крепления фасонных элементов принят 300 мм по узлам АТР ТСП.',
     },
   ]
+  if (params.extraFastenerRows && params.extraFastenerRows.length > 0) {
+    fasteners.push(...params.extraFastenerRows)
+  }
 
   const panelsRub = sumRub(panelSpecification)
   const accessoriesRub = sumRub(accessories)
@@ -450,6 +468,7 @@ function buildClassSpecification(params: {
   wallAreaNetM2: number
   roofAreaM2: number
   roofPanelLengthM: number
+  roofPurlinStepM: number
   derivedAccessoryPriceRubPerM2: number
   selectedWallWorkingWidthMm: number
   notes: string[]
@@ -461,6 +480,7 @@ function buildClassSpecification(params: {
   const perimeterM = 2 * (params.input.spanM + params.input.buildingLengthM)
   const wallRowsCount = Math.max(1, Math.ceil(params.input.buildingHeightM / wallWorkingWidthM))
   const wallJointLengthM = perimeterM * Math.max(0, wallRowsCount - 1)
+  const wallPanelsCount = calcPanelsCount(params.wallAreaNetM2, params.input.frameStepM, wallWorkingWidthM)
 
   const wallAccessories = [
     calcAccessoryRow(
@@ -580,6 +600,40 @@ function buildClassSpecification(params: {
     ),
   ].filter((row): row is EnclosingSealantRow => row !== null)
 
+  const wallAccessoryLengthM = wallAccessories.reduce((sum, row) => sum + row.requiredLengthM, 0)
+  const roofAccessoryLengthM = roofAccessories.reduce((sum, row) => sum + row.requiredLengthM, 0)
+
+  const wallPanelFastenerQuantity = wallPanelsCount * WALL_PANEL_FASTENERS_PER_PANEL
+  const wallAccessoryFastenerQuantity = Math.ceil(wallAccessoryLengthM / FACADE_FASTENER_STEP_M)
+
+  const roofPanelsCount = calcPanelsCount(params.roofAreaM2, params.roofPanelLengthM, PANEL_WORKING_WIDTH_M)
+  const roofSupportLinesPerPanel = calcRoofSupportLinesPerPanel(params.roofPanelLengthM, params.roofPurlinStepM)
+  const roofFastenersPerSupportLine = calcRoofFastenersPerSupportLine(PANEL_WORKING_WIDTH_M)
+  const roofFastenersPerEaveLine = calcRoofFastenersPerEaveLine(PANEL_WORKING_WIDTH_M)
+  const roofPanelFastenerQuantity =
+    roofPanelsCount *
+    (Math.max(1, roofSupportLinesPerPanel - 1) * roofFastenersPerSupportLine + roofFastenersPerEaveLine)
+  const roofAccessoryFastenerQuantity = Math.ceil(roofAccessoryLengthM / FACADE_FASTENER_STEP_M)
+
+  const roofOverlapLengthM = roofSlopesCount * Math.max(0, roofPanelsPerSlope - 1) * params.roofPanelLengthM
+  const roofLapFastenerQuantity = Math.ceil(roofOverlapLengthM / ROOF_LAP_FASTENER_STEP_M)
+  const roofLapFastenerRows: EnclosingFastenerRow[] =
+    roofLapFastenerQuantity > 0
+      ? [
+          {
+            key: `${params.classKey}-roof-lap-fastener`,
+            section: 'roof',
+            item: 'Саморез Ø4,8х28 с ЭПДМ-прокладкой для крепления панелей по нахлесту',
+            unit: 'шт',
+            quantity: roofLapFastenerQuantity,
+            lengthMm: ACCESSORY_FASTENER_LENGTH_MM,
+            unitPriceRub: ACCESSORY_FASTENER_PRICE_RUB,
+            totalRub: roundRub(roofLapFastenerQuantity * ACCESSORY_FASTENER_PRICE_RUB),
+            note: 'Шаг крепления по нахлесточному гофру не более 500 мм (Техкаталог ТСП, п.7.9.11).',
+          },
+        ]
+      : []
+
   const walls = buildSectionSpecification({
     classKey: params.classKey,
     classLabel,
@@ -598,8 +652,8 @@ function buildClassSpecification(params: {
     sealantRows: wallSealants,
     panelWorkingWidthM: wallWorkingWidthM,
     panelFastenerLengthByThicknessMm: WALL_FASTENER_LENGTH_MM_BY_THICKNESS_ATR,
-    panelFastenerRate: WALL_FASTENER_RATE_PER_M2,
-    accessoryFastenerRate: WALL_ACCESSORY_FASTENER_RATE_PER_M,
+    panelFastenerQuantity: wallPanelFastenerQuantity,
+    accessoryFastenerQuantity: wallAccessoryFastenerQuantity,
     notes: params.notes,
   })
 
@@ -621,8 +675,9 @@ function buildClassSpecification(params: {
     accessoryRows: roofAccessories,
     sealantRows: roofSealants,
     panelFastenerLengthByThicknessMm: ROOF_FASTENER_LENGTH_MM_BY_THICKNESS_ATR,
-    panelFastenerRate: ROOF_FASTENER_RATE_PER_M2,
-    accessoryFastenerRate: ROOF_ACCESSORY_FASTENER_RATE_PER_M,
+    panelFastenerQuantity: roofPanelFastenerQuantity,
+    accessoryFastenerQuantity: roofAccessoryFastenerQuantity,
+    extraFastenerRows: roofLapFastenerRows,
     notes: params.notes,
   })
 
@@ -642,7 +697,7 @@ function buildClassSpecification(params: {
   }
 }
 
-export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculationResult {
+export function calculateEnclosing(rawInput: EnclosingInputRaw): EnclosingCalculationResult {
   const input = enclosingInputSchema.parse(rawInput)
 
   const wallAreaGrossM2 = resolveWallAreaGrossM2(input)
@@ -662,7 +717,11 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
     'Sealants are added from price list №12.5 (lock gasket and roof profile gaskets).',
     'Wall accessories include only panel joints and outer corners (no openings considered).',
     'Fastener lengths for MP ТСП-Z and MP ТСП-К are selected strictly by ATR recommendations.',
-    'Fastener prices use price list №12.4 (Harpoon for sandwich panels) and price list №7 (4.8x28 for accessories). If exact screw length is absent in price list, the next larger available length is used.',
+    'Wall panel fasteners: 3 pcs per panel row (Техкаталог ТСП, п.7.7.3).',
+    `Accessory fasteners: step 300 mm (узлы АТР ТСП), equivalent to ceil(L/0.3).`,
+    `Roof panel-to-purlin fasteners: 500 mm across panel width + 250 mm at eave line, with purlin step ${input.roofPurlinStepM.toFixed(2)} m (Техкаталог ТСП, п.7.9.9).`,
+    `Roof lap fasteners: step <=500 mm along overlap rib (Техкаталог ТСП, п.7.9.11).`,
+    'Fastener prices use price list №12.4 (Harpoon for sandwich panels) and price list №7 (4.8x28 ROOFRetail for accessories). If exact screw length is absent in price list, the next larger available length is used.',
     'Wall panel working width is fixed at 1000 mm.',
     `Wall panels are assumed to be mounted horizontally; panel length is taken as frame step (${input.frameStepM} m).`,
   ]
@@ -676,6 +735,7 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
         wallAreaNetM2,
         roofAreaM2,
         roofPanelLengthM,
+        roofPurlinStepM: input.roofPurlinStepM,
         derivedAccessoryPriceRubPerM2,
         selectedWallWorkingWidthMm,
         notes,
@@ -712,3 +772,4 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
     notes,
   }
 }
+

@@ -708,9 +708,27 @@ function renderEnclosingOverview(
   input: UnifiedInputState,
   selectedClassKey: EnclosingClassKey,
   onClassChange: (value: EnclosingClassKey) => void,
+  purlinResult: PurlinCalculationResult | null,
+  purlinSpecificationSource: UnifiedInputState['purlinSpecificationSource'],
+  purlinSelectionMode: UnifiedInputState['purlinSelectionMode'],
+  selectedSortPurlinIndex: number,
+  selectedLstkPurlinIndex: number,
 ) {
   try {
-    const enclosingInput = mapUnifiedInputToEnclosingInput(input)
+    const selectedPurlin = resolvePurlinSpecificationState(
+      purlinResult,
+      purlinSpecificationSource,
+      purlinSelectionMode,
+      selectedSortPurlinIndex,
+      selectedLstkPurlinIndex,
+    ).selectedCandidate
+    const roofPurlinStepM =
+      selectedPurlin?.stepMm && selectedPurlin.stepMm > 0 ? selectedPurlin.stepMm / 1000 : 1.5
+
+    const enclosingInput = {
+      ...mapUnifiedInputToEnclosingInput(input),
+      roofPurlinStepM,
+    }
     const enclosingResult = calculateEnclosing(enclosingInput)
     const activeClass = enclosingResult.classes[selectedClassKey]
     const walls = activeClass.walls
@@ -1166,7 +1184,16 @@ export function ResultsPanel({
           )}
         </div>
       ) : activeTab === 'enclosing' ? (
-        renderEnclosingOverview(input, enclosingClassKey, setEnclosingClassKey)
+        renderEnclosingOverview(
+          input,
+          enclosingClassKey,
+          setEnclosingClassKey,
+          purlinResult,
+          purlinSpecificationSource,
+          purlinSelectionMode,
+          selectedSortPurlinIndex,
+          selectedLstkPurlinIndex,
+        )
       ) : activeTab === 'methodology' ? (
         <MethodologyPanel input={input} purlinResult={purlinResult} columnResult={columnResult} />
       ) : activeTab === 'purlin' ? (

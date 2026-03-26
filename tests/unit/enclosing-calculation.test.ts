@@ -31,10 +31,19 @@ describe('enclosing calculation', () => {
 
     expect(class1.totals.panelsRub).toBe(12753079)
     expect(class1.walls.fasteners[0]?.lengthMm).toBe(170)
+    expect(class1.walls.fasteners[0]?.quantity).toBe(762)
     expect(class1.walls.fasteners[0]?.unitPriceRub).toBeCloseTo(94.8, 1)
     expect(class1.roof.fasteners[0]?.lengthMm).toBe(240)
+    expect(class1.roof.fasteners[0]?.quantity).toBe(3840)
     expect(class1.roof.fasteners[0]?.unitPriceRub).toBeCloseTo(145.7, 1)
-    expect(class1.walls.fasteners[1]?.unitPriceRub).toBe(4)
+    expect(class1.walls.fasteners[1]?.quantity).toBe(5734)
+    expect(class1.walls.fasteners[1]?.unitPriceRub).toBeCloseTo(4.55, 2)
+    expect(class1.roof.fasteners[1]?.quantity).toBe(1361)
+
+    const lapFastenerRow = class1.roof.fasteners.find((row) => row.key.includes('lap-fastener'))
+    expect(lapFastenerRow?.lengthMm).toBe(28)
+    expect(lapFastenerRow?.quantity).toBe(2848)
+    expect(lapFastenerRow?.unitPriceRub).toBeCloseTo(4.55, 2)
     expect(class1.walls.accessories.length).toBeGreaterThan(0)
     expect(class1.roof.accessories.length).toBeGreaterThan(0)
     expect(class1.walls.accessories.some((row) => row.item.includes('ФИ11'))).toBe(true)
@@ -68,6 +77,7 @@ describe('enclosing calculation', () => {
       buildingLengthM: 60,
       buildingHeightM: 10,
       frameStepM: 6,
+      roofPurlinStepM: 2,
       roofSlopeDeg: 6,
       wallCoveringType: 'С-П 120 мм',
       roofCoveringType: 'С-П 170 мм',
@@ -82,6 +92,7 @@ describe('enclosing calculation', () => {
     expect(mapped.wallPanelThicknessMm).toBe(120)
     expect(mapped.roofPanelThicknessMm).toBe(170)
     expect(mapped.frameStepM).toBe(6)
+    expect(mapped.roofPurlinStepM).toBe(2)
     expect(mapped.openingsAreaM2).toBe(189)
   })
 
@@ -118,5 +129,41 @@ describe('enclosing calculation', () => {
     expect(mapped.wallPanelThicknessMm).toBe(100)
     expect(mapped.roofPanelThicknessMm).toBe(150)
     expect(mapped.frameStepM).toBe(6)
+    expect(mapped.roofPurlinStepM).toBe(1.5)
+  })
+
+  it('reduces roof panel fastener quantity when purlin step is increased', () => {
+    const defaultStepResult = calculateEnclosing({
+      roofType: 'двускатная',
+      spanM: 24,
+      buildingLengthM: 60,
+      buildingHeightM: 10,
+      frameStepM: 6,
+      roofPurlinStepM: 1.5,
+      roofSlopeDeg: 6,
+      wallPanelThicknessMm: 100,
+      roofPanelThicknessMm: 150,
+      openingsAreaM2: 0,
+    })
+
+    const largerStepResult = calculateEnclosing({
+      roofType: 'двускатная',
+      spanM: 24,
+      buildingLengthM: 60,
+      buildingHeightM: 10,
+      frameStepM: 6,
+      roofPurlinStepM: 3,
+      roofSlopeDeg: 6,
+      wallPanelThicknessMm: 100,
+      roofPanelThicknessMm: 150,
+      openingsAreaM2: 0,
+    })
+
+    const defaultStepFasteners = defaultStepResult.classes['class-1-gost'].roof.fasteners[0]?.quantity ?? 0
+    const largerStepFasteners = largerStepResult.classes['class-1-gost'].roof.fasteners[0]?.quantity ?? 0
+
+    expect(defaultStepFasteners).toBe(3840)
+    expect(largerStepFasteners).toBe(2400)
+    expect(largerStepFasteners).toBeLessThan(defaultStepFasteners)
   })
 })
