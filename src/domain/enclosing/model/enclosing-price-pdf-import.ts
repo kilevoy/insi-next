@@ -10,6 +10,8 @@ export interface ParsedEnclosingPricingResult {
   extractedFields: string[]
 }
 
+let isPdfWorkerConfigured = false
+
 function parseRuNumber(raw: string): number {
   const normalized = raw.replace(/\u00a0/g, ' ').replace(/\s+/g, '').replace(',', '.')
   const parsed = Number(normalized)
@@ -294,7 +296,30 @@ function extractTextLinesFromPdfPage(pageItems: Array<{ str?: string; transform?
 export async function parseEnclosingPricingValuesFromPdfFile(file: File): Promise<ParsedEnclosingPricingResult> {
   const bytes = new Uint8Array(await file.arrayBuffer())
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
-  const document = await pdfjs.getDocument({ data: bytes }).promise
+
+  if (!isPdfWorkerConfigured) {
+    try {
+      const workerUrlModule = await import('pdfjs-dist/legacy/build/pdf.worker.mjs?url')
+      if (typeof workerUrlModule.default === 'string' && workerUrlModule.default.length > 0) {
+        pdfjs.GlobalWorkerOptions.workerSrc = workerUrlModule.default
+      }
+    } catch {
+      // Keep fallback below: getDocument with disableWorker in environments where worker URL import is unavailable.
+    }
+    isPdfWorkerConfigured = true
+  }
+
+  const document = await pdfjs
+    .getDocument({
+      data: bytes,
+      ...(pdfjs.GlobalWorkerOptions.workerSrc
+        ? {}
+        : ({
+            // Runtime option supported by PDF.js; type is missing in current package typings.
+            disableWorker: true,
+          } as Record<string, unknown>)),
+    } as Record<string, unknown>)
+    .promise
 
   const pages: string[] = []
   for (let pageIndex = 1; pageIndex <= document.numPages; pageIndex += 1) {
