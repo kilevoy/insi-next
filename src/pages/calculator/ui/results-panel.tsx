@@ -715,6 +715,7 @@ function renderEnclosingOverview(
     const activeClass = enclosingResult.classes[selectedClassKey]
     const walls = activeClass.walls
     const roof = activeClass.roof
+    const wallStandards = [...new Set(walls.panelSpecification.map((row) => row.standard))]
 
     return (
       <div className="tab-pane animate-in" data-testid="enclosing-panel">
@@ -787,9 +788,6 @@ function renderEnclosingOverview(
                     <th>Толщина, мм</th>
                     <th>Длина, м</th>
                     <th>Штук</th>
-                    <th>Норматив</th>
-                    <th>Плотность, кг/м3</th>
-                    <th>Объем, м2</th>
                     <th>Вес, кг/м2</th>
                     <th>Вес общий, кг</th>
                     <th>Цена, руб/м2</th>
@@ -806,9 +804,6 @@ function renderEnclosingOverview(
                       <td>{row.thicknessMm}</td>
                       <td>{formatNumber(row.panelLengthM, 2)}</td>
                       <td>{formatNumber(row.panelsCount, 0)}</td>
-                      <td>{row.standard}</td>
-                      <td>{formatNumber(row.densityKgPerM3, 0)}</td>
-                      <td>{formatNumber(row.areaM2, 2)}</td>
                       <td>{formatNumber(row.unitMassKgPerM2, 2)}</td>
                       <td>{formatNumber(row.totalMassKg, 2)}</td>
                       <td>{formatRub(row.unitPriceRubPerM2)}</td>
@@ -818,6 +813,9 @@ function renderEnclosingOverview(
                 </tbody>
               </table>
             </div>
+            <p className="results-inline-note" style={{ marginTop: 8 }}>
+              Норматив: {wallStandards.join('; ')}
+            </p>
           </div>
 
           <div className="results-section">
