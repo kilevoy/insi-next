@@ -1,7 +1,10 @@
 import type { EnclosingClassKey } from './enclosing-reference.generated'
 
-export interface EnclosingSpecificationRow {
+export type EnclosingSectionKey = 'walls' | 'roof'
+
+export interface EnclosingPanelSpecificationRow {
   key: string
+  section: EnclosingSectionKey
   classKey: EnclosingClassKey
   classLabel: string
   panelType: string
@@ -12,14 +15,64 @@ export interface EnclosingSpecificationRow {
   standard: string
   densityKgPerM3: number
   areaM2: number
+  panelLengthM: number
+  panelsCount: number
+  unitMassKgPerM2: number
+  totalMassKg: number
   unitPriceRubPerM2: number
   totalRub: number
 }
 
-export interface EnclosingFastenerMetalSelection {
-  requestedThicknessMm: number
-  resolvedThicknessMm: number
+export interface EnclosingAccessoryRow {
+  key: string
+  section: EnclosingSectionKey
+  item: string
+  unit: string
+  lengthM: number
+  developedWidthM: number
+  quantityM2: number
+  unitPriceRubPerM2: number
+  totalRub: number
+  note?: string
+}
+
+export interface EnclosingFastenerRow {
+  key: string
+  section: EnclosingSectionKey
+  item: string
+  unit: string
+  quantity: number
   lengthMm: number
+  unitPriceRub: number
+  totalRub: number
+  note?: string
+}
+
+export interface EnclosingSectionSpecification {
+  panelSpecification: EnclosingPanelSpecificationRow[]
+  accessories: EnclosingAccessoryRow[]
+  fasteners: EnclosingFastenerRow[]
+  totals: {
+    panelsRub: number
+    accessoriesRub: number
+    fastenersRub: number
+    sectionRub: number
+    panelMassKg: number
+  }
+}
+
+export interface EnclosingClassSpecification {
+  key: EnclosingClassKey
+  label: string
+  walls: EnclosingSectionSpecification
+  roof: EnclosingSectionSpecification
+  totals: {
+    panelsRub: number
+    accessoriesRub: number
+    fastenersRub: number
+    classRub: number
+    panelMassKg: number
+  }
 }
 
 export interface EnclosingCalculationResult {
@@ -35,21 +88,12 @@ export interface EnclosingCalculationResult {
     roofAreaM2: number
     openingsAreaM2: number
   }
-  specificationRows: EnclosingSpecificationRow[]
-  totals: {
-    class1Rub: number
-    class2Rub: number
-  }
-  fasteners: {
-    metal: {
-      source: string
-      wallZLock: EnclosingFastenerMetalSelection
-      roofK: EnclosingFastenerMetalSelection
-    }
-  }
+  classes: Record<EnclosingClassKey, EnclosingClassSpecification>
   accessories: {
     flatSheetMultiplier: number
     formula: string
+    baseFlatSheetPriceRubPerM2: number
+    derivedUnitPriceRubPerM2: number
   }
   notes: string[]
 }

@@ -1,15 +1,35 @@
 import { enclosingInputSchema, type EnclosingInput } from './enclosing-input'
 import type {
+  EnclosingAccessoryRow,
   EnclosingCalculationResult,
-  EnclosingFastenerMetalSelection,
-  EnclosingSpecificationRow,
+  EnclosingClassSpecification,
+  EnclosingFastenerRow,
+  EnclosingPanelSpecificationRow,
+  EnclosingSectionSpecification,
 } from './enclosing-output'
 import {
   ENCLOSING_CLASS_KEYS,
   enclosingAccessoriesReference,
   enclosingFastenerReference,
   enclosingPanelPriceRubPerM2,
+  type EnclosingClassKey,
 } from './enclosing-reference.generated'
+
+const STEEL_DENSITY_KG_PER_M3 = 7850
+const FACING_STEEL_THICKNESS_M = 0.0005
+const PANEL_WORKING_WIDTH_M = 1
+
+const ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2 = 1200
+
+const WALL_PANEL_FASTENER_PRICE_RUB = 22
+const ROOF_PANEL_FASTENER_PRICE_RUB = 24
+const ACCESSORY_FASTENER_PRICE_RUB = 8
+const ACCESSORY_FASTENER_LENGTH_MM = 28
+
+const WALL_FASTENER_RATE_PER_M2 = 2.5
+const ROOF_FASTENER_RATE_PER_M2 = 3.5
+const WALL_ACCESSORY_FASTENER_RATE_PER_M = 3
+const ROOF_ACCESSORY_FASTENER_RATE_PER_M = 3.5
 
 function toRadians(degrees: number): number {
   return (degrees * Math.PI) / 180
@@ -42,6 +62,12 @@ function resolveWallAreaGrossM2(input: EnclosingInput): number {
 
   const riseM = (input.spanM / 2) * Math.tan(toRadians(input.roofSlopeDeg))
   return perimeterArea + input.spanM * riseM
+}
+
+function resolveRoofPanelLengthM(input: EnclosingInput): number {
+  const angleRad = toRadians(input.roofSlopeDeg)
+  const cosine = Math.max(Math.cos(angleRad), 0.2)
+  return isGableRoof(input.roofType) ? input.spanM / (2 * cosine) : input.spanM / cosine
 }
 
 function resolveNearestThickness(availableThicknesses: number[], requestedThicknessMm: number): number {
@@ -77,10 +103,7 @@ function resolvePricedThickness(
   }
 }
 
-function resolveFastenerMetal(
-  table: Record<number, number>,
-  requestedThicknessMm: number,
-): EnclosingFastenerMetalSelection {
+function resolveFastenerLengthByThickness(table: Record<number, number>, requestedThicknessMm: number) {
   const thicknesses = Object.keys(table).map(Number)
   const resolvedThicknessMm = table[requestedThicknessMm]
     ? requestedThicknessMm
@@ -93,71 +116,292 @@ function resolveFastenerMetal(
   }
 }
 
-function buildSpecificationRows(
-  requestedWallThicknessMm: number,
-  requestedRoofThicknessMm: number,
-  wallAreaNetM2: number,
-  roofAreaM2: number,
-): { rows: EnclosingSpecificationRow[]; notes: string[] } {
-  const rows: EnclosingSpecificationRow[] = []
-  const notes: string[] = []
+function calcFacingSteelMassKgPerM2(): number {
+  return 2 * FACING_STEEL_THICKNESS_M * STEEL_DENSITY_KG_PER_M3
+}
 
-  for (const classKey of ENCLOSING_CLASS_KEYS) {
-    const catalog = enclosingPanelPriceRubPerM2[classKey]
-    const wall = resolvePricedThickness(catalog.wallZLock, requestedWallThicknessMm)
-    const roof = resolvePricedThickness(catalog.roofK, requestedRoofThicknessMm)
+function calcUnitMassKgPerM2(densityKgPerM3: number, thicknessMm: number): number {
+  const coreMass = densityKgPerM3 * (thicknessMm / 1000)
+  return coreMass + calcFacingSteelMassKgPerM2()
+}
 
-    const classLabel = classKey === 'class-1-gost' ? 'Класс 1' : 'Класс 2'
-    const wallStandard = classKey === 'class-1-gost' ? 'ГОСТ 32603-2021, класс 1' : 'ГОСТ 32603-2021, класс 2'
-    const roofStandard =
-      classKey === 'class-1-gost' ? 'ГОСТ 32603-2021, класс 1' : 'ТУ 5284-001-37144780-2012'
-    const densityKgPerM3 = classKey === 'class-1-gost' ? 105 : 95
+function calcPanelsCount(areaM2: number, panelLengthM: number): number {
+  const panelArea = PANEL_WORKING_WIDTH_M * Math.max(panelLengthM, 0.1)
+  if (panelArea <= 0) {
+    return 0
+  }
+  return Math.max(1, Math.ceil(areaM2 / panelArea))
+}
 
-    if (wall.requestedThicknessMm !== wall.resolvedThicknessMm) {
-      notes.push(
-        `Для ${classLabel.toLowerCase()} стеновая толщина ${wall.requestedThicknessMm} мм заменена на ближайшую ${wall.resolvedThicknessMm} мм.`,
-      )
-    }
-    if (roof.requestedThicknessMm !== roof.resolvedThicknessMm) {
-      notes.push(
-        `Для ${classLabel.toLowerCase()} кровельная толщина ${roof.requestedThicknessMm} мм заменена на ближайшую ${roof.resolvedThicknessMm} мм.`,
-      )
-    }
+function calcAccessoryRow(
+  key: string,
+  section: 'walls' | 'roof',
+  item: string,
+  lengthM: number,
+  developedWidthM: number,
+  derivedUnitPriceRubPerM2: number,
+): EnclosingAccessoryRow | null {
+  if (lengthM <= 0 || developedWidthM <= 0) {
+    return null
+  }
+  const quantityM2 = lengthM * developedWidthM
+  return {
+    key,
+    section,
+    item,
+    unit: 'м.п.',
+    lengthM,
+    developedWidthM,
+    quantityM2,
+    unitPriceRubPerM2: derivedUnitPriceRubPerM2,
+    totalRub: roundRub(quantityM2 * derivedUnitPriceRubPerM2),
+    note: 'Цена фасонного изделия = цена плоского листа x 1.9',
+  }
+}
 
-    rows.push({
-      key: `${classKey}-wall-zlock`,
-      classKey,
-      classLabel,
-      panelType: 'Стеновая трехслойная сэндвич-панель с видимым креплением Z-Lock',
-      mark: 'МП ТСП-Z',
-      workingWidthMm: '1000 / 1160 / 1190',
-      unit: 'м2',
-      thicknessMm: wall.resolvedThicknessMm,
-      standard: wallStandard,
-      densityKgPerM3,
-      areaM2: wallAreaNetM2,
-      unitPriceRubPerM2: wall.unitPriceRubPerM2,
-      totalRub: roundRub(wallAreaNetM2 * wall.unitPriceRubPerM2),
-    })
+function sumRub<T extends { totalRub: number }>(rows: T[]): number {
+  return rows.reduce((sum, row) => sum + row.totalRub, 0)
+}
 
-    rows.push({
-      key: `${classKey}-roof-k`,
-      classKey,
-      classLabel,
-      panelType: 'Кровельная трехслойная сэндвич-панель',
-      mark: 'МП ТСП-К',
-      workingWidthMm: '1000',
-      unit: 'м2',
-      thicknessMm: roof.resolvedThicknessMm,
-      standard: roofStandard,
-      densityKgPerM3,
-      areaM2: roofAreaM2,
-      unitPriceRubPerM2: roof.unitPriceRubPerM2,
-      totalRub: roundRub(roofAreaM2 * roof.unitPriceRubPerM2),
-    })
+function sumMass<T extends { totalMassKg: number }>(rows: T[]): number {
+  return rows.reduce((sum, row) => sum + row.totalMassKg, 0)
+}
+
+function buildSectionSpecification(params: {
+  classKey: EnclosingClassKey
+  classLabel: string
+  section: 'walls' | 'roof'
+  densityKgPerM3: number
+  requestedThicknessMm: number
+  areaM2: number
+  panelLengthM: number
+  standard: string
+  panelType: string
+  mark: string
+  workingWidthMm: string
+  unit: string
+  priceTable: Record<number, number>
+  accessoryRows: EnclosingAccessoryRow[]
+  panelFastenerLengthMm: number
+  panelFastenerPriceRub: number
+  panelFastenerRate: number
+  accessoryFastenerRate: number
+  notes: string[]
+}): EnclosingSectionSpecification {
+  const priced = resolvePricedThickness(params.priceTable, params.requestedThicknessMm)
+  if (priced.requestedThicknessMm !== priced.resolvedThicknessMm) {
+    params.notes.push(
+      `${params.classLabel}: для раздела ${params.section === 'walls' ? 'стены' : 'кровля'} толщина ${priced.requestedThicknessMm} мм заменена на ${priced.resolvedThicknessMm} мм.`,
+    )
   }
 
-  return { rows, notes }
+  const unitMassKgPerM2 = calcUnitMassKgPerM2(params.densityKgPerM3, priced.resolvedThicknessMm)
+  const panelSpecification: EnclosingPanelSpecificationRow[] = [
+    {
+      key: `${params.classKey}-${params.section}-panel`,
+      section: params.section,
+      classKey: params.classKey,
+      classLabel: params.classLabel,
+      panelType: params.panelType,
+      mark: params.mark,
+      workingWidthMm: params.workingWidthMm,
+      unit: params.unit,
+      thicknessMm: priced.resolvedThicknessMm,
+      standard: params.standard,
+      densityKgPerM3: params.densityKgPerM3,
+      areaM2: params.areaM2,
+      panelLengthM: params.panelLengthM,
+      panelsCount: calcPanelsCount(params.areaM2, params.panelLengthM),
+      unitMassKgPerM2,
+      totalMassKg: params.areaM2 * unitMassKgPerM2,
+      unitPriceRubPerM2: priced.unitPriceRubPerM2,
+      totalRub: roundRub(params.areaM2 * priced.unitPriceRubPerM2),
+    },
+  ]
+
+  const accessories = params.accessoryRows
+  const accessoryLengthM = accessories.reduce((sum, row) => sum + row.lengthM, 0)
+
+  const fasteners: EnclosingFastenerRow[] = [
+    {
+      key: `${params.classKey}-${params.section}-panel-fastener`,
+      section: params.section,
+      item:
+        params.section === 'walls'
+          ? 'Саморез для крепления стеновых панелей к металлокаркасу'
+          : 'Саморез для крепления кровельных панелей к металлокаркасу',
+      unit: 'шт',
+      quantity: Math.ceil(params.areaM2 * params.panelFastenerRate),
+      lengthMm: params.panelFastenerLengthMm,
+      unitPriceRub: params.panelFastenerPriceRub,
+      totalRub: Math.ceil(params.areaM2 * params.panelFastenerRate) * params.panelFastenerPriceRub,
+      note: 'Оценочная норма крепежа на 1 м2',
+    },
+    {
+      key: `${params.classKey}-${params.section}-accessory-fastener`,
+      section: params.section,
+      item: 'Саморез для крепления доборных элементов',
+      unit: 'шт',
+      quantity: Math.ceil(accessoryLengthM * params.accessoryFastenerRate),
+      lengthMm: ACCESSORY_FASTENER_LENGTH_MM,
+      unitPriceRub: ACCESSORY_FASTENER_PRICE_RUB,
+      totalRub: Math.ceil(accessoryLengthM * params.accessoryFastenerRate) * ACCESSORY_FASTENER_PRICE_RUB,
+      note: 'Оценочная норма крепежа на 1 м.п.',
+    },
+  ]
+
+  const panelsRub = sumRub(panelSpecification)
+  const accessoriesRub = sumRub(accessories)
+  const fastenersRub = sumRub(fasteners)
+
+  return {
+    panelSpecification,
+    accessories,
+    fasteners,
+    totals: {
+      panelsRub,
+      accessoriesRub,
+      fastenersRub,
+      sectionRub: panelsRub + accessoriesRub + fastenersRub,
+      panelMassKg: sumMass(panelSpecification),
+    },
+  }
+}
+
+function buildClassSpecification(params: {
+  classKey: EnclosingClassKey
+  input: EnclosingInput
+  wallAreaNetM2: number
+  roofAreaM2: number
+  roofPanelLengthM: number
+  derivedAccessoryPriceRubPerM2: number
+  wallFastenerLengthMm: number
+  roofFastenerLengthMm: number
+  notes: string[]
+}): EnclosingClassSpecification {
+  const classLabel = params.classKey === 'class-1-gost' ? 'Класс 1' : 'Класс 2'
+  const densityKgPerM3 = params.classKey === 'class-1-gost' ? 105 : 95
+
+  const wallPanelsApprox = calcPanelsCount(params.wallAreaNetM2, params.input.buildingHeightM)
+  const perimeterM = 2 * (params.input.spanM + params.input.buildingLengthM)
+  const wallJointLengthM = Math.max(0, wallPanelsApprox - 4) * params.input.buildingHeightM
+
+  const wallAccessories = [
+    calcAccessoryRow(
+      `${params.classKey}-walls-joint-cover`,
+      'walls',
+      'Нащельник стыка стеновых панелей',
+      wallJointLengthM,
+      0.25,
+      params.derivedAccessoryPriceRubPerM2,
+    ),
+    calcAccessoryRow(
+      `${params.classKey}-walls-outer-corner`,
+      'walls',
+      'Угол наружный стеновой',
+      4 * params.input.buildingHeightM,
+      0.3,
+      params.derivedAccessoryPriceRubPerM2,
+    ),
+    calcAccessoryRow(
+      `${params.classKey}-walls-top-cap`,
+      'walls',
+      'Планка парапетная верхняя',
+      perimeterM,
+      0.35,
+      params.derivedAccessoryPriceRubPerM2,
+    ),
+  ].filter((row): row is EnclosingAccessoryRow => row !== null)
+
+  const roofEdgeLengthM = isGableRoof(params.input.roofType)
+    ? 4 * params.roofPanelLengthM
+    : 2 * params.roofPanelLengthM
+
+  const roofAccessories = [
+    calcAccessoryRow(
+      `${params.classKey}-roof-ridge`,
+      'roof',
+      'Планка конька',
+      isGableRoof(params.input.roofType) ? params.input.buildingLengthM : 0,
+      0.5,
+      params.derivedAccessoryPriceRubPerM2,
+    ),
+    calcAccessoryRow(
+      `${params.classKey}-roof-eave`,
+      'roof',
+      'Планка карнизная',
+      2 * params.input.buildingLengthM,
+      0.3,
+      params.derivedAccessoryPriceRubPerM2,
+    ),
+    calcAccessoryRow(
+      `${params.classKey}-roof-end`,
+      'roof',
+      'Планка торцевая',
+      roofEdgeLengthM,
+      0.3,
+      params.derivedAccessoryPriceRubPerM2,
+    ),
+  ].filter((row): row is EnclosingAccessoryRow => row !== null)
+
+  const walls = buildSectionSpecification({
+    classKey: params.classKey,
+    classLabel,
+    section: 'walls',
+    densityKgPerM3,
+    requestedThicknessMm: params.input.wallPanelThicknessMm,
+    areaM2: params.wallAreaNetM2,
+    panelLengthM: params.input.buildingHeightM,
+    standard: params.classKey === 'class-1-gost' ? 'ГОСТ 32603-2021, класс 1' : 'ГОСТ 32603-2021, класс 2',
+    panelType: 'Стеновая трехслойная сэндвич-панель с видимым креплением Z-Lock',
+    mark: 'МП ТСП-Z',
+    workingWidthMm: '1000 / 1160 / 1190',
+    unit: 'м2',
+    priceTable: enclosingPanelPriceRubPerM2[params.classKey].wallZLock,
+    accessoryRows: wallAccessories,
+    panelFastenerLengthMm: params.wallFastenerLengthMm,
+    panelFastenerPriceRub: WALL_PANEL_FASTENER_PRICE_RUB,
+    panelFastenerRate: WALL_FASTENER_RATE_PER_M2,
+    accessoryFastenerRate: WALL_ACCESSORY_FASTENER_RATE_PER_M,
+    notes: params.notes,
+  })
+
+  const roof = buildSectionSpecification({
+    classKey: params.classKey,
+    classLabel,
+    section: 'roof',
+    densityKgPerM3,
+    requestedThicknessMm: params.input.roofPanelThicknessMm,
+    areaM2: params.roofAreaM2,
+    panelLengthM: params.roofPanelLengthM,
+    standard:
+      params.classKey === 'class-1-gost' ? 'ГОСТ 32603-2021, класс 1' : 'ТУ 5284-001-37144780-2012',
+    panelType: 'Кровельная трехслойная сэндвич-панель',
+    mark: 'МП ТСП-К',
+    workingWidthMm: '1000',
+    unit: 'м2',
+    priceTable: enclosingPanelPriceRubPerM2[params.classKey].roofK,
+    accessoryRows: roofAccessories,
+    panelFastenerLengthMm: params.roofFastenerLengthMm,
+    panelFastenerPriceRub: ROOF_PANEL_FASTENER_PRICE_RUB,
+    panelFastenerRate: ROOF_FASTENER_RATE_PER_M2,
+    accessoryFastenerRate: ROOF_ACCESSORY_FASTENER_RATE_PER_M,
+    notes: params.notes,
+  })
+
+  return {
+    key: params.classKey,
+    label: classLabel,
+    walls,
+    roof,
+    totals: {
+      panelsRub: walls.totals.panelsRub + roof.totals.panelsRub,
+      accessoriesRub: walls.totals.accessoriesRub + roof.totals.accessoriesRub,
+      fastenersRub: walls.totals.fastenersRub + roof.totals.fastenersRub,
+      classRub: walls.totals.sectionRub + roof.totals.sectionRub,
+      panelMassKg: walls.totals.panelMassKg + roof.totals.panelMassKg,
+    },
+  }
 }
 
 export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculationResult {
@@ -167,40 +411,53 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
   const roofAreaM2 = resolveRoofAreaM2(input)
   const openingsAreaM2 = Math.max(0, input.openingsAreaM2)
   const wallAreaNetM2 = Math.max(0, wallAreaGrossM2 - openingsAreaM2)
+  const roofPanelLengthM = resolveRoofPanelLengthM(input)
 
-  const { rows: specificationRows, notes } = buildSpecificationRows(
-    input.wallPanelThicknessMm,
-    input.roofPanelThicknessMm,
-    wallAreaNetM2,
-    roofAreaM2,
-  )
+  const derivedAccessoryPriceRubPerM2 =
+    ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2 * enclosingAccessoriesReference.flatSheetMultiplier
 
-  const class1Rub = specificationRows
-    .filter((row) => row.classKey === 'class-1-gost')
-    .reduce((sum, row) => sum + row.totalRub, 0)
-  const class2Rub = specificationRows
-    .filter((row) => row.classKey === 'class-2-tu')
-    .reduce((sum, row) => sum + row.totalRub, 0)
-
-  const metalWall = resolveFastenerMetal(
+  const wallFastener = resolveFastenerLengthByThickness(
     enclosingFastenerReference.metalHarpoonToSteelUpTo12_5mm.wallZLockLengthMmByThickness,
     input.wallPanelThicknessMm,
   )
-  const metalRoof = resolveFastenerMetal(
+  const roofFastener = resolveFastenerLengthByThickness(
     enclosingFastenerReference.metalHarpoonToSteelUpTo12_5mm.roofKLengthMmByThickness,
     input.roofPanelThicknessMm,
   )
 
-  if (metalWall.requestedThicknessMm !== metalWall.resolvedThicknessMm) {
+  const notes: string[] = [
+    'Количество панелей рассчитано по укрупненной схеме раскладки при рабочей ширине 1000 мм.',
+    `Комплектующие оценены по формуле прайса: цена плоского листа x ${enclosingAccessoriesReference.flatSheetMultiplier}.`,
+    'Цены крепежа заданы как оценочные для предварительного технико-коммерческого расчета.',
+  ]
+
+  if (wallFastener.requestedThicknessMm !== wallFastener.resolvedThicknessMm) {
     notes.push(
-      `Для крепежа по металлу стен использована ближайшая толщина ${metalWall.resolvedThicknessMm} мм вместо ${metalWall.requestedThicknessMm} мм.`,
+      `Для стенового крепежа использована ближайшая толщина ${wallFastener.resolvedThicknessMm} мм вместо ${wallFastener.requestedThicknessMm} мм.`,
     )
   }
-  if (metalRoof.requestedThicknessMm !== metalRoof.resolvedThicknessMm) {
+  if (roofFastener.requestedThicknessMm !== roofFastener.resolvedThicknessMm) {
     notes.push(
-      `Для крепежа по металлу кровли использована ближайшая толщина ${metalRoof.resolvedThicknessMm} мм вместо ${metalRoof.requestedThicknessMm} мм.`,
+      `Для кровельного крепежа использована ближайшая толщина ${roofFastener.resolvedThicknessMm} мм вместо ${roofFastener.requestedThicknessMm} мм.`,
     )
   }
+
+  const classes = Object.fromEntries(
+    ENCLOSING_CLASS_KEYS.map((classKey) => [
+      classKey,
+      buildClassSpecification({
+        classKey,
+        input,
+        wallAreaNetM2,
+        roofAreaM2,
+        roofPanelLengthM,
+        derivedAccessoryPriceRubPerM2,
+        wallFastenerLengthMm: wallFastener.lengthMm,
+        roofFastenerLengthMm: roofFastener.lengthMm,
+        notes,
+      }),
+    ]),
+  ) as Record<EnclosingClassKey, EnclosingClassSpecification>
 
   return {
     snapshot: {
@@ -215,21 +472,12 @@ export function calculateEnclosing(rawInput: EnclosingInput): EnclosingCalculati
       roofAreaM2,
       openingsAreaM2,
     },
-    specificationRows,
-    totals: {
-      class1Rub,
-      class2Rub,
-    },
-    fasteners: {
-      metal: {
-        source: 'Harpoon, табл. 18: крепление к подконструкциям до 12.5 мм',
-        wallZLock: metalWall,
-        roofK: metalRoof,
-      },
-    },
+    classes,
     accessories: {
       flatSheetMultiplier: enclosingAccessoriesReference.flatSheetMultiplier,
       formula: enclosingAccessoriesReference.formula,
+      baseFlatSheetPriceRubPerM2: ACCESSORY_BASE_FLAT_SHEET_PRICE_RUB_PER_M2,
+      derivedUnitPriceRubPerM2: derivedAccessoryPriceRubPerM2,
     },
     notes,
   }

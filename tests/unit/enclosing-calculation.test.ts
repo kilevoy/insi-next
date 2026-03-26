@@ -2,7 +2,7 @@ import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing
 import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclosing-mapper'
 
 describe('enclosing calculation', () => {
-  it('calculates geometry and panel totals for both classes', () => {
+  it('builds class-based wall and roof specifications with pieces, length, mass and price', () => {
     const result = calculateEnclosing({
       roofType: 'двускатная',
       spanM: 24,
@@ -18,22 +18,37 @@ describe('enclosing calculation', () => {
     expect(result.geometry.wallAreaNetM2).toBeCloseTo(1521.27, 2)
     expect(result.geometry.roofAreaM2).toBeCloseTo(1447.93, 2)
 
-    expect(result.specificationRows).toHaveLength(4)
-    expect(result.specificationRows[0]?.panelType).toContain('Стеновая')
-    expect(result.specificationRows[0]?.mark).toBe('МП ТСП-Z')
-    expect(result.specificationRows[0]?.workingWidthMm).toBe('1000 / 1160 / 1190')
-    expect(result.specificationRows[0]?.unit).toBe('м2')
-    expect(result.specificationRows[0]?.unitPriceRubPerM2).toBe(3905)
-    expect(result.specificationRows[0]?.totalRub).toBe(5940559)
-    expect(result.specificationRows[1]?.unitPriceRubPerM2).toBe(4705)
-    expect(result.specificationRows[1]?.totalRub).toBe(6812520)
+    const class1 = result.classes['class-1-gost']
+    expect(class1.walls.panelSpecification[0]?.mark).toBe('МП ТСП-Z')
+    expect(class1.walls.panelSpecification[0]?.panelLengthM).toBeCloseTo(10, 2)
+    expect(class1.walls.panelSpecification[0]?.panelsCount).toBe(153)
+    expect(class1.walls.panelSpecification[0]?.unitMassKgPerM2).toBeCloseTo(18.35, 2)
+    expect(class1.walls.panelSpecification[0]?.unitPriceRubPerM2).toBe(3905)
+    expect(class1.roof.panelSpecification[0]?.mark).toBe('МП ТСП-К')
+    expect(class1.roof.panelSpecification[0]?.unitPriceRubPerM2).toBe(4705)
 
-    expect(result.totals.class1Rub).toBe(12753079)
-    expect(result.totals.class2Rub).toBe(11117912)
+    expect(class1.totals.panelsRub).toBe(12753079)
+    expect(class1.walls.fasteners[0]?.lengthMm).toBe(140)
+    expect(class1.roof.fasteners[0]?.lengthMm).toBe(240)
+    expect(class1.walls.accessories.length).toBeGreaterThan(0)
+    expect(class1.roof.accessories.length).toBeGreaterThan(0)
+  })
 
-    expect(result.fasteners.metal.wallZLock.lengthMm).toBe(140)
-    expect(result.fasteners.metal.roofK.lengthMm).toBe(240)
-    expect((result.fasteners as Record<string, unknown>).concrete).toBeUndefined()
+  it('keeps only metal fastener logic and does not expose concrete fasteners', () => {
+    const result = calculateEnclosing({
+      roofType: 'двускатная',
+      spanM: 24,
+      buildingLengthM: 60,
+      buildingHeightM: 10,
+      roofSlopeDeg: 6,
+      wallPanelThicknessMm: 100,
+      roofPanelThicknessMm: 150,
+      openingsAreaM2: 0,
+    })
+
+    const serialized = JSON.stringify(result)
+    expect(serialized.includes('concrete')).toBe(false)
+    expect(result.classes['class-1-gost'].walls.fasteners[0]?.item).toContain('стеновых панелей')
   })
 
   it('maps unified input to enclosing input and resolves openings area', () => {
@@ -70,7 +85,7 @@ describe('enclosing calculation', () => {
       openingsAreaM2: 0,
     })
 
-    const class2RoofRow = result.specificationRows.find((row) => row.key === 'class-2-tu-roof-k')
+    const class2RoofRow = result.classes['class-2-tu'].roof.panelSpecification[0]
     expect(class2RoofRow?.thicknessMm).toBe(80)
     expect(result.notes.some((note) => note.includes('80'))).toBe(true)
   })
