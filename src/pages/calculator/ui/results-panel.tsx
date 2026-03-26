@@ -3,6 +3,8 @@ import type { CandidateResult } from '@/domain/common/model/candidate-result'
 import type { ColumnCalculationResult } from '@/domain/column/model/calculate-column'
 import type { ColumnGroupKey } from '@/domain/column/model/column-output'
 import type { PurlinCalculationResult } from '@/domain/purlin/model/calculate-purlin'
+import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing'
+import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclosing-mapper'
 import type { UnifiedInputState } from '../model/unified-input'
 import { MethodologyPanel } from './methodology-panel'
 
@@ -700,6 +702,165 @@ function renderGeneralSpecificationOverview(
   )
 }
 
+function renderEnclosingOverview(input: UnifiedInputState) {
+  try {
+    const enclosingInput = mapUnifiedInputToEnclosingInput(input)
+    const enclosingResult = calculateEnclosing(enclosingInput)
+    const class1 = enclosingResult.scenarios.find((scenario) => scenario.key === 'class-1-gost')
+    const class2 = enclosingResult.scenarios.find((scenario) => scenario.key === 'class-2-tu')
+
+    return (
+      <div className="tab-pane animate-in" data-testid="enclosing-panel">
+        <div className="results-section results-section--summary-sheet">
+          <div className="results-table-head results-table-head--summary">
+            <div>
+              <h3 className="results-section-title">Ограждающие конструкции</h3>
+              <p className="results-inline-note" style={{ marginTop: 6 }}>
+                Сценарный расчет по прайсу ТСП (стр. 28) для панелей МП ТСП-Z и МП ТСП-К, без SECRET FIX.
+              </p>
+            </div>
+            <button className="results-print-action" onClick={() => window.print()}>
+              Печать / PDF
+            </button>
+          </div>
+
+          <div className="summary-hero">
+            <div className="summary-metric-card summary-metric-card--accent">
+              <span>Класс 1 (ГОСТ)</span>
+              <strong>{class1 ? `${formatRub(class1.panelsTotalRub)} руб.` : '-'}</strong>
+            </div>
+            <div className="summary-metric-card">
+              <span>Класс 2 (стены ГОСТ / кровля ТУ)</span>
+              <strong>{class2 ? `${formatRub(class2.panelsTotalRub)} руб.` : '-'}</strong>
+            </div>
+            <div className="summary-metric-card">
+              <span>Площадь стен (нетто)</span>
+              <strong>{`${formatNumber(enclosingResult.geometry.wallAreaNetM2, 2)} м2`}</strong>
+            </div>
+            <div className="summary-metric-card">
+              <span>Площадь кровли</span>
+              <strong>{`${formatNumber(enclosingResult.geometry.roofAreaM2, 2)} м2`}</strong>
+            </div>
+          </div>
+
+          <div className="load-grid load-grid--summary">
+            <div className="load-tile">
+              <span>Стены брутто</span>
+              <strong>{`${formatNumber(enclosingResult.geometry.wallAreaGrossM2, 2)} м2`}</strong>
+            </div>
+            <div className="load-tile">
+              <span>Проемы</span>
+              <strong>{`${formatNumber(enclosingResult.geometry.openingsAreaM2, 2)} м2`}</strong>
+            </div>
+            <div className="load-tile">
+              <span>Толщина стеновой панели</span>
+              <strong>{`${enclosingInput.wallPanelThicknessMm} мм`}</strong>
+            </div>
+            <div className="load-tile">
+              <span>Толщина кровельной панели</span>
+              <strong>{`${enclosingInput.roofPanelThicknessMm} мм`}</strong>
+            </div>
+            <div className="load-tile">
+              <span>Фасонные изделия</span>
+              <strong>{`Плоский лист x ${formatNumber(enclosingResult.accessories.flatSheetMultiplier, 1)}`}</strong>
+            </div>
+            <div className="load-tile">
+              <span>Формула фасонки</span>
+              <strong>{enclosingResult.accessories.formula}</strong>
+            </div>
+          </div>
+
+          <div className="results-section">
+            <h3 className="results-section-title">Панели: сценарии и стоимость</h3>
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Сценарий</th>
+                    <th>Стены, мм</th>
+                    <th>Стены, руб/м2</th>
+                    <th>Кровля, мм</th>
+                    <th>Кровля, руб/м2</th>
+                    <th>Итого панели, руб.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {enclosingResult.scenarios.map((scenario) => (
+                    <tr key={scenario.key}>
+                      <td>{scenario.title}</td>
+                      <td>{scenario.wall.resolvedThicknessMm}</td>
+                      <td>{formatRub(scenario.wall.unitPriceRubPerM2)}</td>
+                      <td>{scenario.roof.resolvedThicknessMm}</td>
+                      <td>{formatRub(scenario.roof.unitPriceRubPerM2)}</td>
+                      <td>{formatRub(scenario.panelsTotalRub)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="results-section-row">
+            <div className="results-section">
+              <h3 className="results-section-title">Крепеж по металлу</h3>
+              <div className="load-grid load-grid--summary" style={{ marginTop: 10 }}>
+                <div className="load-tile">
+                  <span>Стеновая Z-LOCK</span>
+                  <strong>{`${enclosingResult.fasteners.metal.wallZLock.lengthMm} мм`}</strong>
+                </div>
+                <div className="load-tile">
+                  <span>Кровельная ТСП-К</span>
+                  <strong>{`${enclosingResult.fasteners.metal.roofK.lengthMm} мм`}</strong>
+                </div>
+              </div>
+              <p className="results-inline-note" style={{ marginTop: 10 }}>
+                {enclosingResult.fasteners.metal.source}
+              </p>
+            </div>
+
+            <div className="results-section">
+              <h3 className="results-section-title">Крепеж по бетону</h3>
+              <div className="load-grid load-grid--summary" style={{ marginTop: 10 }}>
+                <div className="load-tile">
+                  <span>Стеновая Z-LOCK</span>
+                  <strong>{enclosingResult.fasteners.concrete.wallZLock.diameterAndLength}</strong>
+                </div>
+                <div className="load-tile">
+                  <span>Кровельная ТСП-К</span>
+                  <strong>{enclosingResult.fasteners.concrete.roofK.diameterAndLength}</strong>
+                </div>
+              </div>
+              <p className="results-inline-note" style={{ marginTop: 10 }}>
+                {enclosingResult.fasteners.concrete.source}
+              </p>
+            </div>
+          </div>
+
+          {enclosingResult.notes.length > 0 && (
+            <div className="footer-note">
+              <strong>Примечания: </strong>
+              <span>{enclosingResult.notes.join(' ')}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Не удалось рассчитать ограждающие конструкции.'
+    return (
+      <div className="tab-pane animate-in">
+        <div className="results-section">
+          <h3 className="results-section-title">Ограждающие конструкции</h3>
+          <div className="results-error">
+            <strong>Ошибка расчета: </strong>
+            {message}
+          </div>
+        </div>
+      </div>
+    )
+  }
+}
+
 export function ResultsPanel({
   input,
   activeTab,
@@ -779,12 +940,7 @@ export function ResultsPanel({
           )}
         </div>
       ) : activeTab === 'enclosing' ? (
-        <div className="tab-pane animate-in">
-          <div className="results-section">
-            <h3 className="results-section-title">Ограждающие конструкции</h3>
-            <div className="results-empty">Раздел в разработке</div>
-          </div>
-        </div>
+        renderEnclosingOverview(input)
       ) : activeTab === 'methodology' ? (
         <MethodologyPanel input={input} purlinResult={purlinResult} columnResult={columnResult} />
       ) : activeTab === 'purlin' ? (
