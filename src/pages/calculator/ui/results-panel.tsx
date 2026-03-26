@@ -10,6 +10,14 @@ import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclos
 import type { UnifiedInputState } from '../model/unified-input'
 import { MethodologyPanel } from './methodology-panel'
 
+interface PriceImportStatus {
+  isLoading: boolean
+  message: string | null
+  error: string | null
+  sourceFileName: string | null
+  importedAtIso: string | null
+}
+
 interface ResultsPanelProps {
   input: UnifiedInputState
   activeTab: DomainTab
@@ -29,7 +37,12 @@ interface ResultsPanelProps {
   selectedLstkPurlinIndex: number
   onSortPurlinSelect: (selectedIndex: number) => void
   onLstkPurlinSelect: (selectedIndex: number) => void
+  onImportPricePdf: (file: File) => Promise<void>
+  onResetPriceOverrides: () => void
+  priceImportStatus: PriceImportStatus
 }
+
+const ENCLOSING_PRICE_PDF_INPUT_ID = 'enclosing-price-pdf-input'
 
 const COLUMN_GROUPS: ReadonlyArray<{ key: ColumnGroupKey; title: string }> = [
   { key: 'extreme', title: 'Крайняя колонна — Подбор профилей' },
@@ -713,6 +726,9 @@ function renderEnclosingOverview(
   purlinSelectionMode: UnifiedInputState['purlinSelectionMode'],
   selectedSortPurlinIndex: number,
   selectedLstkPurlinIndex: number,
+  onImportPricePdf: (file: File) => Promise<void>,
+  onResetPriceOverrides: () => void,
+  priceImportStatus: PriceImportStatus,
 ) {
   try {
     const selectedPurlin = resolvePurlinSpecificationState(
@@ -766,6 +782,63 @@ function renderEnclosingOverview(
                 Класс 2
               </button>
             </div>
+          </div>
+
+          <div className="results-section" style={{ marginBottom: 12 }}>
+            <h3 className="results-section-title">Прайс PDF</h3>
+            <div className="field-row">
+              <label
+                className="mode-button"
+                htmlFor={ENCLOSING_PRICE_PDF_INPUT_ID}
+                style={{
+                  cursor: priceImportStatus.isLoading ? 'not-allowed' : 'pointer',
+                  opacity: priceImportStatus.isLoading ? 0.65 : 1,
+                }}
+                onClick={(event) => {
+                  if (priceImportStatus.isLoading) {
+                    event.preventDefault()
+                  }
+                }}
+              >
+                {priceImportStatus.isLoading ? 'Импорт...' : 'Загрузить прайс (PDF)'}
+              </label>
+              <button
+                type="button"
+                className="mode-button"
+                onClick={() => onResetPriceOverrides()}
+                disabled={priceImportStatus.isLoading}
+              >
+                Сбросить импорт
+              </button>
+              <input
+                id={ENCLOSING_PRICE_PDF_INPUT_ID}
+                type="file"
+                accept=".pdf,application/pdf"
+                style={{ display: 'none' }}
+                disabled={priceImportStatus.isLoading}
+                onChange={async (event) => {
+                  const file = event.target.files?.[0]
+                  if (file) {
+                    await onImportPricePdf(file)
+                  }
+                  event.currentTarget.value = ''
+                }}
+              />
+            </div>
+            {priceImportStatus.sourceFileName && (
+              <p className="results-inline-note">
+                Последний импорт: {priceImportStatus.sourceFileName}
+                {priceImportStatus.importedAtIso
+                  ? ` (${new Date(priceImportStatus.importedAtIso).toLocaleString('ru-RU')})`
+                  : ''}
+              </p>
+            )}
+            {priceImportStatus.message && <p className="results-inline-note">{priceImportStatus.message}</p>}
+            {priceImportStatus.error && (
+              <p className="results-inline-note" style={{ color: '#b00020' }}>
+                {priceImportStatus.error}
+              </p>
+            )}
           </div>
 
           <div className="results-section">
@@ -1139,6 +1212,9 @@ export function ResultsPanel({
   selectedLstkPurlinIndex,
   onSortPurlinSelect,
   onLstkPurlinSelect,
+  onImportPricePdf,
+  onResetPriceOverrides,
+  priceImportStatus,
 }: ResultsPanelProps) {
   const activeErrors =
     activeTab === 'summary' || activeTab === 'enclosing' || activeTab === 'methodology'
@@ -1209,6 +1285,9 @@ export function ResultsPanel({
           purlinSelectionMode,
           selectedSortPurlinIndex,
           selectedLstkPurlinIndex,
+          onImportPricePdf,
+          onResetPriceOverrides,
+          priceImportStatus,
         )
       ) : activeTab === 'methodology' ? (
         <MethodologyPanel input={input} purlinResult={purlinResult} columnResult={columnResult} />

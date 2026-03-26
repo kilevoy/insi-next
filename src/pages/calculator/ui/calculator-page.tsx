@@ -298,13 +298,7 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
 
       <div className="split-view">
         <div className="split-left">
-          <UnifiedInputPanel
-            input={input}
-            onChange={handleFieldChange}
-            onImportPricePdf={handlePricePdfImport}
-            onResetPriceOverrides={handlePriceOverridesReset}
-            priceImportStatus={priceImportStatus}
-          />
+          <UnifiedInputPanel input={input} onChange={handleFieldChange} />
         </div>
 
         <div className="split-right">
@@ -327,6 +321,9 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
             selectedLstkPurlinIndex={input.selectedLstkPurlinIndex}
             onSortPurlinSelect={handleSortPurlinSelect}
             onLstkPurlinSelect={handleLstkPurlinSelect}
+            onImportPricePdf={handlePricePdfImport}
+            onResetPriceOverrides={handlePriceOverridesReset}
+            priceImportStatus={priceImportStatus}
           />
         </div>
       </div>

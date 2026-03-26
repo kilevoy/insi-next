@@ -1,4 +1,3 @@
-import { useRef } from 'react'
 import {
   MAX_SUPPORTED_BUILDING_HEIGHT_M,
   MAX_SUPPORTED_BUILDING_LENGTH_M,
@@ -23,15 +22,6 @@ import {
 interface UnifiedInputPanelProps {
   input: UnifiedInputState
   onChange: <K extends keyof UnifiedInputState>(key: K, value: UnifiedInputState[K]) => void
-  onImportPricePdf?: (file: File) => Promise<void>
-  onResetPriceOverrides?: () => void
-  priceImportStatus?: {
-    isLoading: boolean
-    message: string | null
-    error: string | null
-    sourceFileName: string | null
-    importedAtIso: string | null
-  }
 }
 
 function NumberField({
@@ -65,14 +55,7 @@ function NumberField({
   )
 }
 
-export function UnifiedInputPanel({
-  input,
-  onChange,
-  onImportPricePdf,
-  onResetPriceOverrides,
-  priceImportStatus,
-}: UnifiedInputPanelProps) {
-  const priceFileInputRef = useRef<HTMLInputElement | null>(null)
+export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
   const roofCoveringNormalized = input.roofCoveringType.toLowerCase()
   const wallCoveringNormalized = input.wallCoveringType.toLowerCase()
   const showRoofProfileSheet =
@@ -88,55 +71,6 @@ export function UnifiedInputPanel({
         <h2 className="panel-title">Параметры расчета</h2>
         <p className="panel-copy">Общие данные для колонн и прогонов</p>
       </div>
-
-      <section className="form-section">
-        <h3 className="form-section-title">Прайс PDF</h3>
-        <div className="field-row">
-          <button
-            type="button"
-            className="mode-button"
-            onClick={() => priceFileInputRef.current?.click()}
-            disabled={priceImportStatus?.isLoading}
-          >
-            {priceImportStatus?.isLoading ? 'Импорт...' : 'Загрузить прайс (PDF)'}
-          </button>
-          <button
-            type="button"
-            className="mode-button"
-            onClick={() => onResetPriceOverrides?.()}
-            disabled={priceImportStatus?.isLoading}
-          >
-            Сбросить импорт
-          </button>
-          <input
-            ref={priceFileInputRef}
-            type="file"
-            accept=".pdf,application/pdf"
-            style={{ display: 'none' }}
-            onChange={async (event) => {
-              const file = event.target.files?.[0]
-              if (file && onImportPricePdf) {
-                await onImportPricePdf(file)
-              }
-              event.currentTarget.value = ''
-            }}
-          />
-        </div>
-        {priceImportStatus?.sourceFileName && (
-          <p className="results-inline-note">
-            Последний импорт: {priceImportStatus.sourceFileName}
-            {priceImportStatus.importedAtIso
-              ? ` (${new Date(priceImportStatus.importedAtIso).toLocaleString('ru-RU')})`
-              : ''}
-          </p>
-        )}
-        {priceImportStatus?.message && <p className="results-inline-note">{priceImportStatus.message}</p>}
-        {priceImportStatus?.error && (
-          <p className="results-inline-note" style={{ color: '#b00020' }}>
-            {priceImportStatus.error}
-          </p>
-        )}
-      </section>
 
       <section className="form-section">
         <h3 className="form-section-title">Район строительства</h3>
