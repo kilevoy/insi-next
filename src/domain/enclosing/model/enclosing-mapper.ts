@@ -8,19 +8,22 @@ interface UnifiedInputLike {
   roofSlopeDeg: number
   wallCoveringType: string
   roofCoveringType: string
-  doubleDoorAreaM2: number
-  singleDoorCount: number
-  entranceBlockAreaM2: number
-  tambourDoorAreaM2: number
-  windowsAreaM2: number
-  gatesAreaM2: number
+  doubleDoorAreaM2?: number
+  singleDoorCount?: number
+  entranceBlockAreaM2?: number
+  tambourDoorAreaM2?: number
+  windowsAreaM2?: number
+  gatesAreaM2?: number
 }
 
 const DEFAULT_WALL_PANEL_THICKNESS_MM = 100
 const DEFAULT_ROOF_PANEL_THICKNESS_MM = 150
 const DEFAULT_SINGLE_DOOR_AREA_M2 = 2
 
-function normalizeNonNegative(value: number): number {
+function normalizeNonNegative(value: unknown): number {
+  if (typeof value !== 'number') {
+    return 0
+  }
   return Number.isFinite(value) ? Math.max(0, value) : 0
 }
 

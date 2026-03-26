@@ -71,4 +71,20 @@ describe('enclosing calculation', () => {
     expect(class2?.roof.resolvedThicknessMm).toBe(80)
     expect(class2?.notes.some((note) => note.includes('80'))).toBe(true)
   })
+
+  it('supports unified input versions without opening fields', () => {
+    const mapped = mapUnifiedInputToEnclosingInput({
+      roofType: 'двускатная',
+      spanM: 24,
+      buildingLengthM: 60,
+      buildingHeightM: 10,
+      roofSlopeDeg: 6,
+      wallCoveringType: 'С-П 100 мм',
+      roofCoveringType: 'С-П 150 мм',
+    })
+
+    expect(mapped.openingsAreaM2).toBe(0)
+    expect(mapped.wallPanelThicknessMm).toBe(100)
+    expect(mapped.roofPanelThicknessMm).toBe(150)
+  })
 })
