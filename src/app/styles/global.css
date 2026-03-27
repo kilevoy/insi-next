@@ -1467,61 +1467,53 @@ textarea {
 
 .truss-settings-grid {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .truss-settings-block {
-  border: 1px solid #cfd7df;
-  border-radius: 4px;
-  background: #ffffff;
-  overflow: hidden;
+  display: grid;
+  gap: 8px;
 }
 
 .truss-settings-subtitle {
   margin: 0;
-  padding: 6px 8px;
-  border-bottom: 1px solid #cfd7df;
-  background: #eceff3;
-  color: #2b3640;
-  font-size: 0.78rem;
+  color: #3a4653;
+  font-size: 0.72rem;
   font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .truss-settings-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 110px;
-}
-
-.truss-settings-row + .truss-settings-row {
-  border-top: 1px solid #cfd7df;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  gap: 8px;
+  align-items: center;
 }
 
 .truss-settings-code {
-  display: flex;
-  align-items: center;
-  padding: 6px 8px;
-  border-right: 1px solid #cfd7df;
-  background: #eceff3;
-  color: #2b3640;
-  font-size: 0.78rem;
+  color: #596470;
+  font-size: 0.73rem;
   font-weight: 700;
 }
 
 .truss-settings-input {
   width: 100%;
-  min-height: 30px;
-  border: 0;
-  padding: 6px 8px;
-  background: #fff200;
-  color: #232a32;
+  min-height: 32px;
+  padding: 7px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background: var(--input-bg);
+  color: var(--ink);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   text-align: right;
   outline: none;
 }
 
 .truss-settings-input:focus {
-  box-shadow: inset 0 0 0 1px #8b949e;
+  border-color: var(--accent);
+  background: #fff;
 }
 
 .results-section {
