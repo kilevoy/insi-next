@@ -43,7 +43,8 @@ const LOCK_GASKET_PACK_PRICE_RUB = 90
 const ROOF_PROFILE_GASKET_PIECE_LENGTH_M = 1
 const ROOF_PROFILE_GASKET_PRICE_RUB = 55
 
-const WALL_PANEL_FASTENERS_PER_PANEL = 3
+const WALL_PANEL_FASTENERS_PER_ROW = 3
+const WALL_PANEL_FASTENER_ROWS_PER_PANEL = 2
 const FACADE_FASTENER_STEP_M = 0.3
 const ROOF_PANEL_FASTENER_STEP_ACROSS_WIDTH_M = 0.5
 const ROOF_PANEL_FASTENER_STEP_EAVE_M = 0.25
@@ -660,7 +661,8 @@ function buildClassSpecification(params: {
   const wallAccessoryLengthM = wallAccessories.reduce((sum, row) => sum + row.requiredLengthM, 0)
   const roofAccessoryLengthM = roofAccessories.reduce((sum, row) => sum + row.requiredLengthM, 0)
 
-  const wallPanelFastenerQuantity = wallPanelsCount * WALL_PANEL_FASTENERS_PER_PANEL
+  const wallPanelFastenerQuantity =
+    wallPanelsCount * WALL_PANEL_FASTENERS_PER_ROW * WALL_PANEL_FASTENER_ROWS_PER_PANEL
   const wallAccessoryFastenerQuantity = Math.ceil(wallAccessoryLengthM / FACADE_FASTENER_STEP_M)
   const wallSocleAnchorQuantity = Math.ceil(perimeterM / SOCLE_ANCHOR_STEP_M)
   const wallExtraFastenerRows: EnclosingFastenerRow[] =
@@ -799,7 +801,7 @@ export function calculateEnclosing(rawInput: EnclosingInputRaw): EnclosingCalcul
     'В стеновые доборы включены нащельники стыков, наружные углы и отлив цоколя (без учета проемов).',
     'Нащельник стыка ФИ11 (узел 1.2.3) считается по вертикальным стыкам между панелями в каждом горизонтальном ряду.',
     'Длины саморезов для МП ТСП-Z и МП ТСП-К подбираются строго по рекомендациям АТР.',
-    'Крепеж стеновых панелей: 3 шт на панель по ряду (Техкаталог ТСП, п.7.7.3).',
+    'Крепеж стеновых панелей: 3 шт на панель по ряду, 2 ряда крепления (итого 6 шт/панель в типовой схеме, Техкаталог ТСП, п.7.7.3).',
     'Крепеж доборных элементов: шаг 300 мм (узлы АТР ТСП), эквивалентно ceil(L/0.3).',
     'Анкерные болты цоколя: шаг 600 мм для крепления опорного элемента/отлива к основанию (узлы АТР ТСП).',
     `Крепеж кровельных панелей к прогонам: 500 мм по ширине панели + 250 мм по карнизной линии, шаг прогонов ${input.roofPurlinStepM.toFixed(2)} м (Техкаталог ТСП, п.7.9.9).`,
