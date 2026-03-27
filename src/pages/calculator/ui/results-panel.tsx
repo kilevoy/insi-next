@@ -4,6 +4,7 @@ import type { CandidateResult } from '@/domain/common/model/candidate-result'
 import type { ColumnCalculationResult } from '@/domain/column/model/calculate-column'
 import type { ColumnGroupKey } from '@/domain/column/model/column-output'
 import type { EnclosingClassKey } from '@/domain/enclosing/model/enclosing-reference.generated'
+import type { EnclosingSectionSpecification } from '@/domain/enclosing/model/enclosing-output'
 import type { PurlinCalculationResult } from '@/domain/purlin/model/calculate-purlin'
 import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing'
 import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclosing-mapper'
@@ -759,6 +760,192 @@ function renderGeneralSpecificationOverview(
   )
 }
 
+interface SummaryEnclosingSpecRow {
+  key: string
+  category: string
+  item: string
+  parameter: string
+  unit: string
+  quantity: number
+  quantityFractionDigits: number
+  massKg: number | null
+  unitPriceRub: number
+  totalRub: number
+}
+
+function buildSummaryEnclosingRows(section: EnclosingSectionSpecification): SummaryEnclosingSpecRow[] {
+  const panelRows: SummaryEnclosingSpecRow[] = section.panelSpecification.map((row) => ({
+    key: row.key,
+    category: 'Панели',
+    item: row.mark,
+    parameter: `Ширина ${row.workingWidthMm} мм; толщина ${row.thicknessMm} мм; длина ${formatNumber(row.panelLengthM, 2)} м; ${formatNumber(row.panelsCount, 0)} шт.`,
+    unit: row.unit,
+    quantity: row.areaM2,
+    quantityFractionDigits: 2,
+    massKg: row.totalMassKg,
+    unitPriceRub: row.unitPriceRubPerM2,
+    totalRub: row.totalRub,
+  }))
+
+  const accessoryRows: SummaryEnclosingSpecRow[] = section.accessories.map((row) => ({
+    key: row.key,
+    category: 'Комплектующие',
+    item: row.item,
+    parameter: `Требуемая длина ${formatNumber(row.requiredLengthM, 2)} м.п.; развертка ${formatNumber(row.developedWidthM, 2)} м`,
+    unit: row.unit,
+    quantity: row.quantity,
+    quantityFractionDigits: 2,
+    massKg: null,
+    unitPriceRub: row.unitPriceRub,
+    totalRub: row.totalRub,
+  }))
+
+  const sealantRows: SummaryEnclosingSpecRow[] = section.sealants.map((row) => ({
+    key: row.key,
+    category: 'Уплотнители',
+    item: row.item,
+    parameter: row.note ?? 'По нормам ТСП',
+    unit: row.unit,
+    quantity: row.quantity,
+    quantityFractionDigits: row.unit.trim().toLowerCase() === 'шт' ? 0 : 2,
+    massKg: null,
+    unitPriceRub: row.unitPriceRub,
+    totalRub: row.totalRub,
+  }))
+
+  const fastenerRows: SummaryEnclosingSpecRow[] = section.fasteners.map((row) => ({
+    key: row.key,
+    category: 'Крепеж',
+    item: row.item,
+    parameter: `Длина ${formatNumber(row.lengthMm, 0)} мм${row.note ? `; ${row.note}` : ''}`,
+    unit: row.unit,
+    quantity: row.quantity,
+    quantityFractionDigits: 0,
+    massKg: null,
+    unitPriceRub: row.unitPriceRub,
+    totalRub: row.totalRub,
+  }))
+
+  return [...panelRows, ...accessoryRows, ...sealantRows, ...fastenerRows]
+}
+
+function renderSummaryEnclosingSectionTable(title: string, section: EnclosingSectionSpecification) {
+  const rows = buildSummaryEnclosingRows(section)
+
+  return (
+    <div className="results-section">
+      <h3 className="results-section-title">{title}</h3>
+      {rows.length === 0 ? (
+        <div className="results-empty">Нет позиций для отображения.</div>
+      ) : (
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Категория</th>
+                <th>Наименование / марка</th>
+                <th>Параметры</th>
+                <th>Ед. изм.</th>
+                <th>Кол-во</th>
+                <th>Вес, кг</th>
+                <th>Цена, руб/ед.</th>
+                <th>Сумма, руб.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.key}>
+                  <td>{row.category}</td>
+                  <td>{row.item}</td>
+                  <td>{row.parameter}</td>
+                  <td>{row.unit}</td>
+                  <td>{formatNumber(row.quantity, row.quantityFractionDigits)}</td>
+                  <td>{row.massKg === null ? '-' : formatNumber(row.massKg, 2)}</td>
+                  <td>{formatRub(row.unitPriceRub)}</td>
+                  <td>{formatRub(row.totalRub)}</td>
+                </tr>
+              ))}
+              <tr>
+                <td colSpan={5}>Итого по разделу</td>
+                <td>{formatNumber(section.totals.panelMassKg, 2)}</td>
+                <td>-</td>
+                <td>{formatRub(section.totals.sectionRub)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function renderEnclosingSummarySpecification(
+  input: UnifiedInputState,
+  selectedClassKey: EnclosingClassKey,
+  purlinResult: PurlinCalculationResult | null,
+  purlinSpecificationSource: UnifiedInputState['purlinSpecificationSource'],
+  purlinSelectionMode: UnifiedInputState['purlinSelectionMode'],
+  selectedSortPurlinIndex: number,
+  selectedLstkPurlinIndex: number,
+) {
+  try {
+    const selectedPurlin = resolvePurlinSpecificationState(
+      purlinResult,
+      purlinSpecificationSource,
+      purlinSelectionMode,
+      selectedSortPurlinIndex,
+      selectedLstkPurlinIndex,
+    ).selectedCandidate
+    const roofPurlinStepM =
+      selectedPurlin?.stepMm && selectedPurlin.stepMm > 0 ? selectedPurlin.stepMm / 1000 : 1.5
+    const enclosingInput = {
+      ...mapUnifiedInputToEnclosingInput(input),
+      roofPurlinStepM,
+    }
+    const enclosingResult = calculateEnclosing(enclosingInput)
+    const activeClass = enclosingResult.classes[selectedClassKey]
+    const includeWalls = isSandwichPanelCovering(input.wallCoveringType)
+    const includeRoof = isSandwichPanelCovering(input.roofCoveringType)
+
+    return (
+      <>
+        {includeWalls ? (
+          renderSummaryEnclosingSectionTable('Спецификация стеновых ограждающих конструкций', activeClass.walls)
+        ) : (
+          <div className="results-section">
+            <h3 className="results-section-title">Спецификация стеновых ограждающих конструкций</h3>
+            <p className="results-inline-note">
+              Расчет не выполняется: для стен выбрано покрытие не С-П ({input.wallCoveringType}).
+            </p>
+          </div>
+        )}
+
+        {includeRoof ? (
+          renderSummaryEnclosingSectionTable('Спецификация кровельных ограждающих конструкций', activeClass.roof)
+        ) : (
+          <div className="results-section">
+            <h3 className="results-section-title">Спецификация кровельных ограждающих конструкций</h3>
+            <p className="results-inline-note">
+              Расчет не выполняется: для кровли выбрано покрытие не С-П ({input.roofCoveringType}).
+            </p>
+          </div>
+        )}
+      </>
+    )
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Не удалось подготовить сводную спецификацию ограждающих.'
+    return (
+      <div className="results-section">
+        <h3 className="results-section-title">Сводная спецификация ограждающих конструкций</h3>
+        <div className="results-error">
+          <strong>Ошибка расчета: </strong>
+          {message}
+        </div>
+      </div>
+    )
+  }
+}
+
 function renderEnclosingOverview(
   input: UnifiedInputState,
   selectedClassKey: EnclosingClassKey,
@@ -1350,6 +1537,15 @@ export function ResultsPanel({
           )}
           {renderColumnSpecification(columnResult)}
           {renderPurlinSpecification(
+            purlinResult,
+            purlinSpecificationSource,
+            purlinSelectionMode,
+            selectedSortPurlinIndex,
+            selectedLstkPurlinIndex,
+          )}
+          {renderEnclosingSummarySpecification(
+            input,
+            enclosingClassKey,
             purlinResult,
             purlinSpecificationSource,
             purlinSelectionMode,
