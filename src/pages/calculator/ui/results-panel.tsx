@@ -597,16 +597,15 @@ function renderGeneralSpecificationOverview(
   const enclosingMassKg =
     (includeWalls ? enclosingClass.walls.totals.panelMassKg : 0) +
     (includeRoof ? enclosingClass.roof.totals.panelMassKg : 0)
+  const columnMassKg = columnResult?.specification.totalMassKg ?? 0
+  const columnCostRub = columnResult?.specification.totalCostRub ?? 0
+  const purlinMassKg = selectedCandidate?.totalMassKg ?? 0
+  const purlinCostRub = selectedCostRub ?? 0
 
   const combinedMassKg =
-    (columnResult?.specification.totalMassKg ?? 0) + (selectedCandidate?.totalMassKg ?? 0) + enclosingMassKg
+    columnMassKg + purlinMassKg + enclosingMassKg
   const combinedCostRub =
-    (columnResult?.specification.totalCostRub ?? 0) + (selectedCostRub ?? 0) + enclosingCostRub
-  const combinedColumnsCount =
-    columnResult?.specification.groups.reduce((sum, group) => sum + group.columnsCount, 0) ?? 0
-  const selectedPurlinLabel = selectedCandidate
-    ? `${formatPurlinFamilyLabel(selectedCandidate.family)} / ${selectedCandidate.profile}`
-    : 'Не выбран'
+    columnCostRub + purlinCostRub + enclosingCostRub
   const snowRegionKpa = purlinResult?.loadSummary.snowRegionKpa
   const windRegionKpa = purlinResult?.loadSummary.windRegionKpa
   const roofCoveringNormalized = input.roofCoveringType.toLowerCase()
@@ -619,7 +618,7 @@ function renderGeneralSpecificationOverview(
         <div>
           <h3 className="results-section-title">Общие сведения о расчете</h3>
           <p className="results-inline-note" style={{ marginTop: 6 }}>
-            Сводная спецификация здания по текущим выбранным режимам расчета колонн и прогонов.
+            Сводная спецификация здания: массы и стоимости по колоннам, прогонам и ограждающим конструкциям.
           </p>
         </div>
         <button className="results-print-action" onClick={() => window.print()}>
@@ -629,24 +628,20 @@ function renderGeneralSpecificationOverview(
 
       <div className="summary-hero">
         <div className="summary-metric-card summary-metric-card--accent">
-          <span>Общая масса здания</span>
-          <strong>{formatNumber(combinedMassKg, 0)} кг</strong>
+          <span>Колонны</span>
+          <strong>{`${formatNumber(columnMassKg, 0)} кг / ${formatRub(columnCostRub)} руб.`}</strong>
         </div>
         <div className="summary-metric-card">
-          <span>Ориентировочная стоимость</span>
-          <strong>{formatRub(combinedCostRub)} руб.</strong>
-        </div>
-        <div className="summary-metric-card">
-          <span>Колонн / прогонов</span>
-          <strong>{`${combinedColumnsCount} шт. / ${selectedCandidate ? '1 тип' : '—'}`}</strong>
-        </div>
-        <div className="summary-metric-card">
-          <span>Выбранный прогон</span>
-          <strong>{selectedPurlinLabel}</strong>
+          <span>Прогоны</span>
+          <strong>{`${formatNumber(purlinMassKg, 0)} кг / ${formatRub(purlinCostRub)} руб.`}</strong>
         </div>
         <div className="summary-metric-card">
           <span>Ограждающие ({enclosingClass.label})</span>
-          <strong>{`${formatRub(enclosingCostRub)} руб. / ${formatNumber(enclosingMassKg, 0)} кг`}</strong>
+          <strong>{`${formatNumber(enclosingMassKg, 0)} кг / ${formatRub(enclosingCostRub)} руб.`}</strong>
+        </div>
+        <div className="summary-metric-card">
+          <span>Итого</span>
+          <strong>{`${formatNumber(combinedMassKg, 0)} кг / ${formatRub(combinedCostRub)} руб.`}</strong>
         </div>
       </div>
 
@@ -729,18 +724,26 @@ function renderGeneralSpecificationOverview(
         </div>
         <div className="load-tile">
           <span>Сумма колонн, кг</span>
-          <strong>{columnResult ? formatNumber(columnResult.specification.totalMassKg, 0) : '-'}</strong>
+          <strong>{formatNumber(columnMassKg, 0)}</strong>
+        </div>
+        <div className="load-tile">
+          <span>Стоимость колонн, руб.</span>
+          <strong>{formatRub(columnCostRub)}</strong>
         </div>
         <div className="load-tile">
           <span>Сумма прогонов, кг</span>
-          <strong>{selectedCandidate ? formatNumber(selectedCandidate.totalMassKg, 0) : '-'}</strong>
+          <strong>{formatNumber(purlinMassKg, 0)}</strong>
+        </div>
+        <div className="load-tile">
+          <span>Стоимость прогонов, руб.</span>
+          <strong>{formatRub(purlinCostRub)}</strong>
         </div>
         <div className="load-tile">
           <span>Сумма ограждающих, кг</span>
           <strong>{formatNumber(enclosingMassKg, 0)}</strong>
         </div>
         <div className="load-tile">
-          <span>Сумма ограждающих, руб.</span>
+          <span>Стоимость ограждающих, руб.</span>
           <strong>{formatRub(enclosingCostRub)}</strong>
         </div>
         <div className="load-tile load-tile--total">
