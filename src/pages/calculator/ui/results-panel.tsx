@@ -848,7 +848,7 @@ function renderGeneralSpecificationOverview(
         </div>
         <div className="summary-metric-card">
           <span>Фермы</span>
-          <strong>{`${formatNumber(trussCount, 0)} шт. / ${formatNumber(trussMassKg, 0)} кг / ${formatRub(trussCostRub)} руб.`}</strong>
+          <strong>{`${formatNumber(trussMassKg, 0)} кг / ${formatRub(trussCostRub)} руб.`}</strong>
         </div>
         <div className="summary-metric-card">
           <span>Ограждающие ({enclosingClass.label})</span>
