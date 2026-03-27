@@ -8,8 +8,9 @@ import {
   saveEnclosingPricingOverrides,
 } from '@/domain/enclosing/model/enclosing-pricing-overrides'
 import { calculatePurlin, type PurlinCalculationResult } from '@/domain/purlin/model/calculate-purlin'
+import { calculateTruss, type TrussCalculationResult } from '@/domain/truss/model/calculate-truss'
 import { useCalculatorStore } from '../model/calculator-store'
-import { mapToColumnInput, mapToPurlinInput } from '../model/input-mapper'
+import { mapToColumnInput, mapToPurlinInput, mapToTrussInput } from '../model/input-mapper'
 import type { UnifiedInputState } from '../model/unified-input'
 import { ResultsPanel } from './results-panel'
 import { UnifiedInputPanel } from './unified-input-panel'
@@ -94,11 +95,39 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
     }
   }
 
+  const safeCalculateTruss = (
+    nextInput: UnifiedInputState,
+    purlinState: CalculationState<PurlinCalculationResult>,
+  ): CalculationState<TrussCalculationResult> => {
+    if (!purlinState.result) {
+      return {
+        result: null,
+        error: purlinState.error ?? 'Ошибка расчета прогонов не позволяет рассчитать фермы',
+      }
+    }
+
+    try {
+      return {
+        result: calculateTruss(mapToTrussInput(nextInput, purlinState.result)),
+        error: null,
+      }
+    } catch (error) {
+      console.warn('Truss calculation failed:', error)
+      return {
+        result: null,
+        error: error instanceof Error ? error.message : 'Ошибка расчета ферм',
+      }
+    }
+  }
+
   const [initialPurlinState] = useState(() => safeCalculatePurlin(input))
+  const [initialTrussState] = useState(() => safeCalculateTruss(input, initialPurlinState))
   const [initialColumnState] = useState(() => safeCalculateColumn(input))
   const [purlinResult, setPurlinResult] = useState<PurlinCalculationResult | null>(initialPurlinState.result)
+  const [trussResult, setTrussResult] = useState<TrussCalculationResult | null>(initialTrussState.result)
   const [columnResult, setColumnResult] = useState<ColumnCalculationResult | null>(initialColumnState.result)
   const [purlinError, setPurlinError] = useState<string | null>(initialPurlinState.error)
+  const [trussError, setTrussError] = useState<string | null>(initialTrussState.error)
   const [columnError, setColumnError] = useState<string | null>(initialColumnState.error)
   const [priceImportStatus, setPriceImportStatus] = useState<PriceImportStatus>(() => {
     const persisted = loadEnclosingPricingOverrides()
@@ -115,6 +144,10 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
     const nextPurlinState = safeCalculatePurlin(nextInput)
     setPurlinResult(nextPurlinState.result)
     setPurlinError(nextPurlinState.error)
+
+    const nextTrussState = safeCalculateTruss(nextInput, nextPurlinState)
+    setTrussResult(nextTrussState.result)
+    setTrussError(nextTrussState.error)
 
     const nextColumnState = safeCalculateColumn(nextInput)
     setColumnResult(nextColumnState.result)
@@ -313,9 +346,11 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
             input={input}
             activeTab={activeTab}
             purlinResult={purlinResult}
+            trussResult={trussResult}
             columnResult={columnResult}
             isPending={isPending}
             purlinError={purlinError}
+            trussError={trussError}
             columnError={columnError}
             isColumnManualMode={input.isManualMode}
             onColumnManualModeChange={handleColumnManualModeChange}

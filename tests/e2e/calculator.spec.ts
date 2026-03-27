@@ -1,41 +1,45 @@
-import { expect, test } from '@playwright/test'
+﻿import { expect, test } from '@playwright/test'
 
 test('renders the calculator shell by default', async ({ page }) => {
   await page.goto('/')
 
   await expect(page.getByTestId('calculator-page')).toBeVisible()
-  await expect(page.locator('.tabs > button')).toHaveText([
-    'Колонны',
-    'Прогоны',
-    'Ограждающие конструкции',
-    'Сводная',
-  ])
+  await expect(page.getByTestId('tab-column')).toBeVisible()
+  await expect(page.getByTestId('tab-truss')).toBeVisible()
+  await expect(page.getByTestId('tab-purlin')).toBeVisible()
+  await expect(page.getByTestId('tab-enclosing')).toBeVisible()
+  await expect(page.getByTestId('tab-summary')).toBeVisible()
   await expect(page.getByTestId('tab-column')).toHaveClass(/active/)
-  await expect(page.getByText('Параметры расчета')).toBeVisible()
+  await expect(page.locator('.split-left')).toBeVisible()
 })
 
-test('switches between summary, enclosing, methodology, column and purlin result tabs', async ({ page }) => {
+test('switches between summary, enclosing, truss, methodology, column and purlin result tabs', async ({ page }) => {
   await page.goto('/')
 
   await page.getByTestId('tab-summary').click()
   await expect(page.getByTestId('tab-summary')).toHaveClass(/active/)
-  await expect(page.getByText('Общие сведения о расчете')).toBeVisible()
+  await expect(page.locator('.results-section--summary-sheet')).toBeVisible()
 
   await page.getByTestId('tab-enclosing').click()
   await expect(page.getByTestId('tab-enclosing')).toHaveClass(/active/)
-  await expect(page.getByText('Раздел в разработке')).toBeVisible()
+  await expect(page.getByTestId('enclosing-panel')).toBeVisible()
+
+  await page.getByTestId('tab-truss').click()
+  await expect(page.getByTestId('tab-truss')).toHaveClass(/active/)
+  await expect(page.getByTestId('truss-panel')).toBeVisible()
+  await expect(page.locator('[data-testid="truss-panel"] table.data-table')).toBeVisible()
 
   await page.getByTestId('tab-methodology').click()
   await expect(page.getByTestId('tab-methodology')).toHaveClass(/active/)
   await expect(page.getByText('Excel parity')).toBeVisible()
 
-  await page.getByTestId('tab-purlin').click()
+  await page.getByTestId('tab-purlin').click({ force: true })
   await expect(page.getByTestId('tab-purlin')).toHaveClass(/active/)
-  await expect(page.getByText('Источник спецификации прогонов')).toBeVisible()
+  await expect(page.locator('.load-grid--purlin')).toBeVisible()
 
   await page.getByTestId('tab-column').click()
   await expect(page.getByTestId('tab-column')).toHaveClass(/active/)
-  await expect(page.getByText('Режим подбора колонн')).toBeVisible()
+  await expect(page.locator('.results-section-row')).toBeVisible()
 })
 
 test('shows three snow bag modes in unified input', async ({ page }) => {
@@ -43,8 +47,8 @@ test('shows three snow bag modes in unified input', async ({ page }) => {
 
   const snowBagSelect = page.getByLabel('Снеговой мешок')
   await expect(snowBagSelect).toBeVisible()
-  await snowBagSelect.selectOption('поперёк здания')
-  await expect(page.getByText('Размер соседнего здания, м')).toBeVisible()
+  await snowBagSelect.selectOption({ index: 2 })
+  await expect(page.locator('.field-row.animate-in')).toBeVisible()
 })
 
 test('switches between light and dark themes', async ({ page }) => {

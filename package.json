@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "generate:purlin-ref": "python scripts/extract_purlin_reference.py",
     "generate:column-ref": "python scripts/extract_column_reference.py",
+    "generate:truss-ref": "python scripts/extract_truss_reference.py",
     "generate:acceptance-excel": "python scripts/generate_engineering_acceptance_excel_snapshot.py",
     "generate:acceptance-cases": "tsx --tsconfig tsconfig.app.json scripts/generate_engineering_acceptance_cases.ts",
     "generate:acceptance-report": "tsx --tsconfig tsconfig.app.json scripts/generate_engineering_acceptance_auto_report.ts",

@@ -1,5 +1,7 @@
 import type { ColumnInput } from '@/domain/column/model/column-input'
 import type { PurlinInput } from '@/domain/purlin/model/purlin-input'
+import type { PurlinCalculationResult } from '@/domain/purlin/model/purlin-output'
+import type { TrussInput } from '@/domain/truss/model/truss-input'
 import { defaultUnifiedInput, type UnifiedInputState } from './unified-input'
 import { DEFAULT_NORMATIVE_MODE } from './unified-input-options'
 
@@ -73,5 +75,21 @@ export function mapToColumnInput(state: UnifiedInputState): ColumnInput {
     selectedProfileFachwerk: state.selectedProfileFachwerk,
     selectedProfileMiddle: state.selectedProfileMiddle,
     isManualMode: state.isManualMode,
+  }
+}
+
+export function mapToTrussInput(
+  state: UnifiedInputState,
+  purlinResult: PurlinCalculationResult,
+): TrussInput {
+  return {
+    spanM: state.spanM,
+    frameStepM: state.frameStepM,
+    roofSlopeDeg: state.roofSlopeDeg,
+    responsibilityLevel: state.responsibilityLevel,
+    designSnowKpa: purlinResult.loadSummary.designSnowKpa,
+    windRoofKpa: purlinResult.loadSummary.windRoofKpa,
+    coveringKpa: purlinResult.loadSummary.coveringKpa,
+    purlinBracingStepMm: 0,
   }
 }
