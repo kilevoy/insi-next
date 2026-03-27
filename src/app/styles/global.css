@@ -1480,13 +1480,17 @@ textarea {
 .truss-settings-block {
   display: grid;
   gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--section-border);
+  border-radius: 6px;
+  background: var(--section-bg);
 }
 
 .truss-settings-subtitle {
   margin: 0;
   color: #3a4653;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -1501,7 +1505,7 @@ textarea {
 .truss-settings-code {
   color: #596470;
   font-size: 0.73rem;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.35;
 }
 
@@ -1514,7 +1518,7 @@ textarea {
   background: var(--input-bg);
   color: var(--ink);
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: 400;
   text-align: right;
   outline: none;
 }
