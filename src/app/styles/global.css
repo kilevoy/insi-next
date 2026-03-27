@@ -1236,6 +1236,45 @@ textarea {
   line-height: 1.6;
 }
 
+.truss-methodology {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--tile-bg) 92%, var(--panel-bg) 8%);
+}
+
+.truss-methodology > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-strong);
+}
+
+.truss-methodology > summary::-webkit-details-marker {
+  display: none;
+}
+
+.truss-methodology[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.truss-methodology-content {
+  padding: 10px 12px 12px;
+}
+
+.truss-methodology-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--soft-ink);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .selection-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
