@@ -522,7 +522,13 @@ function buildClassSpecification(params: {
   const wallWorkingWidthM = params.selectedWallWorkingWidthMm / 1000
   const perimeterM = 2 * (params.input.spanM + params.input.buildingLengthM)
   const wallRowsCount = Math.max(1, Math.ceil(params.input.buildingHeightM / wallWorkingWidthM))
-  const wallJointLengthM = perimeterM * Math.max(0, wallRowsCount - 1)
+  const wallHorizontalLockJointLengthM = perimeterM * Math.max(0, wallRowsCount - 1)
+  const wallPanelLengthM = Math.max(params.input.frameStepM, 0.1)
+  const longWallPanelsPerRow = Math.max(1, Math.ceil(params.input.buildingLengthM / wallPanelLengthM))
+  const shortWallPanelsPerRow = Math.max(1, Math.ceil(params.input.spanM / wallPanelLengthM))
+  const wallVerticalJointLinesCount =
+    2 * Math.max(0, longWallPanelsPerRow - 1) + 2 * Math.max(0, shortWallPanelsPerRow - 1)
+  const wallVerticalStitchJointLengthM = wallVerticalJointLinesCount * params.input.buildingHeightM
   const wallPanelsCount = calcPanelsCount(params.wallAreaNetM2, params.input.frameStepM, wallWorkingWidthM)
 
   const wallAccessories = [
@@ -538,7 +544,7 @@ function buildClassSpecification(params: {
       `${params.classKey}-walls-joint-cover`,
       'walls',
       'Нащельник стыка ФИ11 (узел 1.2.3, АТР ТСП)',
-      wallJointLengthM,
+      wallVerticalStitchJointLengthM,
       WALL_JOINT_COVER_FI11_DEV_WIDTH_M,
       params.derivedAccessoryPriceRubPerM2,
     ),
@@ -565,7 +571,7 @@ function buildClassSpecification(params: {
       `${params.classKey}-walls-lock-gasket`,
       'walls',
       'Уплотнитель замкового соединения ТСП (8 мм x 30 м)',
-      wallJointLengthM,
+      wallHorizontalLockJointLengthM,
       LOCK_GASKET_PACK_LENGTH_M,
       params.pricing.lockGasketPackPriceRub,
     ),
@@ -791,6 +797,7 @@ export function calculateEnclosing(rawInput: EnclosingInputRaw): EnclosingCalcul
     'Доборные элементы в спецификации учитываются в м2 по формуле ТСП.',
     'Уплотнители добавляются из прайс-листа №12.5 (замковый и профильные для кровли).',
     'В стеновые доборы включены нащельники стыков, наружные углы и отлив цоколя (без учета проемов).',
+    'Нащельник стыка ФИ11 (узел 1.2.3) считается по вертикальным стыкам между панелями в каждом горизонтальном ряду.',
     'Длины саморезов для МП ТСП-Z и МП ТСП-К подбираются строго по рекомендациям АТР.',
     'Крепеж стеновых панелей: 3 шт на панель по ряду (Техкаталог ТСП, п.7.7.3).',
     'Крепеж доборных элементов: шаг 300 мм (узлы АТР ТСП), эквивалентно ceil(L/0.3).',
