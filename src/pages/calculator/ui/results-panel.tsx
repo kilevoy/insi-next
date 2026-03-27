@@ -1485,7 +1485,9 @@ export function ResultsPanel({
   priceImportStatus,
 }: ResultsPanelProps) {
   const activeErrors =
-    activeTab === 'summary' || activeTab === 'enclosing' || activeTab === 'methodology'
+    activeTab === 'truss'
+      ? []
+      : activeTab === 'summary' || activeTab === 'enclosing' || activeTab === 'methodology'
       ? [
           { scope: 'Прогоны', message: purlinError },
           { scope: 'Колонны', message: columnError },
@@ -1569,6 +1571,13 @@ export function ResultsPanel({
         )
       ) : activeTab === 'methodology' ? (
         <MethodologyPanel input={input} purlinResult={purlinResult} columnResult={columnResult} />
+      ) : activeTab === 'truss' ? (
+        <div className="tab-pane animate-in">
+          <div className="results-section">
+            <h3 className="results-section-title">Фермы</h3>
+            <p className="results-inline-note">Раздел в разработке.</p>
+          </div>
+        </div>
       ) : activeTab === 'purlin' ? (
         <div className="tab-pane animate-in">
           <div className="results-section">

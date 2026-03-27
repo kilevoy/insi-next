@@ -245,6 +245,13 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
               Колонны
             </button>
             <button
+              className={`tab ${activeTab === 'truss' ? 'active' : ''}`}
+              data-testid="tab-truss"
+              onClick={() => setActiveTab('truss')}
+            >
+              Фермы
+            </button>
+            <button
               className={`tab ${activeTab === 'purlin' ? 'active' : ''}`}
               data-testid="tab-purlin"
               onClick={() => setActiveTab('purlin')}
