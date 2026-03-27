@@ -1465,6 +1465,65 @@ textarea {
   font-size: 0.82rem;
 }
 
+.truss-settings-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.truss-settings-block {
+  border: 1px solid #cfd7df;
+  border-radius: 4px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.truss-settings-subtitle {
+  margin: 0;
+  padding: 6px 8px;
+  border-bottom: 1px solid #cfd7df;
+  background: #eceff3;
+  color: #2b3640;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.truss-settings-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px;
+}
+
+.truss-settings-row + .truss-settings-row {
+  border-top: 1px solid #cfd7df;
+}
+
+.truss-settings-code {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-right: 1px solid #cfd7df;
+  background: #eceff3;
+  color: #2b3640;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.truss-settings-input {
+  width: 100%;
+  min-height: 30px;
+  border: 0;
+  padding: 6px 8px;
+  background: #fff200;
+  color: #232a32;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: right;
+  outline: none;
+}
+
+.truss-settings-input:focus {
+  box-shadow: inset 0 0 0 1px #8b949e;
+}
+
 .results-section {
   margin-bottom: 12px;
   padding-bottom: 12px;

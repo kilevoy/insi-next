@@ -55,6 +55,37 @@ function NumberField({
   )
 }
 
+function TrussSettingRow({
+  code,
+  label,
+  value,
+  onValue,
+  step = '1',
+  min = 0,
+}: {
+  code: string
+  label: string
+  value: number
+  onValue: (value: number) => void
+  step?: string
+  min?: number
+}) {
+  return (
+    <div className="truss-settings-row">
+      <span className="truss-settings-code">{code}</span>
+      <input
+        className="truss-settings-input"
+        type="number"
+        value={value}
+        step={step}
+        min={min}
+        aria-label={label}
+        onChange={(event) => onValue(Number(event.target.value))}
+      />
+    </div>
+  )
+}
+
 export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
   const roofCoveringNormalized = input.roofCoveringType.toLowerCase()
   const wallCoveringNormalized = input.wallCoveringType.toLowerCase()
@@ -369,6 +400,84 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
             min={0.01}
             max={1}
           />
+        </div>
+      </section>
+
+      <section className="form-section">
+        <h3 className="form-section-title">Настройка ферм</h3>
+
+        <div className="truss-settings-grid">
+          <div className="truss-settings-block">
+            <p className="truss-settings-subtitle">Минимальная толщина</p>
+            <TrussSettingRow
+              code="ВП"
+              label="Минимальная толщина ВП, мм"
+              value={input.trussMinThicknessVpMm}
+              onValue={(value) => onChange('trussMinThicknessVpMm', value)}
+            />
+            <TrussSettingRow
+              code="НП"
+              label="Минимальная толщина НП, мм"
+              value={input.trussMinThicknessNpMm}
+              onValue={(value) => onChange('trussMinThicknessNpMm', value)}
+            />
+            <TrussSettingRow
+              code="ОРб"
+              label="Минимальная толщина ОРб, мм"
+              value={input.trussMinThicknessOrbMm}
+              onValue={(value) => onChange('trussMinThicknessOrbMm', value)}
+            />
+            <TrussSettingRow
+              code="ОР"
+              label="Минимальная толщина ОР, мм"
+              value={input.trussMinThicknessOrMm}
+              onValue={(value) => onChange('trussMinThicknessOrMm', value)}
+            />
+            <TrussSettingRow
+              code="РР"
+              label="Минимальная толщина РР, мм"
+              value={input.trussMinThicknessRrMm}
+              onValue={(value) => onChange('trussMinThicknessRrMm', value)}
+            />
+          </div>
+
+          <div className="truss-settings-block">
+            <p className="truss-settings-subtitle">Максимальная ширина</p>
+            <TrussSettingRow
+              code="ВП"
+              label="Максимальная ширина ВП, мм"
+              value={input.trussMaxWidthVpMm}
+              onValue={(value) => onChange('trussMaxWidthVpMm', value)}
+            />
+            <TrussSettingRow
+              code="НП"
+              label="Максимальная ширина НП, мм"
+              value={input.trussMaxWidthNpMm}
+              onValue={(value) => onChange('trussMaxWidthNpMm', value)}
+            />
+          </div>
+
+          <div className="truss-settings-block">
+            <p className="truss-settings-subtitle">Минимальная ширина</p>
+            <TrussSettingRow
+              code="ОРб"
+              label="Минимальная ширина ОРб, мм"
+              value={input.trussMinWidthOrbMm}
+              onValue={(value) => onChange('trussMinWidthOrbMm', value)}
+            />
+            <TrussSettingRow
+              code="ОР"
+              label="Минимальная ширина ОР, мм"
+              value={input.trussMinWidthOrMm}
+              onValue={(value) => onChange('trussMinWidthOrMm', value)}
+            />
+            <TrussSettingRow
+              code="РР"
+              label="Минимальная ширина РР, мм"
+              value={input.trussMinWidthRrMm}
+              onValue={(value) => onChange('trussMinWidthRrMm', value)}
+            />
+          </div>
         </div>
       </section>
 

@@ -50,6 +50,16 @@ export interface UnifiedInputState {
   braceSpacingM: number
   snowRetentionPurlin: (typeof PRESENCE_OPTIONS)[number]
   barrierPurlin: (typeof PRESENCE_OPTIONS)[number]
+  trussMinThicknessVpMm: number
+  trussMinThicknessNpMm: number
+  trussMinThicknessOrbMm: number
+  trussMinThicknessOrMm: number
+  trussMinThicknessRrMm: number
+  trussMaxWidthVpMm: number
+  trussMaxWidthNpMm: number
+  trussMinWidthOrbMm: number
+  trussMinWidthOrMm: number
+  trussMinWidthRrMm: number
 
   columnType: ColumnType
   columnSelectionMode: (typeof COLUMN_SELECTION_MODE_OPTIONS)[number]
@@ -254,6 +264,11 @@ function normalizeBoundedInteger(value: unknown, fallback: number): number {
   return Number.isFinite(numeric) ? Math.max(0, Math.trunc(numeric)) : fallback
 }
 
+function normalizeNonNegativeNumber(value: unknown, fallback: number): number {
+  const numeric = Number(value)
+  return Number.isFinite(numeric) && numeric >= 0 ? numeric : fallback
+}
+
 export const defaultUnifiedInput: UnifiedInputState = {
   city: DEFAULT_UNIFIED_CITY,
   responsibilityLevel: '1',
@@ -283,6 +298,16 @@ export const defaultUnifiedInput: UnifiedInputState = {
   braceSpacingM: 3,
   snowRetentionPurlin: 'нет',
   barrierPurlin: 'нет',
+  trussMinThicknessVpMm: 4,
+  trussMinThicknessNpMm: 4,
+  trussMinThicknessOrbMm: 4,
+  trussMinThicknessOrMm: 4,
+  trussMinThicknessRrMm: 3,
+  trussMaxWidthVpMm: 500,
+  trussMaxWidthNpMm: 500,
+  trussMinWidthOrbMm: 80,
+  trussMinWidthOrMm: 80,
+  trussMinWidthRrMm: 60,
 
   columnType: COLUMN_TYPE_OPTIONS[0],
   columnSelectionMode: 'engineering',
@@ -344,6 +369,46 @@ export function normalizeLoadedInput(raw: unknown): UnifiedInputState {
       : defaultUnifiedInput.braceSpacingM,
     snowRetentionPurlin: normalizePresenceMode(parsed.snowRetentionPurlin),
     barrierPurlin: normalizePresenceMode(parsed.barrierPurlin),
+    trussMinThicknessVpMm: normalizeNonNegativeNumber(
+      parsed.trussMinThicknessVpMm,
+      defaultUnifiedInput.trussMinThicknessVpMm,
+    ),
+    trussMinThicknessNpMm: normalizeNonNegativeNumber(
+      parsed.trussMinThicknessNpMm,
+      defaultUnifiedInput.trussMinThicknessNpMm,
+    ),
+    trussMinThicknessOrbMm: normalizeNonNegativeNumber(
+      parsed.trussMinThicknessOrbMm,
+      defaultUnifiedInput.trussMinThicknessOrbMm,
+    ),
+    trussMinThicknessOrMm: normalizeNonNegativeNumber(
+      parsed.trussMinThicknessOrMm,
+      defaultUnifiedInput.trussMinThicknessOrMm,
+    ),
+    trussMinThicknessRrMm: normalizeNonNegativeNumber(
+      parsed.trussMinThicknessRrMm,
+      defaultUnifiedInput.trussMinThicknessRrMm,
+    ),
+    trussMaxWidthVpMm: normalizeNonNegativeNumber(
+      parsed.trussMaxWidthVpMm,
+      defaultUnifiedInput.trussMaxWidthVpMm,
+    ),
+    trussMaxWidthNpMm: normalizeNonNegativeNumber(
+      parsed.trussMaxWidthNpMm,
+      defaultUnifiedInput.trussMaxWidthNpMm,
+    ),
+    trussMinWidthOrbMm: normalizeNonNegativeNumber(
+      parsed.trussMinWidthOrbMm,
+      defaultUnifiedInput.trussMinWidthOrbMm,
+    ),
+    trussMinWidthOrMm: normalizeNonNegativeNumber(
+      parsed.trussMinWidthOrMm,
+      defaultUnifiedInput.trussMinWidthOrMm,
+    ),
+    trussMinWidthRrMm: normalizeNonNegativeNumber(
+      parsed.trussMinWidthRrMm,
+      defaultUnifiedInput.trussMinWidthRrMm,
+    ),
     columnType: normalizeColumnType(parsed.columnType),
     columnSelectionMode: defaultUnifiedInput.columnSelectionMode,
     purlinSpecificationSource: normalizePurlinSpecificationSource(parsed.purlinSpecificationSource),

@@ -383,8 +383,8 @@ function resolveVpGroup(
       excelLte(governing.value, trussLimitsAndConstants.maxUtilization.vp) &&
       !profile.vpExcluded &&
       excelLte(maxSlenderness, 120) &&
-      excelGte(profile.tMm, trussLimitsAndConstants.minThicknessMm.vp) &&
-      excelLte(profile.bMm, trussLimitsAndConstants.maxWidthMm.vp)
+      excelGte(profile.tMm, input.limits.minThicknessMm.vp) &&
+      excelLte(profile.bMm, input.limits.maxWidthMm.vp)
 
     if (!passes) {
       continue
@@ -431,8 +431,8 @@ function resolveNpGroup(input: TrussInput, efforts: TrussEffortSummary, vpLeffY:
       excelLte(checkStrength5, trussLimitsAndConstants.maxUtilization.np) &&
       !profile.npExcluded &&
       excelLte(vpSlendernessMax, 400) &&
-      excelGte(profile.tMm, trussLimitsAndConstants.minThicknessMm.np) &&
-      excelLte(profile.bMm, trussLimitsAndConstants.maxWidthMm.np)
+      excelGte(profile.tMm, input.limits.minThicknessMm.np) &&
+      excelLte(profile.bMm, input.limits.maxWidthMm.np)
 
     if (!passes) {
       continue
@@ -542,6 +542,7 @@ function calculateSnapshot(allGroupsResolved: boolean): CalculationSnapshot {
 export function calculateTruss(input: TrussInput): TrussCalculationResult {
   const validated = trussInputSchema.parse(input)
   const { loadSummary, efforts } = calculateEfforts(validated)
+  const limits = validated.limits
 
   const vpLeffY = validated.purlinBracingStepMm > 0 ? validated.purlinBracingStepMm / 1000 : 3
   const vp = resolveVpGroup(validated, efforts, vpLeffY)
@@ -559,9 +560,9 @@ export function calculateTruss(input: TrussInput): TrussCalculationResult {
     1.9,
     vpLeffY,
     120,
-    trussLimitsAndConstants.minWidthMm.orb,
+    limits.minWidthMm.orb,
     chordMaxWidth,
-    trussLimitsAndConstants.minThicknessMm.orb,
+    limits.minThicknessMm.orb,
     trussLimitsAndConstants.maxUtilization.orb,
     1.9 * 4,
     'orbExcluded',
@@ -574,9 +575,9 @@ export function calculateTruss(input: TrussInput): TrussCalculationResult {
     2,
     vpLeffY,
     150,
-    trussLimitsAndConstants.minWidthMm.or,
+    limits.minWidthMm.or,
     chordMaxWidth,
-    trussLimitsAndConstants.minThicknessMm.or,
+    limits.minThicknessMm.or,
     trussLimitsAndConstants.maxUtilization.or,
     2 * 4,
     'orExcluded',
@@ -589,9 +590,9 @@ export function calculateTruss(input: TrussInput): TrussCalculationResult {
     2.5,
     vpLeffY,
     150,
-    trussLimitsAndConstants.minWidthMm.rr,
+    limits.minWidthMm.rr,
     chordMaxWidth,
-    trussLimitsAndConstants.minThicknessMm.rr,
+    limits.minThicknessMm.rr,
     trussLimitsAndConstants.maxUtilization.rr,
     2.3 * resolvePanelCountForRr(loadSummary.spanUpperM),
     'rrExcluded',

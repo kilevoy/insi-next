@@ -91,5 +91,23 @@ export function mapToTrussInput(
     windRoofKpa: purlinResult.loadSummary.windRoofKpa,
     coveringKpa: purlinResult.loadSummary.coveringKpa,
     purlinBracingStepMm: 0,
+    limits: {
+      minThicknessMm: {
+        vp: state.trussMinThicknessVpMm,
+        np: state.trussMinThicknessNpMm,
+        orb: state.trussMinThicknessOrbMm,
+        or: state.trussMinThicknessOrMm,
+        rr: state.trussMinThicknessRrMm,
+      },
+      maxWidthMm: {
+        vp: state.trussMaxWidthVpMm,
+        np: state.trussMaxWidthNpMm,
+      },
+      minWidthMm: {
+        orb: state.trussMinWidthOrbMm,
+        or: state.trussMinWidthOrMm,
+        rr: state.trussMinWidthRrMm,
+      },
+    },
   }
 }
