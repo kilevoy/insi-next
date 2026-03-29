@@ -43,6 +43,7 @@ interface SortSteelStepEvaluation {
   criterion: string
   buildingMassKg: number
   estimatedCostRub: number
+  priceTonRub: number
 }
 
 interface SortSteelRankedCandidate {
@@ -275,6 +276,7 @@ function evaluateCandidateAtStep(
       criterion: controllingResult.criterion,
       buildingMassKg: 0,
       estimatedCostRub: 0,
+      priceTonRub: 0,
     }
   }
 
@@ -294,6 +296,7 @@ function evaluateCandidateAtStep(
     criterion: controllingResult.criterion,
     buildingMassKg,
     estimatedCostRub,
+    priceTonRub: profilePriceRubPerKg * 1000,
   }
 }
 
@@ -310,6 +313,7 @@ function buildCandidateResult(
     utilization: evaluation.utilization,
     unitMassKg: candidate.unitMassKgPerM,
     totalMassKg: evaluation.buildingMassKg,
+    priceTonRub: evaluation.priceTonRub,
     estimatedCostRub: evaluation.estimatedCostRub,
     objectiveValue: evaluation.objectiveValue,
     excelMetrics: {

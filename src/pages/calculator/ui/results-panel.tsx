@@ -11,6 +11,7 @@ import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing
 import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclosing-mapper'
 import type { UnifiedInputState } from '../model/unified-input'
 import { MethodologyPanel } from './methodology-panel'
+import { SelectionSummaryPage } from './selection-summary-page'
 
 interface PriceImportStatus {
   isLoading: boolean
@@ -1745,7 +1746,10 @@ export function ResultsPanel({
       ? trussError
         ? [{ scope: 'Фермы', message: trussError }]
         : []
-      : activeTab === 'summary' || activeTab === 'enclosing' || activeTab === 'methodology'
+      : activeTab === 'summary' ||
+          activeTab === 'selection-summary' ||
+          activeTab === 'enclosing' ||
+          activeTab === 'methodology'
       ? [
           { scope: 'Прогоны', message: purlinError },
           { scope: 'Фермы', message: trussError },
@@ -1783,7 +1787,18 @@ export function ResultsPanel({
         </div>
       )}
 
-      {activeTab === 'summary' ? (
+      {activeTab === 'selection-summary' ? (
+        <SelectionSummaryPage
+          input={input}
+          purlinResult={purlinResult}
+          trussResult={trussResult}
+          columnResult={columnResult}
+          purlinSpecificationSource={purlinSpecificationSource}
+          purlinSelectionMode={purlinSelectionMode}
+          selectedSortPurlinIndex={selectedSortPurlinIndex}
+          selectedLstkPurlinIndex={selectedLstkPurlinIndex}
+        />
+      ) : activeTab === 'summary' ? (
         <div className="tab-pane animate-in">
           {renderGeneralSpecificationOverview(
             input,
