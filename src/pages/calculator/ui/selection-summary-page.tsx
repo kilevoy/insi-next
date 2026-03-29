@@ -1,6 +1,9 @@
 import type { CandidateResult } from '@/domain/common/model/candidate-result'
 import type { ColumnCalculationResult } from '@/domain/column/model/calculate-column'
 import type { ColumnGroupSpecification } from '@/domain/column/model/column-output'
+import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing'
+import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclosing-mapper'
+import type { EnclosingClassKey } from '@/domain/enclosing/model/enclosing-reference.generated'
 import type { PurlinCalculationResult } from '@/domain/purlin/model/calculate-purlin'
 import type { TrussCalculationResult } from '@/domain/truss/model/calculate-truss'
 import type { UnifiedInputState } from '../model/unified-input'
@@ -10,11 +13,33 @@ interface SelectionSummaryPageProps {
   purlinResult: PurlinCalculationResult | null
   trussResult: TrussCalculationResult | null
   columnResult: ColumnCalculationResult | null
+  selectedEnclosingClassKey: EnclosingClassKey
   purlinSpecificationSource: UnifiedInputState['purlinSpecificationSource']
   purlinSelectionMode: UnifiedInputState['purlinSelectionMode']
   selectedSortPurlinIndex: number
   selectedLstkPurlinIndex: number
 }
+
+const WIND_REGION_BY_KPA = new Map<number, string>([
+  [0.23, 'I'],
+  [0.3, 'II'],
+  [0.38, 'III'],
+  [0.48, 'IV'],
+  [0.6, 'V'],
+  [0.73, 'VI'],
+  [0.85, 'VII'],
+])
+
+const SNOW_REGION_LIMITS: ReadonlyArray<{ maxKpa: number; label: string }> = [
+  { maxKpa: 0.5, label: 'I' },
+  { maxKpa: 1.0, label: 'II' },
+  { maxKpa: 1.5, label: 'III' },
+  { maxKpa: 2.0, label: 'IV' },
+  { maxKpa: 2.5, label: 'V' },
+  { maxKpa: 3.0, label: 'VI' },
+  { maxKpa: 3.5, label: 'VII' },
+  { maxKpa: 4.0, label: 'VIII' },
+]
 
 function formatNumber(value: number, fractionDigits = 2): string {
   return value.toLocaleString('ru-RU', {
@@ -25,6 +50,46 @@ function formatNumber(value: number, fractionDigits = 2): string {
 
 function formatRub(value: number): string {
   return Math.round(value).toLocaleString('ru-RU')
+}
+
+function resolveSpansSummaryLabel(spansCount: UnifiedInputState['spansCount']): string {
+  return spansCount === 'один' ? 'пролет один' : 'пролетов несколько'
+}
+
+function resolveCraneSummaryLabel(input: UnifiedInputState): string {
+  const hasSupportCrane = input.supportCraneMode === 'есть'
+  const hasHangingCrane = input.hangingCraneMode === 'есть'
+
+  if (!hasSupportCrane && !hasHangingCrane) {
+    return 'кранов нет'
+  }
+
+  return 'краны есть'
+}
+
+function resolveCoveringSummaryLabel(label: string): string {
+  return label.trim().toLowerCase()
+}
+
+function resolveWindRegionLabel(windLoadKpa: number | undefined): string {
+  if (windLoadKpa === undefined) {
+    return '-'
+  }
+
+  const exactMatch = [...WIND_REGION_BY_KPA.entries()].find(
+    ([kpa]) => Math.abs(kpa - windLoadKpa) < 0.001,
+  )
+
+  return exactMatch?.[1] ?? 'по таблице города'
+}
+
+function resolveSnowRegionLabel(snowLoadKpa: number | undefined): string {
+  if (snowLoadKpa === undefined) {
+    return '-'
+  }
+
+  const band = SNOW_REGION_LIMITS.find((item) => snowLoadKpa <= item.maxKpa + 0.001)
+  return band?.label ?? 'по таблице города'
 }
 
 function resolveCandidateCostRub(candidate: CandidateResult): number | null {
@@ -271,12 +336,21 @@ function resolveColumnGroupTotalLengthM(group: ColumnGroupSpecification): number
   return group.rows.reduce((sum, row) => sum + row.lengthM * row.branchesCount, 0)
 }
 
-function resolveTrussCount(buildingLengthM: number, frameStepM: number): number {
+function resolveTrussCount(
+  columnResult: ColumnCalculationResult | null,
+  buildingLengthM: number,
+  frameStepM: number,
+): number {
+  const extremeGroup = columnResult?.specification.groups.find((group) => group.key === 'extreme')
+  if (extremeGroup && extremeGroup.columnsCount > 0) {
+    return Math.max(1, Math.round(extremeGroup.columnsCount / 2))
+  }
+
   if (frameStepM <= 0 || buildingLengthM <= 0) {
     return 0
   }
 
-  return Math.max(1, Math.floor(buildingLengthM / frameStepM) + 1)
+  return Math.max(1, Math.floor(buildingLengthM / frameStepM))
 }
 
 function resolveColumnHeightDisplay(group: ColumnGroupSpecification): string {
@@ -374,11 +448,30 @@ function resolveTrussTubeDescription(profile: string): string {
   return `${typeLabel} ${resolveTrussTubeSize(profile)}`
 }
 
+function isSandwichPanelCovering(covering: string): boolean {
+  const normalized = covering.trim().toLowerCase()
+  return (
+    normalized.includes('с-п') ||
+    normalized.includes('с п') ||
+    normalized.includes('сэндвич') ||
+    normalized.includes('sandwich')
+  )
+}
+
+function resolveFrameCount(buildingLengthM: number, frameStepM: number): number {
+  if (frameStepM <= 0 || buildingLengthM <= 0) {
+    return 0
+  }
+
+  return Math.max(1, Math.floor(buildingLengthM / frameStepM) + 1)
+}
+
 export function SelectionSummaryPage({
   input,
   purlinResult,
   trussResult,
   columnResult,
+  selectedEnclosingClassKey,
   purlinSpecificationSource,
   purlinSelectionMode,
   selectedSortPurlinIndex,
@@ -399,6 +492,8 @@ export function SelectionSummaryPage({
   const selectedPriceTonRub = selectedCandidate ? resolveCandidatePriceTonRub(selectedCandidate) : null
   const standardLabel = selectedCandidate ? resolveStandardLabel(selectedCandidate) : '-'
   const designationLabel = selectedCandidate ? resolveDesignation(selectedCandidate, standardLabel) : '-'
+  const snowRegionLabel = resolveSnowRegionLabel(purlinResult?.loadSummary.snowRegionKpa)
+  const windRegionLabel = resolveWindRegionLabel(purlinResult?.loadSummary.windRegionKpa)
   const columnGroups =
     columnResult?.specification.groups.filter(
       (group) => group.columnsCount > 0 && group.selectedCandidate !== null,
@@ -408,7 +503,26 @@ export function SelectionSummaryPage({
     0,
   )
   const columnTotalCount = columnGroups.reduce((sum, group) => sum + group.columnsCount, 0)
-  const trussCount = trussResult ? resolveTrussCount(input.buildingLengthM, trussResult.loadSummary.frameStepM) : 0
+  const roofPurlinStepM =
+    selectedCandidate?.stepMm && selectedCandidate.stepMm > 0 ? selectedCandidate.stepMm / 1000 : 1.5
+  const enclosingInput = mapUnifiedInputToEnclosingInput({
+    ...input,
+    roofPurlinStepM,
+  })
+  const enclosingResult = calculateEnclosing(enclosingInput)
+  const enclosingClass = enclosingResult.classes[selectedEnclosingClassKey]
+  const includeWalls = isSandwichPanelCovering(input.wallCoveringType)
+  const includeRoof = isSandwichPanelCovering(input.roofCoveringType)
+  const enclosingWallsRub = includeWalls ? enclosingClass.walls.totals.sectionRub : 0
+  const enclosingRoofRub = includeRoof ? enclosingClass.roof.totals.sectionRub : 0
+  const enclosingWallsMassKg = includeWalls ? enclosingClass.walls.totals.panelMassKg : 0
+  const enclosingRoofMassKg = includeRoof ? enclosingClass.roof.totals.panelMassKg : 0
+  const enclosingTotalRub = enclosingWallsRub + enclosingRoofRub
+  const enclosingTotalMassKg = enclosingWallsMassKg + enclosingRoofMassKg
+  const trussCount = trussResult
+    ? resolveTrussCount(columnResult, input.buildingLengthM, trussResult.loadSummary.frameStepM)
+    : 0
+  const frameCount = resolveFrameCount(input.buildingLengthM, input.frameStepM)
   const trussUnitCostRub =
     trussResult?.totalMassKg == null ? null : trussResult.totalMassKg * input.tubeS345PriceRubPerKg
   const trussTotalMassKg = trussResult?.totalMassKg == null ? null : trussResult.totalMassKg * trussCount
@@ -421,10 +535,141 @@ export function SelectionSummaryPage({
     .filter((group) => group.status === 'ok' && group.profile)
     .map((group) => resolveTrussTubeDesignation(group.profile as string, group.thicknessMm))
   const trussDesignationLabel = [...new Set(trussDesignationEntries)].join('\n')
+  const projectTotalMassKg =
+    (columnResult?.specification.totalMassKg ?? 0) +
+    (selectedCandidate?.totalMassKg ?? 0) +
+    (trussTotalMassKg ?? 0) +
+    enclosingTotalMassKg
+  const projectTotalCostRub =
+    (columnResult?.specification.totalCostRub ?? 0) +
+    (selectedCostRub ?? 0) +
+    (trussTotalCostRub ?? 0) +
+    enclosingTotalRub
+  const projectBreakdownItems = [
+    {
+      label: 'Колонны',
+      massKg: columnResult?.specification.totalMassKg ?? 0,
+      costRub: columnResult?.specification.totalCostRub ?? 0,
+    },
+    {
+      label: 'Фермы',
+      massKg: trussTotalMassKg ?? 0,
+      costRub: trussTotalCostRub ?? 0,
+    },
+    {
+      label: 'Прогоны',
+      massKg: selectedCandidate?.totalMassKg ?? 0,
+      costRub: selectedCostRub ?? 0,
+    },
+    {
+      label: 'Ограждающие',
+      massKg: enclosingTotalMassKg,
+      costRub: enclosingTotalRub,
+    },
+  ]
+  const projectStatItems = [
+    { label: 'Рам', value: `${formatNumber(frameCount, 0)} шт.` },
+    { label: 'Ферм', value: `${formatNumber(trussCount, 0)} шт.` },
+    { label: 'Колонн', value: `${formatNumber(columnTotalCount, 0)} шт.` },
+    { label: 'Площадь кровли', value: `${formatNumber(enclosingResult.geometry.roofAreaM2, 1)} м²` },
+    { label: 'Площадь стен', value: `${formatNumber(enclosingResult.geometry.wallAreaNetM2, 1)} м²` },
+    { label: 'Масса ограждающих', value: `${formatNumber(enclosingTotalMassKg, 1)} кг` },
+  ]
+  const summaryPassportItems = [
+    input.city || 'Город не выбран',
+    `снеговой район ${snowRegionLabel}`,
+    `ветровой район ${windRegionLabel}`,
+    `${formatNumber(input.spanM, 0)}х${formatNumber(input.buildingLengthM, 0)}х${formatNumber(input.buildingHeightM, 0)}`,
+    resolveSpansSummaryLabel(input.spansCount),
+    `шаг рам ${formatNumber(input.frameStepM, 1)} м`,
+    `кровля ${input.roofType.toLowerCase()}`,
+    `уклон ${formatNumber(input.roofSlopeDeg, 1)}°`,
+    resolveCraneSummaryLabel(input),
+    `кровля ${resolveCoveringSummaryLabel(input.roofCoveringType)}`,
+    `стены ${resolveCoveringSummaryLabel(input.wallCoveringType)}`,
+  ]
 
   return (
     <div className="tab-pane animate-in" data-testid="selection-summary-page">
       <div className="selection-summary-layout">
+        <section className="selection-summary-sheet-head">
+          <div className="selection-summary-sheet-head__content">
+            <div>
+              <h2 className="selection-summary-sheet-title">Итог подбора</h2>
+              <p className="selection-summary-sheet-note">
+                Сводная спецификация по основным конструкциям с ориентировочной массой и стоимостью проекта.
+              </p>
+            </div>
+
+            <button className="results-print-action" onClick={() => window.print()}>
+              Печать / PDF
+            </button>
+          </div>
+
+          <div className="selection-summary-passport" aria-label="Краткое описание объекта">
+            {summaryPassportItems.map((item) => (
+              <span className="selection-summary-passport__item" key={item}>
+                {item}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        <section className="selection-summary-overview">
+          <div className="selection-summary-overview__hero">
+            <div className="selection-summary-overview__eyebrow">Итоги по проекту</div>
+            <div className="selection-summary-overview__total">
+              {formatRub(projectTotalCostRub)} ₽
+            </div>
+            <div className="selection-summary-overview__lead">
+              Ориентировочная стоимость металлокаркаса и ограждающих по текущему подбору.
+            </div>
+
+            <div className="selection-summary-overview__metrics">
+              <div className="selection-summary-overview__metric">
+                <span>Общая масса</span>
+                <strong>{formatNumber(projectTotalMassKg, 1)} кг</strong>
+              </div>
+              <div className="selection-summary-overview__metric">
+                <span>Стоимость колонн</span>
+                <strong>{formatNumber(columnResult?.specification.totalCostRub ?? 0, 0)} ₽</strong>
+              </div>
+              <div className="selection-summary-overview__metric">
+                <span>Стоимость ферм</span>
+                <strong>{formatNumber(trussTotalCostRub ?? 0, 0)} ₽</strong>
+              </div>
+              <div className="selection-summary-overview__metric">
+                <span>Стоимость ограждающих</span>
+                <strong>{formatNumber(enclosingTotalRub, 0)} ₽</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="selection-summary-overview__aside">
+            <div className="selection-summary-overview__section-title">Состав стоимости</div>
+            <div className="selection-summary-overview__breakdown">
+              {projectBreakdownItems.map((item) => (
+                <div className="selection-summary-overview__breakdown-item" key={item.label}>
+                  <div>
+                    <span>{item.label}</span>
+                    <strong>{formatRub(item.costRub)} ₽</strong>
+                  </div>
+                  <small>{formatNumber(item.massKg, 1)} кг</small>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="selection-summary-overview__stats">
+            {projectStatItems.map((item) => (
+              <div className="selection-summary-overview__stat" key={item.label}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {columnGroups.length > 0 && (
           <section className="selection-summary-columns">
             <div className="selection-summary-page-title">Колонны</div>
@@ -478,7 +723,7 @@ export function SelectionSummaryPage({
                       </div>
 
                       <div className="selection-summary-card__section">
-                        <div className="selection-summary-card__section-title">Параметры колонны</div>
+                        <div className="selection-summary-card__section-title">Объем поставки</div>
 
                         <div className="selection-summary-card__row">
                           <span className="selection-summary-card__label">Высота</span>
@@ -550,6 +795,167 @@ export function SelectionSummaryPage({
           </section>
         )}
 
+        <section className="selection-summary-columns">
+          <div className="selection-summary-page-title">Ограждающие</div>
+
+          <div className="selection-summary-cards-grid">
+            <section className="selection-summary-card">
+              <div className="selection-summary-card__header selection-summary-card__header--edge">Стены</div>
+
+              <div className="selection-summary-card__body">
+                <div className="selection-summary-card__section">
+                  <div className="selection-summary-card__section-title">Параметры панели</div>
+
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Тип</span>
+                    <span className="selection-summary-card__value">
+                      {includeWalls ? 'Сэндвич-панель' : 'Не учитывается'}
+                    </span>
+                  </div>
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Марка</span>
+                    <span className="selection-summary-card__value selection-summary-card__value--highlight">
+                      {includeWalls && enclosingClass.walls.panelSpecification[0]
+                        ? enclosingClass.walls.panelSpecification[0].mark
+                        : '-'}
+                    </span>
+                  </div>
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Стандарт</span>
+                    <span className="selection-summary-card__value">
+                      {includeWalls && enclosingClass.walls.panelSpecification[0]
+                        ? enclosingClass.walls.panelSpecification[0].standard
+                        : '-'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="selection-summary-card__section">
+                  <div className="selection-summary-card__section-title">Объем поставки</div>
+
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Площадь нетто</span>
+                    <span className="selection-summary-card__value">
+                      {includeWalls ? `${formatNumber(enclosingResult.geometry.wallAreaNetM2, 1)} м²` : '-'}
+                    </span>
+                  </div>
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Количество панелей</span>
+                    <span className="selection-summary-card__value">
+                      {includeWalls
+                        ? `${formatNumber(
+                            enclosingClass.walls.panelSpecification.reduce((sum, row) => sum + row.panelsCount, 0),
+                            0,
+                          )} шт.`
+                        : '-'}
+                    </span>
+                  </div>
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Общая масса</span>
+                    <span className="selection-summary-card__value">
+                      {includeWalls ? `${formatNumber(enclosingWallsMassKg, 1)} кг` : '-'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="selection-summary-card__section selection-summary-card__section--last">
+                  <div className="selection-summary-card__section-title">Стоимость</div>
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Общая стоимость</span>
+                    <span className="selection-summary-card__value selection-summary-card__value--cost">
+                      {includeWalls ? `${formatRub(enclosingWallsRub)} ₽` : '-'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="selection-summary-card">
+              <div className="selection-summary-card__header selection-summary-card__header--fachwerk">Кровля</div>
+
+              <div className="selection-summary-card__body">
+                <div className="selection-summary-card__section">
+                  <div className="selection-summary-card__section-title">Параметры панели</div>
+
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Тип</span>
+                    <span className="selection-summary-card__value">
+                      {includeRoof ? 'Сэндвич-панель' : 'Не учитывается'}
+                    </span>
+                  </div>
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Марка</span>
+                    <span className="selection-summary-card__value selection-summary-card__value--highlight">
+                      {includeRoof && enclosingClass.roof.panelSpecification[0]
+                        ? enclosingClass.roof.panelSpecification[0].mark
+                        : '-'}
+                    </span>
+                  </div>
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Стандарт</span>
+                    <span className="selection-summary-card__value">
+                      {includeRoof && enclosingClass.roof.panelSpecification[0]
+                        ? enclosingClass.roof.panelSpecification[0].standard
+                        : '-'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="selection-summary-card__section">
+                  <div className="selection-summary-card__section-title">Объем поставки</div>
+
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Площадь кровли</span>
+                    <span className="selection-summary-card__value">
+                      {includeRoof ? `${formatNumber(enclosingResult.geometry.roofAreaM2, 1)} м²` : '-'}
+                    </span>
+                  </div>
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Количество панелей</span>
+                    <span className="selection-summary-card__value">
+                      {includeRoof
+                        ? `${formatNumber(
+                            enclosingClass.roof.panelSpecification.reduce((sum, row) => sum + row.panelsCount, 0),
+                            0,
+                          )} шт.`
+                        : '-'}
+                    </span>
+                  </div>
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Общая масса</span>
+                    <span className="selection-summary-card__value">
+                      {includeRoof ? `${formatNumber(enclosingRoofMassKg, 1)} кг` : '-'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="selection-summary-card__section selection-summary-card__section--last">
+                  <div className="selection-summary-card__section-title">Стоимость</div>
+                  <div className="selection-summary-card__row">
+                    <span className="selection-summary-card__label">Общая стоимость</span>
+                    <span className="selection-summary-card__value selection-summary-card__value--cost">
+                      {includeRoof ? `${formatRub(enclosingRoofRub)} ₽` : '-'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div className="selection-summary-total">
+            <div className="selection-summary-total__row">
+              <span className="selection-summary-total__label">Масса ограждающих</span>
+              <span className="selection-summary-total__value">{formatNumber(enclosingTotalMassKg, 1)} кг</span>
+            </div>
+            <div className="selection-summary-total__row">
+              <span className="selection-summary-total__label">Стоимость ограждающих</span>
+              <span className="selection-summary-total__value selection-summary-total__value--highlight">
+                {formatRub(enclosingTotalRub)} ₽
+              </span>
+            </div>
+          </div>
+        </section>
+
         <div className="selection-summary-bottom-grid">
           <section className="selection-summary-columns">
             <div className="selection-summary-page-title">Фермы</div>
@@ -613,7 +1019,7 @@ export function SelectionSummaryPage({
                     </div>
 
                     <div className="selection-summary-card__section">
-                      <div className="selection-summary-card__section-title">Спецификация</div>
+                      <div className="selection-summary-card__section-title">Объем поставки</div>
 
                       <div className="selection-summary-card__row">
                         <span className="selection-summary-card__label">Количество ферм</span>
@@ -717,7 +1123,7 @@ export function SelectionSummaryPage({
                     </div>
 
                     <div className="selection-summary-card__section">
-                      <div className="selection-summary-card__section-title">Параметры заказа</div>
+                      <div className="selection-summary-card__section-title">Объем поставки</div>
 
                       <div className="selection-summary-card__row">
                         <span className="selection-summary-card__label">Длина прогона</span>
@@ -766,6 +1172,7 @@ export function SelectionSummaryPage({
             </section>
           </section>
         </div>
+
       </div>
     </div>
   )

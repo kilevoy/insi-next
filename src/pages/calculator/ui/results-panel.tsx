@@ -7,11 +7,14 @@ import type { EnclosingClassKey } from '@/domain/enclosing/model/enclosing-refer
 import type { EnclosingSectionSpecification } from '@/domain/enclosing/model/enclosing-output'
 import type { PurlinCalculationResult } from '@/domain/purlin/model/calculate-purlin'
 import type { TrussCalculationResult } from '@/domain/truss/model/calculate-truss'
+import { resolveTrussGeometryTemplate } from '@/domain/truss/model/truss-geometry'
 import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing'
 import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclosing-mapper'
 import type { UnifiedInputState } from '../model/unified-input'
 import { MethodologyPanel } from './methodology-panel'
+import { PurlinTrussDiagram } from './purlin-truss-diagram'
 import { SelectionSummaryPage } from './selection-summary-page'
+import { TrussVisualDiagram } from './truss-visual-diagram'
 
 interface PriceImportStatus {
   isLoading: boolean
@@ -87,12 +90,142 @@ function formatRub(value: number): string {
   return `${Math.round(value).toLocaleString('ru-RU')}`
 }
 
-function resolveTrussCount(buildingLengthM: number, frameStepM: number): number {
+function formatCriterionLabel(criterion: string | null | undefined): string {
+  if (!criterion) {
+    return '-'
+  }
+
+  const normalized = criterion.toLowerCase()
+
+  if (normalized.includes('местн')) {
+    return 'местная устойчивость'
+  }
+
+  if (normalized.includes('эквив')) {
+    return 'эквивалентные напряжения'
+  }
+
+  if (normalized.includes('прогиб')) {
+    return 'прогиб'
+  }
+
+  if (normalized.includes('гибк')) {
+    return 'гибкость'
+  }
+
+  if (normalized.includes('устойчив')) {
+    return 'устойчивость'
+  }
+
+  if (normalized.includes('прочност')) {
+    return 'прочность'
+  }
+
+  return criterion
+}
+
+function normalizeMultiplierSymbol(value: string): string {
+  return value.replace(/[xх*]/gi, '×')
+}
+
+function formatProfileDimensionToken(token: string, forceSingleFractionDigit: boolean): string {
+  const normalized = token.trim().replace(',', '.')
+  const value = Number(normalized)
+
+  if (!Number.isFinite(value)) {
+    return token.trim()
+  }
+
+  const hasFraction = Math.abs(value - Math.trunc(value)) > 0.0001
+  const minimumFractionDigits = forceSingleFractionDigit ? 1 : hasFraction ? 1 : 0
+
+  return value.toLocaleString('ru-RU', {
+    minimumFractionDigits,
+    maximumFractionDigits: 1,
+  })
+}
+
+function resolveTrussTubeSize(profile: string): string {
+  const cleaned = profile.replace(/^тр\.\s*/i, '').trim()
+  const normalized = normalizeMultiplierSymbol(cleaned)
+  const parts = normalized.split('×').map((part) => part.trim()).filter(Boolean)
+
+  if (parts.length === 2) {
+    const sideToken = formatProfileDimensionToken(parts[0], false)
+    const thicknessToken = formatProfileDimensionToken(parts[1], true)
+    return `${sideToken}×${sideToken}×${thicknessToken}`
+  }
+
+  if (parts.length >= 3) {
+    const heightToken = formatProfileDimensionToken(parts[0], false)
+    const widthToken = formatProfileDimensionToken(parts[1], false)
+    const thicknessToken = formatProfileDimensionToken(parts[2], true)
+    return `${heightToken}×${widthToken}×${thicknessToken}`
+  }
+
+  return profile
+}
+
+function resolveTrussTubeType(profile: string): 'ПК' | 'ПП' {
+  const cleaned = profile.replace(/^тр\.\s*/i, '').trim()
+  const normalized = normalizeMultiplierSymbol(cleaned)
+  const parts = normalized.split('×').map((part) => part.trim()).filter(Boolean)
+
+  if (parts.length === 2) {
+    return 'ПК'
+  }
+
+  if (parts.length >= 3 && parts[0] === parts[1]) {
+    return 'ПК'
+  }
+
+  return 'ПП'
+}
+
+function resolveTrussGroupLongLabel(key: string): string {
+  if (key === 'vp') {
+    return 'Верхний пояс'
+  }
+
+  if (key === 'np') {
+    return 'Нижний пояс'
+  }
+
+  if (key === 'orb') {
+    return 'Опорный раскос большой'
+  }
+
+  if (key === 'or') {
+    return 'Опорный раскос'
+  }
+
+  return 'Рядовой раскос'
+}
+
+function resolveTrussTubeDescription(profile: string | null): string {
+  if (!profile) {
+    return '—'
+  }
+
+  const typeLabel = resolveTrussTubeType(profile) === 'ПК' ? 'Труба квадратная' : 'Труба прямоугольная'
+  return `${typeLabel} ${resolveTrussTubeSize(profile)}`
+}
+
+function resolveTrussCount(
+  columnResult: ColumnCalculationResult | null,
+  buildingLengthM: number,
+  frameStepM: number,
+): number {
+  const extremeGroup = columnResult?.specification.groups.find((group) => group.key === 'extreme')
+  if (extremeGroup && extremeGroup.columnsCount > 0) {
+    return Math.max(1, Math.round(extremeGroup.columnsCount / 2))
+  }
+
   if (frameStepM <= 0 || buildingLengthM <= 0) {
     return 0
   }
 
-  return Math.max(1, Math.floor(buildingLengthM / frameStepM) + 1)
+  return Math.max(1, Math.floor(buildingLengthM / frameStepM))
 }
 
 function isSandwichPanelCovering(covering: string): boolean {
@@ -479,7 +612,7 @@ function renderColumnCandidatesBlock(
                       <td>{candidate.steelGrade}</td>
                       <td>{resolveColumnProfileType(candidate)}</td>
                       <td>{formatNumber(candidate.utilization, 2)}</td>
-                      <td className="criterion-col">{candidate.criterion ?? '-'}</td>
+                      <td className="criterion-col">{formatCriterionLabel(candidate.criterion)}</td>
                       <td>{formatNumber(candidate.unitMassKg, 1)}</td>
                       <td>{formatNumber(massWithoutBraces, 2)}</td>
                       <td>{candidate.braceCount ?? 0}</td>
@@ -578,8 +711,10 @@ function renderColumnSpecification(columnResult: ColumnCalculationResult | null)
 
 function renderTrussOverview(
   trussResult: TrussCalculationResult | null,
+  columnResult: ColumnCalculationResult | null,
   buildingLengthM: number,
   tubeS345PriceRubPerKg: number,
+  roofType: UnifiedInputState['roofType'],
 ) {
   if (!trussResult) {
     return (
@@ -597,6 +732,15 @@ function renderTrussOverview(
   }
 
   const resolveBraceCountForGroup = (groupKey: string, spanM: number): number | null => {
+    const template = resolveTrussGeometryTemplate(spanM)
+    if (template && groupKey === 'vp') {
+      return template.members.filter((member) => member.kind === 'top-chord').length
+    }
+
+    if (template && groupKey === 'np') {
+      return template.members.filter((member) => member.kind === 'bottom-chord').length
+    }
+
     if (groupKey === 'orb' || groupKey === 'or') {
       return 4
     }
@@ -616,51 +760,21 @@ function renderTrussOverview(
 
   const groups = [trussResult.groups.vp, trussResult.groups.np, trussResult.groups.orb, trussResult.groups.or, trussResult.groups.rr]
   const hasMissingGroups = groups.some((group) => group.status !== 'ok')
-  const trussCount = resolveTrussCount(buildingLengthM, trussResult.loadSummary.frameStepM)
+  const trussCount = resolveTrussCount(columnResult, buildingLengthM, trussResult.loadSummary.frameStepM)
   const trussTotalMassKg = trussResult.totalMassKg === null ? null : trussResult.totalMassKg * trussCount
   const trussTotalCostRub = trussTotalMassKg === null ? null : trussTotalMassKg * tubeS345PriceRubPerKg
+  const groupsTotalMassKg = groups.reduce((sum, group) => sum + (group.massKg ?? 0), 0)
+  const groupsTotalCostRub = groups.reduce((sum, group) => sum + ((group.massKg ?? 0) * tubeS345PriceRubPerKg), 0)
 
   return (
     <div className="tab-pane animate-in" data-testid="truss-panel">
       <div className="results-section">
         <h3 className="results-section-title">Фермы</h3>
+        <TrussVisualDiagram roofType={roofType} trussResult={trussResult} />
         <p className="results-inline-note">
           Обозначения: ВП — верхний пояс, НП — нижний пояс, ОРб — опорный раскос большой,
           ОР — опорный раскос, РР — рядовой раскос.
         </p>
-        <div className="load-grid">
-          <div className="load-tile">
-            <span>Пролет, м</span>
-            <strong>{formatNumber(trussResult.loadSummary.spanM, 2)}</strong>
-          </div>
-          <div className="load-tile">
-            <span>Шаг рам, м</span>
-            <strong>{formatNumber(trussResult.loadSummary.frameStepM, 2)}</strong>
-          </div>
-          <div className="load-tile">
-            <span>Расчетный снег, кПа</span>
-            <strong>{formatNumber(trussResult.loadSummary.snowLineLoadKnPerM / trussResult.loadSummary.frameStepM, 3)}</strong>
-          </div>
-          <div className="load-tile">
-            <span>Ветер кровля, кПа</span>
-            <strong>{formatNumber(trussResult.loadSummary.windLineLoadKnPerM / trussResult.loadSummary.frameStepM, 3)}</strong>
-          </div>
-          <div className="load-tile">
-            <span>Покрытие, кПа</span>
-            <strong>
-              {formatNumber(
-                trussResult.loadSummary.coveringLineLoadKnPerM /
-                  trussResult.loadSummary.frameStepM /
-                  trussResult.loadSummary.responsibilityFactor,
-                3,
-              )}
-            </strong>
-          </div>
-          <div className="load-tile">
-            <span>Надбавка, %</span>
-            <strong>{formatNumber(trussResult.loadSummary.extraLoadPercent, 0)}</strong>
-          </div>
-        </div>
       </div>
 
       <div className="results-section">
@@ -669,41 +783,38 @@ function renderTrussOverview(
           <table className="data-table">
             <thead>
               <tr>
-                <th>Группа</th>
-                <th>Марка</th>
-                <th>К-т использования</th>
-                <th>Масса, кг</th>
-                <th>Количество</th>
-                <th>Стоимость, руб.</th>
+                <th>Элемент</th>
+                <th>Профиль</th>
                 <th>Проверка</th>
-                <th>Статус</th>
+                <th>К-т использования</th>
+                <th>Количество</th>
+                <th>Масса, кг</th>
+                <th>Стоимость, руб.</th>
               </tr>
             </thead>
             <tbody>
               {groups.map((group) => {
                 const braceCount = resolveBraceCountForGroup(group.key, trussResult.loadSummary.spanM)
-                const quantityLabel =
-                  group.key === 'vp'
-                    ? 'Верхний пояс'
-                    : group.key === 'np'
-                      ? 'Нижний пояс'
-                      : braceCount === null
-                        ? '—'
-                        : formatNumber(braceCount, 0)
+                const quantityLabel = braceCount === null ? '—' : `${formatNumber(braceCount, 0)} шт.`
 
                 return (
                   <tr key={group.key}>
-                    <td>{group.label}</td>
-                    <td>{group.profile ?? '—'}</td>
-                    <td>{group.utilization === null ? '—' : formatNumber(group.utilization, 6)}</td>
-                    <td>{group.massKg === null ? '—' : formatNumber(group.massKg, 2)}</td>
+                    <td>{resolveTrussGroupLongLabel(group.key)}</td>
+                    <td>{resolveTrussTubeDescription(group.profile)}</td>
+                    <td>{formatCriterionLabel(group.criterion)}</td>
+                    <td>{group.utilization === null ? '—' : formatNumber(group.utilization, 2)}</td>
                     <td>{quantityLabel}</td>
+                    <td>{group.massKg === null ? '—' : formatNumber(group.massKg, 2)}</td>
                     <td>{group.massKg === null ? '—' : formatRub(group.massKg * tubeS345PriceRubPerKg)}</td>
-                    <td>{group.criterion ?? '—'}</td>
-                    <td>{group.status === 'ok' ? 'ОК' : 'Нет подходящего профиля'}</td>
                   </tr>
                 )
               })}
+              <tr>
+                <td colSpan={4}>Итого</td>
+                <td>—</td>
+                <td>{formatNumber(groupsTotalMassKg, 2)}</td>
+                <td>{formatRub(groupsTotalCostRub)}</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -837,7 +948,9 @@ function renderGeneralSpecificationOverview(
   const columnCostRub = columnResult?.specification.totalCostRub ?? 0
   const purlinMassKg = selectedCandidate?.totalMassKg ?? 0
   const purlinCostRub = selectedCostRub ?? 0
-  const trussCount = trussResult ? resolveTrussCount(input.buildingLengthM, trussResult.loadSummary.frameStepM) : 0
+  const trussCount = trussResult
+    ? resolveTrussCount(columnResult, input.buildingLengthM, trussResult.loadSummary.frameStepM)
+    : 0
   const trussUnitMassKg = trussResult?.totalMassKg ?? 0
   const trussMassKg = trussUnitMassKg * trussCount
   const trussCostRub = trussMassKg * input.tubeS345PriceRubPerKg
@@ -1771,6 +1884,13 @@ export function ResultsPanel({
     purlinSpecificationSource === 'sort' ? sortPurlinCandidates : lstkPurlinCandidates
   const manualPurlinSelectedIndex =
     purlinSpecificationSource === 'sort' ? selectedSortPurlinIndex : selectedLstkPurlinIndex
+  const purlinSpecificationState = resolvePurlinSpecificationState(
+    purlinResult,
+    purlinSpecificationSource,
+    purlinSelectionMode,
+    selectedSortPurlinIndex,
+    selectedLstkPurlinIndex,
+  )
   const [enclosingClassKey, setEnclosingClassKey] = useState<EnclosingClassKey>('class-1-gost')
 
   return (
@@ -1793,6 +1913,7 @@ export function ResultsPanel({
           purlinResult={purlinResult}
           trussResult={trussResult}
           columnResult={columnResult}
+          selectedEnclosingClassKey={enclosingClassKey}
           purlinSpecificationSource={purlinSpecificationSource}
           purlinSelectionMode={purlinSelectionMode}
           selectedSortPurlinIndex={selectedSortPurlinIndex}
@@ -1847,7 +1968,13 @@ export function ResultsPanel({
       ) : activeTab === 'methodology' ? (
         <MethodologyPanel input={input} purlinResult={purlinResult} columnResult={columnResult} />
       ) : activeTab === 'truss' ? (
-        renderTrussOverview(trussResult, input.buildingLengthM, input.tubeS345PriceRubPerKg)
+        renderTrussOverview(
+          trussResult,
+          columnResult,
+          input.buildingLengthM,
+          input.tubeS345PriceRubPerKg,
+          input.roofType,
+        )
       ) : activeTab === 'purlin' ? (
         <div className="tab-pane animate-in">
           <div className="results-section">
@@ -1918,6 +2045,22 @@ export function ResultsPanel({
                 </strong>
               </div>
             </div>
+          </div>
+
+          <div className="results-section">
+            <h3 className="results-section-title">Схема фермы с прогонами</h3>
+            <PurlinTrussDiagram
+              selectedPurlinFamily={purlinSpecificationState.selectedCandidate?.family ?? null}
+              roofSlopeDeg={input.roofSlopeDeg}
+              roofType={input.roofType}
+              selectedPurlinProfile={purlinSpecificationState.selectedCandidate?.profile ?? null}
+              selectedPurlinStepMm={
+                purlinSpecificationState.selectedCandidate?.stepMm ??
+                purlinResult?.loadSummary.autoMaxStepMm ??
+                null
+              }
+              spanM={input.spanM}
+            />
           </div>
 
           <div className="results-section-row">
