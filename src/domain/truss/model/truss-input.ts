@@ -45,6 +45,7 @@ const defaultTrussLimits = {
 } satisfies z.input<typeof trussLimitsSchema>
 
 export const trussInputSchema = z.object({
+  roofType: z.string().min(1),
   spanM: z.number().min(18).max(30),
   frameStepM: z.number().positive(),
   roofSlopeDeg: z.number().nonnegative().max(89),
@@ -62,6 +63,7 @@ export const trussInputSchema = z.object({
 export type TrussInput = z.infer<typeof trussInputSchema>
 
 export const defaultTrussInput: TrussInput = {
+  roofType: 'двускатная',
   spanM: 24,
   frameStepM: 6,
   roofSlopeDeg: 6,
