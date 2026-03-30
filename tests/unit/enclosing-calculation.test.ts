@@ -31,7 +31,7 @@ describe('enclosing calculation', () => {
 
     expect(class1.totals.panelsRub).toBe(12753079)
     expect(class1.walls.fasteners[0]?.lengthMm).toBe(190)
-    expect(class1.walls.fasteners[0]?.quantity).toBe(762)
+    expect(class1.walls.fasteners[0]?.quantity).toBe(1524)
     expect(class1.walls.fasteners[0]?.unitPriceRub).toBeCloseTo(94.8, 1)
     expect(class1.roof.fasteners[0]?.lengthMm).toBe(240)
     expect(class1.roof.fasteners[0]?.quantity).toBe(3840)

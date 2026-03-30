@@ -247,6 +247,12 @@ export function PurlinTrussDiagram({
   const nodeSupportedCount = purlinMarkers.filter((marker) => marker.isNodeSupported).length
   const betweenNodeCount = purlinMarkers.length - nodeSupportedCount
   const purlinShapeKind = resolvePurlinShapeKind(selectedPurlinFamily, selectedPurlinProfile)
+  const ridgeNode = topNodes.reduce(
+    (best, node) => (node.y < best.y ? node : best),
+    topNodes[0] ?? { id: 'fallback', x: (leftX + rightX) / 2, y: supportTopY },
+  )
+  const trussHeightDimensionX = Math.min(viewWidth - 24, ridgeNode.x + 56)
+  const trussHeightMm = (baseY - ridgeNode.y) / pxPerMm
 
   return (
     <div className="truss-visual purlin-truss-visual">
@@ -360,6 +366,55 @@ export function PurlinTrussDiagram({
               </g>
             )
           })}
+
+          <line className="truss-visual__tick" x1={leftX} x2={leftX - 44} y1={baseY} y2={baseY} />
+          <line
+            className="truss-visual__tick"
+            x1={leftX}
+            x2={leftX - 44}
+            y1={supportTopY}
+            y2={supportTopY}
+          />
+          <line
+            className="truss-visual__dimension"
+            x1={leftX - 44}
+            x2={leftX - 44}
+            y1={baseY}
+            y2={supportTopY}
+            markerStart="url(#purlin-span-arrow)"
+            markerEnd="url(#purlin-span-arrow)"
+          />
+          <text
+            className="truss-visual__dimension-text"
+            x={leftX - 66}
+            y={(baseY + supportTopY) / 2}
+          >
+            {formatMillimeters(template.supportHeightMm)}
+          </text>
+          <line className="truss-visual__tick" x1={ridgeNode.x} x2={trussHeightDimensionX} y1={baseY} y2={baseY} />
+          <line
+            className="truss-visual__tick"
+            x1={ridgeNode.x}
+            x2={trussHeightDimensionX}
+            y1={ridgeNode.y}
+            y2={ridgeNode.y}
+          />
+          <line
+            className="truss-visual__dimension"
+            x1={trussHeightDimensionX}
+            x2={trussHeightDimensionX}
+            y1={baseY}
+            y2={ridgeNode.y}
+            markerStart="url(#purlin-span-arrow)"
+            markerEnd="url(#purlin-span-arrow)"
+          />
+          <text
+            className="truss-visual__dimension-text truss-visual__dimension-text--side"
+            x={trussHeightDimensionX + 10}
+            y={(baseY + ridgeNode.y) / 2}
+          >
+            {formatMillimeters(trussHeightMm)}
+          </text>
 
           <line
             className="truss-visual__dimension"

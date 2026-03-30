@@ -1950,7 +1950,16 @@ textarea {
   stroke-width: 1.5;
 }
 
-.truss-visual__dimension-text,
+.truss-visual__dimension-text {
+  fill: #435364;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+  text-anchor: middle;
+}
+
 .truss-visual__angle-text,
 .truss-visual__group-label {
   fill: #435364;
@@ -1966,6 +1975,11 @@ textarea {
 .truss-visual__dimension-text--total {
   font-size: 16px;
   font-weight: 800;
+}
+
+.truss-visual__dimension-text--side {
+  text-anchor: start;
+  dominant-baseline: middle;
 }
 
 .truss-visual__group-label {
