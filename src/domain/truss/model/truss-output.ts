@@ -3,7 +3,6 @@
 export type TrussGroupKey = 'vp' | 'np' | 'orb' | 'or' | 'rr'
 
 export interface TrussLoadSummary {
-  roofType: string
   spanM: number
   frameStepM: number
   roofSlopeDeg: number

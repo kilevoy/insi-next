@@ -167,7 +167,6 @@ function calculateEfforts(input: TrussInput): { loadSummary: TrussLoadSummary; e
 
   return {
     loadSummary: {
-      roofType: input.roofType,
       spanM: input.spanM,
       frameStepM: input.frameStepM,
       roofSlopeDeg: input.roofSlopeDeg,

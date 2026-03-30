@@ -83,7 +83,6 @@ export function mapToTrussInput(
   purlinResult: PurlinCalculationResult,
 ): TrussInput {
   return {
-    roofType: state.roofType,
     spanM: state.spanM,
     frameStepM: state.frameStepM,
     roofSlopeDeg: state.roofSlopeDeg,
