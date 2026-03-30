@@ -315,6 +315,7 @@ function resolveVpGroup(
   input: TrussInput,
   efforts: TrussEffortSummary,
   vpLeffY: number,
+  minWidthMm: number,
 ): VpResult {
   const vpCandidates: CandidateEvaluation[] = []
 
@@ -384,6 +385,7 @@ function resolveVpGroup(
       !profile.vpExcluded &&
       excelLte(maxSlenderness, 120) &&
       excelGte(profile.tMm, input.limits.minThicknessMm.vp) &&
+      excelGte(profile.bMm, minWidthMm) &&
       excelLte(profile.bMm, input.limits.maxWidthMm.vp)
 
     if (!passes) {
@@ -418,7 +420,7 @@ function resolveVpGroup(
   }
 }
 
-function resolveNpGroup(input: TrussInput, efforts: TrussEffortSummary, vpLeffY: number): NpResult {
+function resolveNpGroup(input: TrussInput, efforts: TrussEffortSummary, vpLeffY: number, minWidthMm: number): NpResult {
   const npCandidates: CandidateEvaluation[] = []
 
   for (const profile of trussProfileCatalog) {
@@ -432,6 +434,7 @@ function resolveNpGroup(input: TrussInput, efforts: TrussEffortSummary, vpLeffY:
       !profile.npExcluded &&
       excelLte(vpSlendernessMax, 400) &&
       excelGte(profile.tMm, input.limits.minThicknessMm.np) &&
+      excelGte(profile.bMm, minWidthMm) &&
       excelLte(profile.bMm, input.limits.maxWidthMm.np)
 
     if (!passes) {
@@ -545,8 +548,9 @@ export function calculateTruss(input: TrussInput): TrussCalculationResult {
   const limits = validated.limits
 
   const vpLeffY = validated.purlinBracingStepMm > 0 ? validated.purlinBracingStepMm / 1000 : 3
-  const vp = resolveVpGroup(validated, efforts, vpLeffY)
-  const np = resolveNpGroup(validated, efforts, vpLeffY)
+  const requiredChordMinWidthMm = Math.max(limits.minWidthMm.orb, limits.minWidthMm.or, limits.minWidthMm.rr)
+  const vp = resolveVpGroup(validated, efforts, vpLeffY, requiredChordMinWidthMm)
+  const np = resolveNpGroup(validated, efforts, vpLeffY, requiredChordMinWidthMm)
 
   const chordMaxWidth =
     vp.selectedWidthMm !== null && np.selectedWidthMm !== null

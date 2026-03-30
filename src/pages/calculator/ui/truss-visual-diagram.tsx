@@ -214,7 +214,7 @@ export function TrussVisualDiagram({ roofType, trussResult }: TrussVisualDiagram
     (best, node) => (node.y < best.y ? node : best),
     topNodes[0] ?? { id: 'fallback', x: (leftX + rightX) / 2, y: supportTopY },
   )
-  const trussHeightDimensionX = Math.min(viewWidth - 24, ridgeNode.x + 56)
+  const trussHeightDimensionX = rightX + 44
   const trussHeightMm = (baseY - ridgeNode.y) / pxPerMm
 
   return (

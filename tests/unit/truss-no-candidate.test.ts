@@ -10,8 +10,9 @@ describe('truss no-candidate branches', () => {
       coveringKpa: defaultTrussInput.coveringKpa * 0.25,
     })
 
-    expect(lowLoad.groups.orb.status).toBe('not-found')
-    expect(lowLoad.groups.or.status).toBe('not-found')
+    expect(lowLoad.groups.orb.status).toBe('ok')
+    expect(lowLoad.groups.or.status).toBe('ok')
+    expect(lowLoad.totalMassKg).not.toBeNull()
 
     const highLoad = calculateTruss({
       ...defaultTrussInput,
