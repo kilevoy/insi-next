@@ -106,10 +106,9 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
   const [isManualTrussEaveDepthFocused, setIsManualTrussEaveDepthFocused] = useState(false)
   const clearHeightLabel = '\u0412\u044B\u0441\u043E\u0442\u0430 \u0434\u043E \u043D\u0438\u0437\u0430 \u043D\u0435\u0441\u0443\u0449\u0438\u0445, \u043C'
   const trussEaveDepthLabel = '\u0412\u044B\u0441\u043E\u0442\u0430 \u0444\u0435\u0440\u043C\u044B \u0432 \u043A\u0430\u0440\u043D\u0438\u0437\u0435, \u043C'
-  const useManualLabel = '\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C \u0440\u0443\u0447\u043D\u043E\u0435 \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435'
+  const useManualLabel = '\u0417\u0430\u0434\u0430\u0442\u044C \u0432\u0440\u0443\u0447\u043D\u0443\u044E'
   const manualPriorityHint =
     '\u0420\u0443\u0447\u043D\u043E\u0435 \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0438\u043C\u0435\u0435\u0442 \u043F\u0440\u0438\u043E\u0440\u0438\u0442\u0435\u0442 \u043D\u0430\u0434 \u0442\u0430\u0431\u043B\u0438\u0447\u043D\u044B\u043C.'
-  const resetToStandardLabel = '\u0421\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u043A \u0441\u0442\u0430\u043D\u0434\u0430\u0440\u0442\u043D\u043E\u043C\u0443'
   const panelTitleLabel = '\u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u0440\u0430\u0441\u0447\u0435\u0442\u0430'
   const panelCopyLabel = '\u041E\u0431\u0449\u0438\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0434\u043B\u044F \u043A\u043E\u043B\u043E\u043D\u043D \u0438 \u043F\u0440\u043E\u0433\u043E\u043D\u043E\u0432'
   const constructionAreaLabel = '\u0420\u0430\u0439\u043E\u043D \u0441\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u044C\u0441\u0442\u0432\u0430'
@@ -227,79 +226,72 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
         <div className="field">
           <span className="field-label">{trussEaveDepthLabel}</span>
           <div style={{ display: 'grid', gap: 8 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'auto minmax(140px, 1fr)',
+                gap: 12,
+                alignItems: 'center',
+              }}
+            >
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="checkbox"
+                  aria-label={useManualLabel}
+                  checked={usesManualTrussEaveDepth}
+                  onChange={(event) =>
+                    onChange(
+                      'manualTrussEaveDepthM',
+                      event.target.checked ? derivedHeights.eaveTrussDepthM : null,
+                    )
+                  }
+                />
+                <span className="field-label" style={{ margin: 0 }}>
+                  {useManualLabel}
+                </span>
+              </label>
+
               <input
-                type="checkbox"
-                aria-label={useManualLabel}
-                checked={usesManualTrussEaveDepth}
-                onChange={(event) =>
-                  onChange(
-                    'manualTrussEaveDepthM',
-                    event.target.checked ? derivedHeights.eaveTrussDepthM : null,
-                  )
+                className="field-input"
+                type="text"
+                inputMode="decimal"
+                aria-label={trussEaveDepthLabel}
+                value={
+                  usesManualTrussEaveDepth
+                    ? manualTrussEaveDepthDraft
+                    : derivedHeights.eaveTrussDepthM.toFixed(2)
                 }
+                disabled={!usesManualTrussEaveDepth}
+                onFocus={() => setIsManualTrussEaveDepthFocused(true)}
+                onChange={(event) => {
+                  const nextDraft = event.target.value
+                  setManualTrussEaveDepthDraft(nextDraft)
+
+                  const parsed = parseLocalizedDecimal(nextDraft)
+                  if (parsed !== null) {
+                    onChange('manualTrussEaveDepthM', parsed)
+                  }
+                }}
+                onBlur={() => {
+                  setIsManualTrussEaveDepthFocused(false)
+                  const parsed = parseLocalizedDecimal(manualTrussEaveDepthDraft)
+
+                  if (parsed === null) {
+                    setManualTrussEaveDepthDraft(
+                      String(input.manualTrussEaveDepthM ?? derivedHeights.eaveTrussDepthM).replace('.', ','),
+                    )
+                  }
+                }}
               />
-              <span className="field-label" style={{ margin: 0 }}>
-                {useManualLabel}
-              </span>
-            </label>
+            </div>
 
-            {usesManualTrussEaveDepth ? (
-              <>
-                <input
-                  className="field-input"
-                  type="text"
-                  inputMode="decimal"
-                  aria-label={trussEaveDepthLabel}
-                  value={manualTrussEaveDepthDraft}
-                  onFocus={() => setIsManualTrussEaveDepthFocused(true)}
-                  onChange={(event) => {
-                    const nextDraft = event.target.value
-                    setManualTrussEaveDepthDraft(nextDraft)
-
-                    const parsed = parseLocalizedDecimal(nextDraft)
-                    if (parsed !== null) {
-                      onChange('manualTrussEaveDepthM', parsed)
-                    }
-                  }}
-                  onBlur={() => {
-                    setIsManualTrussEaveDepthFocused(false)
-                    const parsed = parseLocalizedDecimal(manualTrussEaveDepthDraft)
-
-                    if (parsed === null) {
-                      setManualTrussEaveDepthDraft(
-                        String(input.manualTrussEaveDepthM ?? derivedHeights.eaveTrussDepthM).replace('.', ','),
-                      )
-                    }
-                  }}
-                />
-                <small style={{ color: 'rgba(15, 23, 42, 0.72)' }}>
-                  {manualPriorityHint}
-                </small>
-                <button
-                  type="button"
-                  className="results-print-action"
-                  onClick={() => onChange('manualTrussEaveDepthM', null)}
-                >
-                  {resetToStandardLabel}
-                </button>
-              </>
-            ) : (
-              <>
-                <input
-                  className="field-input"
-                  type="text"
-                  aria-label={trussEaveDepthLabel}
-                  value={derivedHeights.eaveTrussDepthM.toFixed(2)}
-                  readOnly
-                />
-                <small style={{ color: 'rgba(15, 23, 42, 0.72)' }}>
-                  {derivedHeights.eaveTrussDepthSource === 'standard-table'
-                    ? `Стандартное значение по таблице для пролёта ${input.spanM} м: ${derivedHeights.eaveTrussDepthM.toFixed(2)} м`
-                    : `РќРµС‚ СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ С‚Р°Р±Р»РёС‡РЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ РїСЂРѕР»С‘С‚Р° ${input.spanM} Рј, РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ fallback ${derivedHeights.eaveTrussDepthM.toFixed(2)} Рј`}
-                </small>
-              </>
-            )}
+            <small style={{ color: 'rgba(15, 23, 42, 0.72)' }}>
+              {usesManualTrussEaveDepth
+                ? manualPriorityHint
+                : derivedHeights.eaveTrussDepthSource === 'standard-table'
+                  ? `Стандартное значение по таблице для пролёта ${input.spanM} м: ${derivedHeights.eaveTrussDepthM.toFixed(2)} м`
+                  : `Нет стандартного табличного значения для пролёта ${input.spanM} м, используется fallback ${derivedHeights.eaveTrussDepthM.toFixed(2)} м`}
+            </small>
           </div>
         </div>
 
