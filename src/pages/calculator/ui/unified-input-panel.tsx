@@ -112,6 +112,8 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
   const resetToStandardLabel = '\u0421\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u043A \u0441\u0442\u0430\u043D\u0434\u0430\u0440\u0442\u043D\u043E\u043C\u0443'
   const panelTitleLabel = '\u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u0440\u0430\u0441\u0447\u0435\u0442\u0430'
   const panelCopyLabel = '\u041E\u0431\u0449\u0438\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0434\u043B\u044F \u043A\u043E\u043B\u043E\u043D\u043D \u0438 \u043F\u0440\u043E\u0433\u043E\u043D\u043E\u0432'
+  const constructionAreaLabel = '\u0420\u0430\u0439\u043E\u043D \u0441\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u044C\u0441\u0442\u0432\u0430'
+  const cityLabel = '\u0413\u043E\u0440\u043E\u0434'
 
   useEffect(() => {
     if (isManualTrussEaveDepthFocused) {
@@ -140,10 +142,10 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
       </div>
 
       <section className="form-section">
-        <h3 className="form-section-title">Р Р°Р№РѕРЅ СЃС‚СЂРѕРёС‚РµР»СЊСЃС‚РІР°</h3>
+        <h3 className="form-section-title">{constructionAreaLabel}</h3>
 
         <label className="field">
-          <span className="field-label">Р“РѕСЂРѕРґ</span>
+          <span className="field-label">{cityLabel}</span>
           <select
             className="field-select"
             value={input.city}
