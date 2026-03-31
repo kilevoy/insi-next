@@ -181,6 +181,12 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
     })
   }
 
+  const handleColumnSelectionModeChange = (
+    mode: UnifiedInputState['columnSelectionMode'],
+  ) => {
+    handleFieldChange('columnSelectionMode', mode)
+  }
+
   const handleColumnProfileSelection = (group: ColumnGroupKey, selectedIndex: number) => {
     const field = PROFILE_FIELD_BY_GROUP[group]
     handleFieldChange(field, selectedIndex)
@@ -361,6 +367,8 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
             columnError={columnError}
             isColumnManualMode={input.isManualMode}
             onColumnManualModeChange={handleColumnManualModeChange}
+            columnSelectionMode={input.columnSelectionMode}
+            onColumnSelectionModeChange={handleColumnSelectionModeChange}
             onColumnProfileSelect={handleColumnProfileSelection}
             purlinSpecificationSource={input.purlinSpecificationSource}
             onPurlinSpecificationSourceChange={handlePurlinSpecificationSourceChange}

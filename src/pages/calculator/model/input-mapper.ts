@@ -63,6 +63,7 @@ export function mapToColumnInput(state: UnifiedInputState): ColumnInput {
     roofCoveringType: state.roofCoveringType,
     wallCoveringType: state.wallCoveringType,
     columnType: state.columnType,
+    columnSelectionMode: state.columnSelectionMode,
     extraLoadPercent: state.extraLoadPercent,
     supportCraneMode: state.supportCraneMode,
     supportCraneSingleSpanMode: state.supportCraneSingleSpanMode,

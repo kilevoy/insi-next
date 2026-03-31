@@ -198,8 +198,9 @@ function buildGroupGeometries(input: ColumnInput): ColumnGroupGeometry[] {
 
 function resolveAnalysisHeightM(
   group: ColumnGroupGeometry,
+  input: ColumnInput,
 ): number {
-  return group.criticalHeightM
+  return input.columnSelectionMode === 'excel' ? input.buildingHeightM : group.criticalHeightM
 }
 
 function clampSelectedIndex(index: number, listLength: number): number {
@@ -331,7 +332,7 @@ export function calculateColumn(
   const topCandidatesByType = groupGeometries.reduce<ColumnTopCandidatesByType>(
     (acc, group) => {
       acc[group.key] = calculateColumnTopCandidatesForType(validated, group.type, {
-        analysisHeightM: resolveAnalysisHeightM(group),
+        analysisHeightM: resolveAnalysisHeightM(group, validated),
       })
       return acc
     },

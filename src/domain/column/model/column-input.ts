@@ -19,6 +19,7 @@ export const COLUMN_TYPE_EXTREME = '\u043a\u0440\u0430\u0439\u043d\u044f\u044f'
 export const COLUMN_TYPE_MIDDLE = '\u0441\u0440\u0435\u0434\u043d\u044f\u044f'
 export const COLUMN_TYPE_FACHWERK = '\u0444\u0430\u0445\u0432\u0435\u0440\u043a\u043e\u0432\u0430\u044f'
 export const columnTypeValues = [COLUMN_TYPE_EXTREME, COLUMN_TYPE_FACHWERK, COLUMN_TYPE_MIDDLE] as const
+export const columnSelectionModeValues = ['engineering', 'excel'] as const
 const columnCities = new Set<string>(columnCityLoads.map((item) => item.city))
 const columnCoverings = new Set<string>(columnCoveringCatalog.map((item) => item.name))
 const supportCraneCapacities = new Set<string>(
@@ -62,6 +63,7 @@ export const columnInputSchema = z.object({
     .min(1)
     .refine((value) => columnCoverings.has(value), 'Unknown wall covering type'),
   columnType: z.enum(columnTypeValues),
+  columnSelectionMode: z.enum(columnSelectionModeValues),
   extraLoadPercent: z.number().nonnegative(),
   supportCraneMode: z.string().min(1).refine((value) => BOOLEAN_MODES.has(value), 'Unsupported support crane mode'),
   supportCraneSingleSpanMode: z
@@ -115,6 +117,7 @@ export const defaultColumnInput: ColumnInput = {
   roofCoveringType: '\u0421-\u041f 150 \u043c\u043c',
   wallCoveringType: '\u0421-\u041f 100 \u043c\u043c',
   columnType: '\u043a\u0440\u0430\u0439\u043d\u044f\u044f',
+  columnSelectionMode: 'engineering',
   extraLoadPercent: 15,
   supportCraneMode: '\u043d\u0435\u0442',
   supportCraneSingleSpanMode: '\u0434\u0430',

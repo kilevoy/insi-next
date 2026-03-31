@@ -458,7 +458,11 @@ export function normalizeLoadedInput(raw: unknown): UnifiedInputState {
       defaultUnifiedInput.trussMinWidthRrMm,
     ),
     columnType: normalizeColumnType(parsed.columnType),
-    columnSelectionMode: defaultUnifiedInput.columnSelectionMode,
+    columnSelectionMode: normalizeCatalogValue(
+      parsed.columnSelectionMode,
+      COLUMN_SELECTION_MODE_OPTIONS,
+      defaultUnifiedInput.columnSelectionMode,
+    ) as UnifiedInputState['columnSelectionMode'],
     purlinSpecificationSource: normalizePurlinSpecificationSource(parsed.purlinSpecificationSource),
     purlinSelectionMode: normalizePurlinSelectionMode(parsed.purlinSelectionMode),
     supportCraneMode: normalizePresenceMode(parsed.supportCraneMode),

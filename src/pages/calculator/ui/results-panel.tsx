@@ -40,6 +40,8 @@ interface ResultsPanelProps {
   columnError?: string | null
   isColumnManualMode: boolean
   onColumnManualModeChange: (isManualMode: boolean) => void
+  columnSelectionMode: UnifiedInputState['columnSelectionMode']
+  onColumnSelectionModeChange: (mode: UnifiedInputState['columnSelectionMode']) => void
   onColumnProfileSelect: (group: ColumnGroupKey, selectedIndex: number) => void
   purlinSpecificationSource: UnifiedInputState['purlinSpecificationSource']
   onPurlinSpecificationSourceChange: (source: UnifiedInputState['purlinSpecificationSource']) => void
@@ -1083,7 +1085,7 @@ function renderGeneralSpecificationOverview(
         </div>
         <div className="load-tile">
           <span>Подбор колонн</span>
-          <strong>Инженерный (H_max)</strong>
+          <strong>{input.columnSelectionMode === 'engineering' ? 'Инженерный (H_max)' : 'Excel'}</strong>
         </div>
         <div className="load-tile">
           <span>Выбор колонн</span>
@@ -1893,6 +1895,8 @@ export function ResultsPanel({
   columnError,
   isColumnManualMode,
   onColumnManualModeChange,
+  columnSelectionMode,
+  onColumnSelectionModeChange,
   onColumnProfileSelect,
   purlinSpecificationSource,
   onPurlinSpecificationSourceChange,
@@ -2223,13 +2227,23 @@ export function ResultsPanel({
               <h3 className="results-section-title">Режим подбора колонн</h3>
               <div className="mode-toggle">
                 <button
-                  className="mode-button active"
-                  disabled
+                  className={`mode-button ${columnSelectionMode === 'engineering' ? 'active' : ''}`}
+                  onClick={() => onColumnSelectionModeChange('engineering')}
                 >
                   Инженерный (H_max)
                 </button>
+                <button
+                  className={`mode-button ${columnSelectionMode === 'excel' ? 'active' : ''}`}
+                  onClick={() => onColumnSelectionModeChange('excel')}
+                >
+                  Excel
+                </button>
               </div>
-              <p className="results-inline-note">Используется максимальная расчетная длина в группе.</p>
+              <p className="results-inline-note">
+                {columnSelectionMode === 'engineering'
+                  ? 'Используется максимальная расчетная длина в группе.'
+                  : 'Используется базовая высота у карниза (как в Excel).'}
+              </p>
             </div>
 
             <div className="results-section">
