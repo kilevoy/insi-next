@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { DomainTab } from '@/app/App'
 import type { CandidateResult } from '@/domain/common/model/candidate-result'
 import type { ColumnCalculationResult } from '@/domain/column/model/calculate-column'
+import { buildColumnDerivedContext } from '@/domain/column/model/column-derived-context'
+import type { ColumnType } from '@/domain/column/model/column-input'
 import type { ColumnGroupKey } from '@/domain/column/model/column-output'
 import type { EnclosingClassKey } from '@/domain/enclosing/model/enclosing-reference.generated'
 import type { EnclosingSectionSpecification } from '@/domain/enclosing/model/enclosing-output'
@@ -11,6 +13,7 @@ import { resolveTrussGeometryTemplate } from '@/domain/truss/model/truss-geometr
 import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing'
 import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclosing-mapper'
 import { deriveHeights } from '../model/height-derivations'
+import { mapToColumnInput } from '../model/input-mapper'
 import type { UnifiedInputState } from '../model/unified-input'
 import { MethodologyPanel } from './methodology-panel'
 import { PurlinTrussDiagram } from './purlin-truss-diagram'
@@ -57,6 +60,16 @@ const COLUMN_GROUPS: ReadonlyArray<{ key: ColumnGroupKey; title: string }> = [
   { key: 'extreme', title: 'Крайняя колонна — Подбор профилей' },
   { key: 'fachwerk', title: 'Фахверковая колонна — Подбор профилей' },
   { key: 'middle', title: 'Средняя колонна — Подбор профилей' },
+]
+
+const COLUMN_EFFORT_GROUPS: ReadonlyArray<{
+  key: ColumnGroupKey
+  label: string
+  columnType: ColumnType
+}> = [
+  { key: 'extreme', label: 'Крайняя', columnType: 'крайняя' },
+  { key: 'middle', label: 'Средняя', columnType: 'средняя' },
+  { key: 'fachwerk', label: 'Фахверковая', columnType: 'фахверковая' },
 ]
 
 const WIND_REGION_BY_KPA = new Map<number, string>([
@@ -1840,6 +1853,34 @@ function renderEnclosingOverview(
     )
   }
 }
+
+function resolveColumnEffortsByType(input: UnifiedInputState) {
+  const baseInput = mapToColumnInput(input)
+
+  return COLUMN_EFFORT_GROUPS.map((group) => {
+    try {
+      const derivedContext = buildColumnDerivedContext({
+        ...baseInput,
+        columnType: group.columnType,
+      })
+
+      return {
+        key: group.key,
+        label: group.label,
+        axialLoadKn: derivedContext.axialLoadKn,
+        bendingMomentKnM: derivedContext.bendingMomentKnM,
+      }
+    } catch {
+      return {
+        key: group.key,
+        label: group.label,
+        axialLoadKn: null,
+        bendingMomentKnM: null,
+      }
+    }
+  })
+}
+
 export function ResultsPanel({
   input,
   activeTab,
@@ -1903,6 +1944,7 @@ export function ResultsPanel({
     selectedLstkPurlinIndex,
   )
   const [enclosingClassKey, setEnclosingClassKey] = useState<EnclosingClassKey>('class-1-gost')
+  const columnEffortsByType = useMemo(() => resolveColumnEffortsByType(input), [input])
 
   return (
     <div className={`results-panel ${isPending ? 'pending' : ''}`}>
@@ -2163,6 +2205,16 @@ export function ResultsPanel({
                 <span>Момент M (кН·м)</span>
                 <strong>{columnResult?.derivedContext?.bendingMomentKnM?.toFixed(1) ?? '-'}</strong>
               </div>
+              {columnEffortsByType.map((effort) => (
+                <div key={effort.key} className="load-tile">
+                  <span>{`${effort.label}: N / M`}</span>
+                  <strong>
+                    {effort.axialLoadKn === null || effort.bendingMomentKnM === null
+                      ? '-'
+                      : `${effort.axialLoadKn.toFixed(1)} / ${effort.bendingMomentKnM.toFixed(1)}`}
+                  </strong>
+                </div>
+              ))}
             </div>
           </div>
 
