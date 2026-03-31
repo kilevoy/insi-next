@@ -128,11 +128,11 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
   const roofCoveringNormalized = input.roofCoveringType.toLowerCase()
   const wallCoveringNormalized = input.wallCoveringType.toLowerCase()
   const showRoofProfileSheet =
-    roofCoveringNormalized.includes('РїСЂРѕС„Р»РёСЃС‚') ||
-    roofCoveringNormalized.includes('РЅР°С€Рµ') ||
-    roofCoveringNormalized.includes('РјР°Р»РѕСѓРєР»РѕРЅРЅР°СЏ РєСЂРѕРІР»СЏ')
+    roofCoveringNormalized.includes('профлист') ||
+    roofCoveringNormalized.includes('наше') ||
+    roofCoveringNormalized.includes('малоуклонная кровля')
   const showWallProfileSheet =
-    wallCoveringNormalized.includes('РЅР°С€Рµ') && wallCoveringNormalized.includes('РіРІР»')
+    wallCoveringNormalized.includes('наше') && wallCoveringNormalized.includes('гвл')
 
   return (
     <div className="unified-input-panel">
@@ -161,7 +161,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
 
         <div className="field-row field-row--three">
           <label className="field">
-            <span className="field-label">РўРёРї РјРµСЃС‚РЅРѕСЃС‚Рё</span>
+            <span className="field-label">Тип местности</span>
             <select
               className="field-select"
               value={input.terrainType}
@@ -178,7 +178,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
           </label>
 
           <label className="field">
-            <span className="field-label">РЈСЂРѕРІРµРЅСЊ РѕС‚РІРµС‚СЃС‚.</span>
+            <span className="field-label">Уровень ответст.</span>
             <input
               className="field-input"
               type="text"
@@ -188,7 +188,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
           </label>
 
           <NumberField
-            label="РќР°РґР±Р°РІРєР°, %"
+            label="Надбавка, %"
             value={input.extraLoadPercent}
             onValue={(value) => onChange('extraLoadPercent', value)}
             min={0}
@@ -198,18 +198,18 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
       </section>
 
       <section className="form-section">
-        <h3 className="form-section-title">РџР°СЂР°РјРµС‚СЂС‹ Р·РґР°РЅРёСЏ</h3>
+        <h3 className="form-section-title">Параметры здания</h3>
 
         <div className="field-row field-row--three">
           <NumberField
-            label="РЁРёСЂРёРЅР°, Рј"
+            label="Ширина, м"
             value={input.spanM}
             onValue={(value) => onChange('spanM', value)}
             min={1}
             max={MAX_SUPPORTED_WIND_SPAN_M}
           />
           <NumberField
-            label="Р”Р»РёРЅР°, Рј"
+            label="Длина, м"
             value={input.buildingLengthM}
             onValue={(value) => onChange('buildingLengthM', value)}
             min={1}
@@ -305,7 +305,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
 
         <div className="field-row">
           <label className="field">
-            <span className="field-label">РљРѕР»-РІРѕ РїСЂРѕР»РµС‚РѕРІ</span>
+            <span className="field-label">Кол-во пролетов</span>
             <select
               className="field-select"
               value={input.spansCount}
@@ -313,13 +313,13 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
                 onChange('spansCount', event.target.value as UnifiedInputState['spansCount'])
               }
             >
-              <option value={SPANS_COUNT_OPTIONS[0]}>РѕРґРёРЅ</option>
-              <option value={SPANS_COUNT_OPTIONS[1]}>РЅРµСЃРєРѕР»СЊРєРѕ</option>
+              <option value={SPANS_COUNT_OPTIONS[0]}>один</option>
+              <option value={SPANS_COUNT_OPTIONS[1]}>несколько</option>
             </select>
           </label>
 
           <label className="field">
-            <span className="field-label">РўРёРї РєСЂРѕРІР»Рё</span>
+            <span className="field-label">Тип кровли</span>
             <select
               className="field-select"
               value={input.roofType}
@@ -335,13 +335,13 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
         </div>
 
         <div className="field-row field-row--three">
-          <NumberField label="РЈРєР»РѕРЅ РєСЂРѕРІР»Рё, В°" value={input.roofSlopeDeg} onValue={(value) => onChange('roofSlopeDeg', value)} min={0} max={60} />
-          <NumberField label="РЁР°Рі СЂР°Рј, Рј" value={input.frameStepM} onValue={(value) => onChange('frameStepM', value)} min={1} max={MAX_SUPPORTED_BUILDING_LENGTH_M} />
-          <NumberField label="РЁР°Рі С„Р°С…РІРµСЂРєР°, Рј" value={input.fakhverkStepM} onValue={(value) => onChange('fakhverkStepM', value)} min={1} max={MAX_SUPPORTED_WIND_SPAN_M} />
+          <NumberField label="Уклон кровли, °" value={input.roofSlopeDeg} onValue={(value) => onChange('roofSlopeDeg', value)} min={0} max={60} />
+          <NumberField label="Шаг рам, м" value={input.frameStepM} onValue={(value) => onChange('frameStepM', value)} min={1} max={MAX_SUPPORTED_BUILDING_LENGTH_M} />
+          <NumberField label="Шаг фахверка, м" value={input.fakhverkStepM} onValue={(value) => onChange('fakhverkStepM', value)} min={1} max={MAX_SUPPORTED_WIND_SPAN_M} />
         </div>
 
         <label className="field">
-          <span className="field-label">РЎРІСЏР·Рё РїРѕ РїРµСЂРёРјРµС‚СЂСѓ</span>
+          <span className="field-label">Связи по периметру</span>
           <select
             className="field-select"
             value={input.perimeterBracing}
@@ -359,10 +359,10 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
       </section>
 
       <section className="form-section">
-        <h3 className="form-section-title">РЎС‚РµРЅС‹ Рё РєСЂРѕРІР»СЏ</h3>
+        <h3 className="form-section-title">Стены и кровля</h3>
 
         <label className="field">
-          <span className="field-label">РџРѕРєСЂС‹С‚РёРµ РєСЂРѕРІР»Рё</span>
+          <span className="field-label">Покрытие кровли</span>
           <select
             className="field-select"
             value={input.roofCoveringType}
@@ -377,7 +377,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
         </label>
 
         <label className="field">
-          <span className="field-label">РћРіСЂР°Р¶РґРµРЅРёРµ СЃС‚РµРЅ</span>
+          <span className="field-label">Ограждение стен</span>
           <select
             className="field-select"
             value={input.wallCoveringType}
@@ -395,7 +395,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
           <div className="field-row">
             {showRoofProfileSheet && (
               <label className="field">
-                <span className="field-label">РџСЂРѕС„Р»РёСЃС‚ РєСЂРѕРІР»Рё</span>
+                <span className="field-label">Профлист кровли</span>
                 <select
                   className="field-select"
                   value={input.profileSheet}
@@ -412,7 +412,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
 
             {showWallProfileSheet && (
               <label className="field">
-                <span className="field-label">РџСЂРѕС„Р»РёСЃС‚ СЃС‚РµРЅ</span>
+                <span className="field-label">Профлист стен</span>
                 <select
                   className="field-select"
                   value={input.wallProfileSheet}
@@ -431,11 +431,11 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
       </section>
 
       <section className="form-section">
-        <h3 className="form-section-title">РљСЂРѕРІР»СЏ Рё РїСЂРѕРіРѕРЅС‹</h3>
+        <h3 className="form-section-title">Кровля и прогоны</h3>
 
         <div className="field-row">
           <label className="field">
-            <span className="field-label">РЎРЅРµРіРѕРІРѕР№ РјРµС€РѕРє</span>
+            <span className="field-label">Снеговой мешок</span>
             <select
               className="field-select"
               value={input.snowBagMode}
@@ -454,9 +454,9 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
 
         {input.snowBagMode !== 'нет' && (
           <div className="field-row animate-in">
-            <NumberField label="РџРµСЂРµРїР°Рґ, Рј" value={input.heightDifferenceM} onValue={(value) => onChange('heightDifferenceM', value)} min={0} />
+            <NumberField label="Перепад, м" value={input.heightDifferenceM} onValue={(value) => onChange('heightDifferenceM', value)} min={0} />
             <NumberField
-              label="Р Р°Р·РјРµСЂ СЃРѕСЃРµРґРЅРµРіРѕ Р·РґР°РЅРёСЏ, Рј"
+              label="Размер соседнего здания, м"
               value={input.adjacentBuildingSizeM}
               onValue={(value) => onChange('adjacentBuildingSizeM', value)}
               min={0}
@@ -466,7 +466,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
 
         <div className="field-row">
           <label className="field">
-            <span className="field-label">РЎРЅРµРіРѕР·Р°РґРµСЂР¶Р°С‚РµР»СЊ</span>
+            <span className="field-label">Снегозадержатель</span>
             <select
               className="field-select"
               value={input.snowRetentionPurlin}
@@ -486,7 +486,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
           </label>
 
           <label className="field">
-            <span className="field-label">РћРіСЂР°Р¶РґРµРЅРёРµ РєСЂРѕРІР»Рё</span>
+            <span className="field-label">Ограждение кровли</span>
             <select
               className="field-select"
               value={input.barrierPurlin}
@@ -504,13 +504,13 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
         </div>
 
         <div className="field-row">
-          <NumberField label="РњРёРЅ. С€Р°Рі, РјРј" value={input.manualMinStepMm} onValue={(value) => onChange('manualMinStepMm', value)} step="1" min={0} />
-          <NumberField label="РњР°РєСЃ. С€Р°Рі, РјРј" value={input.manualMaxStepMm} onValue={(value) => onChange('manualMaxStepMm', value)} step="1" min={0} />
-          <NumberField label="РЁР°Рі СЂР°СЃРїРѕСЂРѕРє" value={input.braceSpacingM} onValue={(value) => onChange('braceSpacingM', value)} step="0.1" min={0.1} />
+          <NumberField label="Мин. шаг, мм" value={input.manualMinStepMm} onValue={(value) => onChange('manualMinStepMm', value)} step="1" min={0} />
+          <NumberField label="Макс. шаг, мм" value={input.manualMaxStepMm} onValue={(value) => onChange('manualMaxStepMm', value)} step="1" min={0} />
+          <NumberField label="Шаг распорок" value={input.braceSpacingM} onValue={(value) => onChange('braceSpacingM', value)} step="0.1" min={0.1} />
         </div>
         <div className="field-row">
           <NumberField
-            label="РњР°РєСЃ. Рє-С‚ РёСЃРї."
+            label="Макс. к-т исп."
             value={input.maxUtilizationRatio}
             onValue={(value) => onChange('maxUtilizationRatio', value)}
             step="0.01"
@@ -521,80 +521,80 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
       </section>
 
       <section className="form-section">
-        <h3 className="form-section-title">РќР°СЃС‚СЂРѕР№РєР° С„РµСЂРј</h3>
+        <h3 className="form-section-title">Настройка ферм</h3>
         <p className="truss-settings-legend">
-          РћР±РѕР·РЅР°С‡РµРЅРёСЏ: Р’Рџ вЂ” РІРµСЂС…РЅРёР№ РїРѕСЏСЃ, РќРџ вЂ” РЅРёР¶РЅРёР№ РїРѕСЏСЃ, РћР Р± вЂ” РѕРїРѕСЂРЅС‹Р№ СЂР°СЃРєРѕСЃ Р±РѕР»СЊС€РѕР№,
-          РћР  вЂ” РѕРїРѕСЂРЅС‹Р№ СЂР°СЃРєРѕСЃ, Р Р  вЂ” СЂСЏРґРѕРІРѕР№ СЂР°СЃРєРѕСЃ.
+          Обозначения: ВП — верхний пояс, НП — нижний пояс, ОРб — опорный раскос большой,
+          ОР — опорный раскос, РР — рядовой раскос.
         </p>
 
         <div className="truss-settings-grid">
           <div className="truss-settings-block">
-            <p className="truss-settings-subtitle">РњРёРЅРёРјР°Р»СЊРЅР°СЏ С‚РѕР»С‰РёРЅР°</p>
+            <p className="truss-settings-subtitle">Минимальная толщина</p>
             <TrussSettingRow
-              code="Р’Рџ, РјРј"
-              label="РњРёРЅРёРјР°Р»СЊРЅР°СЏ С‚РѕР»С‰РёРЅР° Р’Рџ, РјРј"
+              code="ВП, мм"
+              label="Минимальная толщина ВП, мм"
               value={input.trussMinThicknessVpMm}
               onValue={(value) => onChange('trussMinThicknessVpMm', value)}
             />
             <TrussSettingRow
-              code="РќРџ, РјРј"
-              label="РњРёРЅРёРјР°Р»СЊРЅР°СЏ С‚РѕР»С‰РёРЅР° РќРџ, РјРј"
+              code="НП, мм"
+              label="Минимальная толщина НП, мм"
               value={input.trussMinThicknessNpMm}
               onValue={(value) => onChange('trussMinThicknessNpMm', value)}
             />
             <TrussSettingRow
-              code="РћР Р±, РјРј"
-              label="РњРёРЅРёРјР°Р»СЊРЅР°СЏ С‚РѕР»С‰РёРЅР° РћР Р±, РјРј"
+              code="ОРб, мм"
+              label="Минимальная толщина ОРб, мм"
               value={input.trussMinThicknessOrbMm}
               onValue={(value) => onChange('trussMinThicknessOrbMm', value)}
             />
             <TrussSettingRow
-              code="РћР , РјРј"
-              label="РњРёРЅРёРјР°Р»СЊРЅР°СЏ С‚РѕР»С‰РёРЅР° РћР , РјРј"
+              code="ОР, мм"
+              label="Минимальная толщина ОР, мм"
               value={input.trussMinThicknessOrMm}
               onValue={(value) => onChange('trussMinThicknessOrMm', value)}
             />
             <TrussSettingRow
-              code="Р Р , РјРј"
-              label="РњРёРЅРёРјР°Р»СЊРЅР°СЏ С‚РѕР»С‰РёРЅР° Р Р , РјРј"
+              code="РР, мм"
+              label="Минимальная толщина РР, мм"
               value={input.trussMinThicknessRrMm}
               onValue={(value) => onChange('trussMinThicknessRrMm', value)}
             />
           </div>
 
           <div className="truss-settings-block">
-            <p className="truss-settings-subtitle">РњР°РєСЃРёРјР°Р»СЊРЅР°СЏ С€РёСЂРёРЅР°</p>
+            <p className="truss-settings-subtitle">Максимальная ширина</p>
             <TrussSettingRow
-              code="Р’Рџ, РјРј"
-              label="РњР°РєСЃРёРјР°Р»СЊРЅР°СЏ С€РёСЂРёРЅР° Р’Рџ, РјРј"
+              code="ВП, мм"
+              label="Максимальная ширина ВП, мм"
               value={input.trussMaxWidthVpMm}
               onValue={(value) => onChange('trussMaxWidthVpMm', value)}
             />
             <TrussSettingRow
-              code="РќРџ, РјРј"
-              label="РњР°РєСЃРёРјР°Р»СЊРЅР°СЏ С€РёСЂРёРЅР° РќРџ, РјРј"
+              code="НП, мм"
+              label="Максимальная ширина НП, мм"
               value={input.trussMaxWidthNpMm}
               onValue={(value) => onChange('trussMaxWidthNpMm', value)}
             />
           </div>
 
           <div className="truss-settings-block">
-            <p className="truss-settings-subtitle">РњРёРЅРёРјР°Р»СЊРЅР°СЏ С€РёСЂРёРЅР°</p>
+            <p className="truss-settings-subtitle">Минимальная ширина</p>
             <TrussSettingRow
-              code="РћР Р±, РјРј"
-              label="РњРёРЅРёРјР°Р»СЊРЅР°СЏ С€РёСЂРёРЅР° РћР Р±, РјРј"
+              code="ОРб, мм"
+              label="Минимальная ширина ОРб, мм"
               value={input.trussMinWidthOrbMm}
               onValue={(value) => onChange('trussMinWidthOrbMm', value)}
             />
             <TrussSettingRow
-              code="РћР , РјРј"
-              label="РњРёРЅРёРјР°Р»СЊРЅР°СЏ С€РёСЂРёРЅР° РћР , РјРј"
+              code="ОР, мм"
+              label="Минимальная ширина ОР, мм"
               value={input.trussMinWidthOrMm}
               onValue={(value) => onChange('trussMinWidthOrMm', value)}
             />
             <TrussSettingRow
-              code="Р Р , РјРј"
-              label="РњРёРЅРёРјР°Р»СЊРЅР°СЏ С€РёСЂРёРЅР° Р Р , РјРј"
+              code="РР, мм"
+              label="Минимальная ширина РР, мм"
               value={input.trussMinWidthRrMm}
               onValue={(value) => onChange('trussMinWidthRrMm', value)}
             />
@@ -603,11 +603,11 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
       </section>
 
       <section className="form-section">
-        <h3 className="form-section-title">РљСЂР°РЅРѕРІРѕРµ РѕР±РѕСЂСѓРґРѕРІР°РЅРёРµ</h3>
+        <h3 className="form-section-title">Крановое оборудование</h3>
 
         <div className="field-row">
           <label className="field">
-            <span className="field-label">РћРїРѕСЂРЅС‹Р№ РєСЂР°РЅ</span>
+            <span className="field-label">Опорный кран</span>
             <select
               className="field-select"
               value={input.supportCraneMode}
@@ -624,7 +624,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
           </label>
 
           <label className="field">
-            <span className="field-label">РџРѕРґРІРµСЃРЅРѕР№ РєСЂР°РЅ</span>
+            <span className="field-label">Подвесной кран</span>
             <select
               className="field-select"
               value={input.hangingCraneMode}
@@ -644,7 +644,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
         {input.supportCraneMode === 'есть' && (
           <div className="field-row animate-in">
             <label className="field">
-              <span className="field-label">Р“/Рї, С‚</span>
+              <span className="field-label">Г/п, т</span>
               <select
                 className="field-select"
                 value={input.supportCraneCapacity}
@@ -658,7 +658,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
               </select>
             </label>
             <label className="field">
-              <span className="field-label">РљРѕР»РёС‡РµСЃС‚РІРѕ РєСЂР°РЅРѕРІ</span>
+              <span className="field-label">Количество кранов</span>
               <select
                 className="field-select"
                 value={input.supportCraneCount}
@@ -679,7 +679,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
         {input.supportCraneMode === 'есть' && (
           <div className="field-row animate-in">
             <label className="field">
-              <span className="field-label">РћРґРЅРѕРїСЂРѕР»РµС‚РЅС‹Р№ СЂРµР¶РёРј</span>
+              <span className="field-label">Однопролетный режим</span>
               <select
                 className="field-select"
                 value={input.supportCraneSingleSpanMode}
@@ -698,7 +698,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
               </select>
             </label>
             <NumberField
-              label="РЈСЂРѕРІРµРЅСЊ СЂРµР»СЊСЃР°, Рј"
+              label="Уровень рельса, м"
               value={input.supportCraneRailLevelM}
               onValue={(value) => onChange('supportCraneRailLevelM', value)}
               min={0}
@@ -709,7 +709,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
         {input.hangingCraneMode === 'есть' && (
           <div className="field-row animate-in">
             <label className="field">
-              <span className="field-label">РћРґРЅРѕРїСЂРѕР»РµС‚РЅС‹Р№ СЂРµР¶РёРј</span>
+              <span className="field-label">Однопролетный режим</span>
               <select
                 className="field-select"
                 value={input.hangingCraneSingleSpanMode}
@@ -728,7 +728,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
               </select>
             </label>
             <NumberField
-              label="Р“/Рї РїРѕРґРІРµСЃРЅРѕРіРѕ, С‚"
+              label="Г/п подвесного, т"
               value={input.hangingCraneCapacityT}
               onValue={(value) => onChange('hangingCraneCapacityT', value)}
               min={0}
@@ -738,17 +738,17 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
       </section>
 
       <section className="form-section">
-        <h3 className="form-section-title">Р­РєРѕРЅРѕРјРёРєР° (СЂСѓР±/РєРі)</h3>
+        <h3 className="form-section-title">Экономика (руб/кг)</h3>
         <div className="field-row">
           <NumberField
-            label="Р”РІСѓС‚Р°РІСЂ РЎ255"
+            label="Двутавр С255"
             value={input.iBeamS255PriceRubPerKg}
             onValue={(value) => onChange('iBeamS255PriceRubPerKg', value)}
             step="0.01"
             min={0.01}
           />
           <NumberField
-            label="Р”РІСѓС‚Р°РІСЂ РЎ355"
+            label="Двутавр С355"
             value={input.iBeamS355PriceRubPerKg}
             onValue={(value) => onChange('iBeamS355PriceRubPerKg', value)}
             step="0.01"
@@ -758,14 +758,14 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
 
         <div className="field-row">
           <NumberField
-            label="РўСЂСѓР±Р° РЎ245"
+            label="Труба С245"
             value={input.tubeS245PriceRubPerKg}
             onValue={(value) => onChange('tubeS245PriceRubPerKg', value)}
             step="0.01"
             min={0.01}
           />
           <NumberField
-            label="РўСЂСѓР±Р° РЎ345"
+            label="Труба С345"
             value={input.tubeS345PriceRubPerKg}
             onValue={(value) => onChange('tubeS345PriceRubPerKg', value)}
             step="0.01"
@@ -775,14 +775,14 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
 
         <div className="field-row">
           <NumberField
-            label="Р¦РµРЅР° Р›РЎРўРљ РњРџ350"
+            label="Цена ЛСТК МП350"
             value={input.lstkMp350PriceRubPerKg}
             onValue={(value) => onChange('lstkMp350PriceRubPerKg', value)}
             step="0.01"
             min={0.01}
           />
           <NumberField
-            label="Р¦РµРЅР° Р›РЎРўРљ РњРџ390"
+            label="Цена ЛСТК МП390"
             value={input.lstkMp390PriceRubPerKg}
             onValue={(value) => onChange('lstkMp390PriceRubPerKg', value)}
             step="0.01"
