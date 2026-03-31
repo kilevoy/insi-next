@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   MAX_SUPPORTED_BUILDING_HEIGHT_M,
   MAX_SUPPORTED_BUILDING_LENGTH_M,
@@ -23,6 +24,17 @@ import {
 interface UnifiedInputPanelProps {
   input: UnifiedInputState
   onChange: <K extends keyof UnifiedInputState>(key: K, value: UnifiedInputState[K]) => void
+}
+
+function parseLocalizedDecimal(value: string): number | null {
+  const normalized = value.trim().replace(',', '.')
+
+  if (normalized === '') {
+    return null
+  }
+
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 
 function NumberField({
@@ -90,6 +102,14 @@ function TrussSettingRow({
 export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
   const derivedHeights = deriveHeights(input)
   const usesManualTrussEaveDepth = input.manualTrussEaveDepthM !== null
+  const [manualTrussEaveDepthDraft, setManualTrussEaveDepthDraft] = useState('')
+
+  useEffect(() => {
+    setManualTrussEaveDepthDraft(
+      input.manualTrussEaveDepthM === null ? '' : String(input.manualTrussEaveDepthM).replace('.', ','),
+    )
+  }, [input.manualTrussEaveDepthM])
+
   const roofCoveringNormalized = input.roofCoveringType.toLowerCase()
   const wallCoveringNormalized = input.wallCoveringType.toLowerCase()
   const showRoofProfileSheet =
@@ -181,7 +201,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
             max={MAX_SUPPORTED_BUILDING_LENGTH_M}
           />
           <NumberField
-            label="\u0412\u044b\u0441\u043e\u0442\u0430 \u0434\u043e \u043d\u0438\u0437\u0430 \u043d\u0435\u0441\u0443\u0449\u0438\u0445, \u043c"
+            label="Высота до низа несущих, м"
             value={input.clearHeightToBottomChordM}
             onValue={(value) => onChange('clearHeightToBottomChordM', value)}
             min={MIN_SUPPORTED_BUILDING_HEIGHT_M}
@@ -189,15 +209,13 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
           />
         </div>
 
-        <label className="field">
+        <div className="field">
           <span className="field-label">Высота фермы в карнизе, м</span>
           <div style={{ display: 'grid', gap: 8 }}>
-            <label
-              className="field"
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 0, border: 'none' }}
-            >
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input
                 type="checkbox"
+                aria-label="Использовать ручное значение"
                 checked={usesManualTrussEaveDepth}
                 onChange={(event) =>
                   onChange(
@@ -215,13 +233,28 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
               <>
                 <input
                   className="field-input"
-                  type="number"
-                  step="0.05"
-                  min={0.05}
-                  value={input.manualTrussEaveDepthM ?? derivedHeights.eaveTrussDepthM}
-                  onChange={(event) =>
-                    onChange('manualTrussEaveDepthM', Number(event.target.value))
-                  }
+                  type="text"
+                  inputMode="decimal"
+                  aria-label="Высота фермы в карнизе, м"
+                  value={manualTrussEaveDepthDraft}
+                  onChange={(event) => {
+                    const nextDraft = event.target.value
+                    setManualTrussEaveDepthDraft(nextDraft)
+
+                    const parsed = parseLocalizedDecimal(nextDraft)
+                    if (parsed !== null) {
+                      onChange('manualTrussEaveDepthM', parsed)
+                    }
+                  }}
+                  onBlur={() => {
+                    const parsed = parseLocalizedDecimal(manualTrussEaveDepthDraft)
+
+                    if (parsed === null) {
+                      setManualTrussEaveDepthDraft(
+                        String(input.manualTrussEaveDepthM ?? derivedHeights.eaveTrussDepthM).replace('.', ','),
+                      )
+                    }
+                  }}
                 />
                 <small style={{ color: 'rgba(15, 23, 42, 0.72)' }}>
                   Ручное значение имеет приоритет над табличным.
@@ -238,8 +271,9 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
               <>
                 <input
                   className="field-input"
-                  type="number"
-                  value={derivedHeights.eaveTrussDepthM}
+                  type="text"
+                  aria-label="Высота фермы в карнизе, м"
+                  value={derivedHeights.eaveTrussDepthM.toFixed(2)}
                   readOnly
                 />
                 <small style={{ color: 'rgba(15, 23, 42, 0.72)' }}>
@@ -250,7 +284,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
               </>
             )}
           </div>
-        </label>
+        </div>
 
         <div className="field-row">
           <label className="field">
