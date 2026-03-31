@@ -4,6 +4,7 @@ import {
   MAX_SUPPORTED_WIND_SPAN_M,
   MIN_SUPPORTED_BUILDING_HEIGHT_M,
 } from '@/shared/config/calculation-limits'
+import { deriveHeights } from '../model/height-derivations'
 import type { UnifiedInputState } from '../model/unified-input'
 import {
   PRESENCE_OPTIONS,
@@ -87,6 +88,8 @@ function TrussSettingRow({
 }
 
 export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
+  const derivedHeights = deriveHeights(input)
+  const usesManualTrussEaveDepth = input.manualTrussEaveDepthM !== null
   const roofCoveringNormalized = input.roofCoveringType.toLowerCase()
   const wallCoveringNormalized = input.wallCoveringType.toLowerCase()
   const showRoofProfileSheet =
@@ -178,13 +181,76 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
             max={MAX_SUPPORTED_BUILDING_LENGTH_M}
           />
           <NumberField
-            label="Высота, м"
-            value={input.buildingHeightM}
-            onValue={(value) => onChange('buildingHeightM', value)}
+            label="\u0412\u044b\u0441\u043e\u0442\u0430 \u0434\u043e \u043d\u0438\u0437\u0430 \u043d\u0435\u0441\u0443\u0449\u0438\u0445, \u043c"
+            value={input.clearHeightToBottomChordM}
+            onValue={(value) => onChange('clearHeightToBottomChordM', value)}
             min={MIN_SUPPORTED_BUILDING_HEIGHT_M}
             max={MAX_SUPPORTED_BUILDING_HEIGHT_M}
           />
         </div>
+
+        <label className="field">
+          <span className="field-label">Высота фермы в карнизе, м</span>
+          <div style={{ display: 'grid', gap: 8 }}>
+            <label
+              className="field"
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 0, border: 'none' }}
+            >
+              <input
+                type="checkbox"
+                checked={usesManualTrussEaveDepth}
+                onChange={(event) =>
+                  onChange(
+                    'manualTrussEaveDepthM',
+                    event.target.checked ? derivedHeights.eaveTrussDepthM : null,
+                  )
+                }
+              />
+              <span className="field-label" style={{ margin: 0 }}>
+                Использовать ручное значение
+              </span>
+            </label>
+
+            {usesManualTrussEaveDepth ? (
+              <>
+                <input
+                  className="field-input"
+                  type="number"
+                  step="0.05"
+                  min={0.05}
+                  value={input.manualTrussEaveDepthM ?? derivedHeights.eaveTrussDepthM}
+                  onChange={(event) =>
+                    onChange('manualTrussEaveDepthM', Number(event.target.value))
+                  }
+                />
+                <small style={{ color: 'rgba(15, 23, 42, 0.72)' }}>
+                  Ручное значение имеет приоритет над табличным.
+                </small>
+                <button
+                  type="button"
+                  className="results-print-action"
+                  onClick={() => onChange('manualTrussEaveDepthM', null)}
+                >
+                  Сбросить к стандартному
+                </button>
+              </>
+            ) : (
+              <>
+                <input
+                  className="field-input"
+                  type="number"
+                  value={derivedHeights.eaveTrussDepthM}
+                  readOnly
+                />
+                <small style={{ color: 'rgba(15, 23, 42, 0.72)' }}>
+                  {derivedHeights.eaveTrussDepthSource === 'standard-table'
+                    ? `Стандартное значение по таблице для пролёта ${input.spanM} м: ${derivedHeights.eaveTrussDepthM.toFixed(2)} м`
+                    : `Нет стандартного табличного значения для пролёта ${input.spanM} м, используется fallback ${derivedHeights.eaveTrussDepthM.toFixed(2)} м`}
+                </small>
+              </>
+            )}
+          </div>
+        </label>
 
         <div className="field-row">
           <label className="field">

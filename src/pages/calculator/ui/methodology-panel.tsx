@@ -23,7 +23,7 @@ function resolveRoofHeightFormula(roofType: string): string {
 }
 
 function resolveCurrentGeometry(input: UnifiedInputState): string {
-  return `${formatNumber(input.spanM, 2)} x ${formatNumber(input.buildingLengthM, 2)} x ${formatNumber(input.buildingHeightM, 2)} м`
+  return `${formatNumber(input.spanM, 2)} x ${formatNumber(input.buildingLengthM, 2)} x ${formatNumber(input.clearHeightToBottomChordM, 2)} м`
 }
 
 function resolveMassDrivers(input: UnifiedInputState): string[] {

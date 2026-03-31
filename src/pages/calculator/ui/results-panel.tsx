@@ -10,6 +10,7 @@ import type { TrussCalculationResult } from '@/domain/truss/model/calculate-trus
 import { resolveTrussGeometryTemplate } from '@/domain/truss/model/truss-geometry'
 import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing'
 import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclosing-mapper'
+import { deriveHeights } from '../model/height-derivations'
 import type { UnifiedInputState } from '../model/unified-input'
 import { MethodologyPanel } from './methodology-panel'
 import { PurlinTrussDiagram } from './purlin-truss-diagram'
@@ -921,6 +922,7 @@ function renderGeneralSpecificationOverview(
   isColumnManualMode: boolean,
   selectedEnclosingClassKey: EnclosingClassKey,
 ) {
+  const heights = deriveHeights(input)
   const { selectedCandidate, selectedCostRub } = resolvePurlinSpecificationState(
     purlinResult,
     purlinSpecificationSource,
@@ -931,7 +933,10 @@ function renderGeneralSpecificationOverview(
   const roofPurlinStepM =
     selectedCandidate?.stepMm && selectedCandidate.stepMm > 0 ? selectedCandidate.stepMm / 1000 : 1.5
   const enclosingInput = {
-    ...mapUnifiedInputToEnclosingInput(input),
+    ...mapUnifiedInputToEnclosingInput({
+      ...input,
+      buildingHeightM: heights.eaveSupportHeightM,
+    }),
     roofPurlinStepM,
   }
   const enclosingResult = calculateEnclosing(enclosingInput)
@@ -1018,7 +1023,7 @@ function renderGeneralSpecificationOverview(
         <div className="load-tile">
           <span>Ширина, м x Длина, м x Высота, м</span>
           <strong>
-            {`${formatNumber(input.spanM, 2)} x ${formatNumber(input.buildingLengthM, 2)} x ${formatNumber(input.buildingHeightM, 2)}`}
+            {`${formatNumber(input.spanM, 2)} x ${formatNumber(input.buildingLengthM, 2)} x ${formatNumber(input.clearHeightToBottomChordM, 2)}`}
           </strong>
         </div>
         <div className="load-tile">
@@ -1267,7 +1272,10 @@ function renderEnclosingSummarySpecification(
     const roofPurlinStepM =
       selectedPurlin?.stepMm && selectedPurlin.stepMm > 0 ? selectedPurlin.stepMm / 1000 : 1.5
     const enclosingInput = {
-      ...mapUnifiedInputToEnclosingInput(input),
+      ...mapUnifiedInputToEnclosingInput({
+        ...input,
+        buildingHeightM: deriveHeights(input).eaveSupportHeightM,
+      }),
       roofPurlinStepM,
     }
     const enclosingResult = calculateEnclosing(enclosingInput)
@@ -1339,7 +1347,10 @@ function renderEnclosingOverview(
       selectedPurlin?.stepMm && selectedPurlin.stepMm > 0 ? selectedPurlin.stepMm / 1000 : 1.5
 
     const enclosingInput = {
-      ...mapUnifiedInputToEnclosingInput(input),
+      ...mapUnifiedInputToEnclosingInput({
+        ...input,
+        buildingHeightM: deriveHeights(input).eaveSupportHeightM,
+      }),
       roofPurlinStepM,
     }
     const enclosingResult = calculateEnclosing(enclosingInput)

@@ -27,7 +27,8 @@ export interface UnifiedInputState {
   roofType: (typeof ROOF_TYPE_OPTIONS)[number]
   spanM: number
   buildingLengthM: number
-  buildingHeightM: number
+  clearHeightToBottomChordM: number
+  manualTrussEaveDepthM: number | null
   roofSlopeDeg: number
   frameStepM: number
   fakhverkStepM: number
@@ -269,13 +270,50 @@ function normalizeNonNegativeNumber(value: unknown, fallback: number): number {
   return Number.isFinite(numeric) && numeric >= 0 ? numeric : fallback
 }
 
+function normalizePositiveNumber(value: unknown, fallback: number): number {
+  const numeric = Number(value)
+  return Number.isFinite(numeric) && numeric > 0 ? numeric : fallback
+}
+
+function normalizeNullablePositiveNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null
+  }
+
+  const numeric = Number(value)
+  return Number.isFinite(numeric) && numeric > 0 ? numeric : null
+}
+
+function resolveNormalizedHeightFields(
+  parsed: Partial<UnifiedInputState> & {
+    buildingHeightM?: unknown
+    supportNodeOffsetAboveBottomChordM?: unknown
+  },
+): Pick<
+  UnifiedInputState,
+  'clearHeightToBottomChordM' | 'manualTrussEaveDepthM'
+> {
+  const clearHeightCandidate = parsed.clearHeightToBottomChordM ?? parsed.buildingHeightM
+  const manualDepthCandidate =
+    parsed.manualTrussEaveDepthM ?? parsed.supportNodeOffsetAboveBottomChordM
+
+  return {
+    clearHeightToBottomChordM: normalizePositiveNumber(
+      clearHeightCandidate,
+      defaultUnifiedInput.clearHeightToBottomChordM,
+    ),
+    manualTrussEaveDepthM: normalizeNullablePositiveNumber(manualDepthCandidate),
+  }
+}
+
 export const defaultUnifiedInput: UnifiedInputState = {
   city: DEFAULT_UNIFIED_CITY,
   responsibilityLevel: '1',
   roofType: 'двускатная',
   spanM: 24,
   buildingLengthM: 60,
-  buildingHeightM: 10,
+  clearHeightToBottomChordM: 8,
+  manualTrussEaveDepthM: null,
   roofSlopeDeg: 6,
   frameStepM: 6,
   fakhverkStepM: 6,
@@ -340,11 +378,21 @@ export const defaultUnifiedInput: UnifiedInputState = {
 }
 
 export function normalizeLoadedInput(raw: unknown): UnifiedInputState {
-  const parsed = (raw && typeof raw === 'object' ? raw : {}) as Partial<UnifiedInputState>
+  const parsed = (raw && typeof raw === 'object' ? raw : {}) as Partial<UnifiedInputState> & {
+    buildingHeightM?: unknown
+    supportNodeOffsetAboveBottomChordM?: unknown
+  }
+  const {
+    buildingHeightM: _legacyBuildingHeightM,
+    supportNodeOffsetAboveBottomChordM: _legacySupportNodeOffsetAboveBottomChordM,
+    ...parsedWithoutLegacyHeight
+  } = parsed
+  const normalizedHeightFields = resolveNormalizedHeightFields(parsed)
 
   return {
     ...defaultUnifiedInput,
-    ...parsed,
+    ...parsedWithoutLegacyHeight,
+    ...normalizedHeightFields,
     city: normalizeCatalogValue(parsed.city, UNIFIED_CITY_OPTIONS, defaultUnifiedInput.city),
     roofType: normalizeRoofType(parsed.roofType),
     spansCount: normalizeSpansCount(parsed.spansCount),

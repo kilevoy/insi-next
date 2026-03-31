@@ -6,6 +6,7 @@ import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclos
 import type { EnclosingClassKey } from '@/domain/enclosing/model/enclosing-reference.generated'
 import type { PurlinCalculationResult } from '@/domain/purlin/model/calculate-purlin'
 import type { TrussCalculationResult } from '@/domain/truss/model/calculate-truss'
+import { deriveHeights } from '../model/height-derivations'
 import type { UnifiedInputState } from '../model/unified-input'
 
 interface SelectionSummaryPageProps {
@@ -503,10 +504,12 @@ export function SelectionSummaryPage({
     0,
   )
   const columnTotalCount = columnGroups.reduce((sum, group) => sum + group.columnsCount, 0)
+  const heights = deriveHeights(input)
   const roofPurlinStepM =
     selectedCandidate?.stepMm && selectedCandidate.stepMm > 0 ? selectedCandidate.stepMm / 1000 : 1.5
   const enclosingInput = mapUnifiedInputToEnclosingInput({
     ...input,
+    buildingHeightM: heights.eaveSupportHeightM,
     roofPurlinStepM,
   })
   const enclosingResult = calculateEnclosing(enclosingInput)
@@ -579,7 +582,7 @@ export function SelectionSummaryPage({
     input.city || 'Город не выбран',
     `снеговой район ${snowRegionLabel}`,
     `ветровой район ${windRegionLabel}`,
-    `${formatNumber(input.spanM, 0)}х${formatNumber(input.buildingLengthM, 0)}х${formatNumber(input.buildingHeightM, 0)}`,
+    `${formatNumber(input.spanM, 0)}х${formatNumber(input.buildingLengthM, 0)}х${formatNumber(input.clearHeightToBottomChordM, 0)}`,
     resolveSpansSummaryLabel(input.spansCount),
     `шаг рам ${formatNumber(input.frameStepM, 1)} м`,
     `кровля ${input.roofType.toLowerCase()}`,

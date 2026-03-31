@@ -3,9 +3,12 @@ import type { PurlinInput } from '@/domain/purlin/model/purlin-input'
 import type { PurlinCalculationResult } from '@/domain/purlin/model/purlin-output'
 import type { TrussInput } from '@/domain/truss/model/truss-input'
 import { defaultUnifiedInput, type UnifiedInputState } from './unified-input'
+import { deriveHeights } from './height-derivations'
 import { DEFAULT_NORMATIVE_MODE } from './unified-input-options'
 
 export function mapToPurlinInput(state: UnifiedInputState): PurlinInput {
+  const heights = deriveHeights(state)
+
   return {
     city: state.city,
     normativeMode: DEFAULT_NORMATIVE_MODE,
@@ -13,7 +16,7 @@ export function mapToPurlinInput(state: UnifiedInputState): PurlinInput {
     roofType: state.roofType,
     spanM: state.spanM,
     buildingLengthM: state.buildingLengthM,
-    buildingHeightM: state.buildingHeightM,
+    buildingHeightM: heights.windReferenceHeightM,
     roofSlopeDeg: state.roofSlopeDeg,
     frameStepM: state.frameStepM,
     fakhverkSpacingM: state.fakhverkStepM,
@@ -42,13 +45,15 @@ export function mapToPurlinInput(state: UnifiedInputState): PurlinInput {
 }
 
 export function mapToColumnInput(state: UnifiedInputState): ColumnInput {
+  const heights = deriveHeights(state)
+
   return {
     city: state.city,
     responsibilityLevel: state.responsibilityLevel,
     roofType: state.roofType,
     spanM: state.spanM,
     buildingLengthM: state.buildingLengthM,
-    buildingHeightM: state.buildingHeightM,
+    buildingHeightM: heights.eaveSupportHeightM,
     roofSlopeDeg: state.roofSlopeDeg,
     frameStepM: state.frameStepM,
     facadeColumnStepM: state.fakhverkStepM,
@@ -83,6 +88,7 @@ export function mapToTrussInput(
   purlinResult: PurlinCalculationResult,
 ): TrussInput {
   return {
+    // TODO: extend truss input with clear height / support-node geometry in a follow-up refactor.
     spanM: state.spanM,
     frameStepM: state.frameStepM,
     roofSlopeDeg: state.roofSlopeDeg,
