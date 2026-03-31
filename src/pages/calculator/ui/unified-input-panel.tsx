@@ -110,6 +110,8 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
   const manualPriorityHint =
     '\u0420\u0443\u0447\u043D\u043E\u0435 \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0438\u043C\u0435\u0435\u0442 \u043F\u0440\u0438\u043E\u0440\u0438\u0442\u0435\u0442 \u043D\u0430\u0434 \u0442\u0430\u0431\u043B\u0438\u0447\u043D\u044B\u043C.'
   const resetToStandardLabel = '\u0421\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u043A \u0441\u0442\u0430\u043D\u0434\u0430\u0440\u0442\u043D\u043E\u043C\u0443'
+  const panelTitleLabel = '\u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u0440\u0430\u0441\u0447\u0435\u0442\u0430'
+  const panelCopyLabel = '\u041E\u0431\u0449\u0438\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0434\u043B\u044F \u043A\u043E\u043B\u043E\u043D\u043D \u0438 \u043F\u0440\u043E\u0433\u043E\u043D\u043E\u0432'
 
   useEffect(() => {
     if (isManualTrussEaveDepthFocused) {
@@ -133,8 +135,8 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
   return (
     <div className="unified-input-panel">
       <div className="panel-header">
-        <h2 className="panel-title">РџР°СЂР°РјРµС‚СЂС‹ СЂР°СЃС‡РµС‚Р°</h2>
-        <p className="panel-copy">РћР±С‰РёРµ РґР°РЅРЅС‹Рµ РґР»СЏ РєРѕР»РѕРЅРЅ Рё РїСЂРѕРіРѕРЅРѕРІ</p>
+        <h2 className="panel-title">{panelTitleLabel}</h2>
+        <p className="panel-copy">{panelCopyLabel}</p>
       </div>
 
       <section className="form-section">
@@ -291,7 +293,7 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
                 />
                 <small style={{ color: 'rgba(15, 23, 42, 0.72)' }}>
                   {derivedHeights.eaveTrussDepthSource === 'standard-table'
-                    ? `РЎС‚Р°РЅРґР°СЂС‚РЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РїРѕ С‚Р°Р±Р»РёС†Рµ РґР»СЏ РїСЂРѕР»С‘С‚Р° ${input.spanM} Рј: ${derivedHeights.eaveTrussDepthM.toFixed(2)} Рј`
+                    ? `Стандартное значение по таблице для пролёта ${input.spanM} м: ${derivedHeights.eaveTrussDepthM.toFixed(2)} м`
                     : `РќРµС‚ СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ С‚Р°Р±Р»РёС‡РЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ РїСЂРѕР»С‘С‚Р° ${input.spanM} Рј, РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ fallback ${derivedHeights.eaveTrussDepthM.toFixed(2)} Рј`}
                 </small>
               </>
@@ -789,4 +791,3 @@ export function UnifiedInputPanel({ input, onChange }: UnifiedInputPanelProps) {
     </div>
   )
 }
-
