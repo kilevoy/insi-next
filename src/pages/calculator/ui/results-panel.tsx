@@ -730,6 +730,7 @@ function renderTrussOverview(
   columnResult: ColumnCalculationResult | null,
   buildingLengthM: number,
   tubeS345PriceRubPerKg: number,
+  roofType: UnifiedInputState['roofType'],
 ) {
   if (!trussResult) {
     return (
@@ -785,6 +786,7 @@ function renderTrussOverview(
     <div className="tab-pane animate-in" data-testid="truss-panel">
       <div className="results-section">
         <h3 className="results-section-title">Фермы</h3>
+        <TrussVisualDiagram roofType={roofType} trussResult={trussResult} />
         <p className="results-inline-note">
           Обозначения: ВП — верхний пояс, НП — нижний пояс, ОРб — опорный раскос большой,
           ОР — опорный раскос, РР — рядовой раскос.
@@ -2029,6 +2031,7 @@ export function ResultsPanel({
           columnResult,
           input.buildingLengthM,
           input.tubeS345PriceRubPerKg,
+          input.roofType,
         )
       ) : activeTab === 'graphics' ? (
         <div className="tab-pane animate-in">
@@ -2126,6 +2129,22 @@ export function ResultsPanel({
                 </strong>
               </div>
             </div>
+          </div>
+
+          <div className="results-section">
+            <h3 className="results-section-title">Схема фермы с прогонами</h3>
+            <PurlinTrussDiagram
+              selectedPurlinFamily={purlinSpecificationState.selectedCandidate?.family ?? null}
+              roofSlopeDeg={input.roofSlopeDeg}
+              roofType={input.roofType}
+              selectedPurlinProfile={purlinSpecificationState.selectedCandidate?.profile ?? null}
+              selectedPurlinStepMm={
+                purlinSpecificationState.selectedCandidate?.stepMm ??
+                purlinResult?.loadSummary.autoMaxStepMm ??
+                null
+              }
+              spanM={input.spanM}
+            />
           </div>
 
           <div className="results-section-row">
