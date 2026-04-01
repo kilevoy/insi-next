@@ -66,7 +66,6 @@ export function buildFrameSectionGraphicsModel(input: UnifiedInputState): FrameG
     height: CANVAS_HEIGHT,
     lines: [],
     polylines: [],
-    polygons: [],
     rects: [],
     texts: [],
     summary,

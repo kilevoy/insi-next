@@ -13,12 +13,6 @@ export type PolylinePrimitive = {
   className?: string
 }
 
-export type PolygonPrimitive = {
-  kind: 'polygon'
-  points: Point[]
-  className?: string
-}
-
 export type RectPrimitive = {
   kind: 'rect'
   at: Point
@@ -49,7 +43,6 @@ export type FrameGraphicsModel = {
   height: number
   lines: LinePrimitive[]
   polylines: PolylinePrimitive[]
-  polygons: PolygonPrimitive[]
   rects: RectPrimitive[]
   texts: TextPrimitive[]
   summary: FrameGraphicsSummary

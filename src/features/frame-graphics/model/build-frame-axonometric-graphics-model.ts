@@ -242,7 +242,6 @@ export function buildFrameAxonometricGraphicsModel(input: UnifiedInputState): Fr
       points: polyline.points.map(mapPoint),
       className: polyline.className,
     })),
-    polygons: [],
     rects: [],
     texts: texts3D.map((text) => ({
       kind: 'text',

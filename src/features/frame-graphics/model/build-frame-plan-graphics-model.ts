@@ -29,7 +29,6 @@ export function buildFramePlanGraphicsModel(input: UnifiedInputState): FrameGrap
     height: CANVAS_HEIGHT,
     lines: [],
     polylines: [],
-    polygons: [],
     rects: [],
     texts: [],
     summary,
