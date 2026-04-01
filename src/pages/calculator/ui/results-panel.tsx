@@ -12,13 +12,13 @@ import type { TrussCalculationResult } from '@/domain/truss/model/calculate-trus
 import { resolveTrussGeometryTemplate } from '@/domain/truss/model/truss-geometry'
 import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing'
 import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclosing-mapper'
+import { buildFrameGraphicsModel } from '@/features/frame-graphics/model/build-frame-graphics-model'
+import { FrameGraphicsSvg } from '@/features/frame-graphics/ui/frame-graphics-svg'
 import { deriveHeights } from '../model/height-derivations'
 import { mapToColumnInput } from '../model/input-mapper'
 import type { UnifiedInputState } from '../model/unified-input'
 import { MethodologyPanel } from './methodology-panel'
-import { PurlinTrussDiagram } from './purlin-truss-diagram'
 import { SelectionSummaryPage } from './selection-summary-page'
-import { TrussVisualDiagram } from './truss-visual-diagram'
 
 interface PriceImportStatus {
   isLoading: boolean
@@ -1939,15 +1939,9 @@ export function ResultsPanel({
     purlinSpecificationSource === 'sort' ? sortPurlinCandidates : lstkPurlinCandidates
   const manualPurlinSelectedIndex =
     purlinSpecificationSource === 'sort' ? selectedSortPurlinIndex : selectedLstkPurlinIndex
-  const purlinSpecificationState = resolvePurlinSpecificationState(
-    purlinResult,
-    purlinSpecificationSource,
-    purlinSelectionMode,
-    selectedSortPurlinIndex,
-    selectedLstkPurlinIndex,
-  )
   const [enclosingClassKey, setEnclosingClassKey] = useState<EnclosingClassKey>('class-1-gost')
   const columnEffortsByType = useMemo(() => resolveColumnEffortsByType(input), [input])
+  const frameGraphicsModel = useMemo(() => buildFrameGraphicsModel(input), [input])
 
   return (
     <div className={`results-panel ${isPending ? 'pending' : ''}`}>
@@ -2034,26 +2028,11 @@ export function ResultsPanel({
         <div className="tab-pane animate-in">
           <div className="results-section">
             <h3 className="results-section-title">Графика</h3>
-            <PurlinTrussDiagram
-              selectedPurlinFamily={purlinSpecificationState.selectedCandidate?.family ?? null}
-              roofSlopeDeg={input.roofSlopeDeg}
-              roofType={input.roofType}
-              selectedPurlinProfile={purlinSpecificationState.selectedCandidate?.profile ?? null}
-              selectedPurlinStepMm={
-                purlinSpecificationState.selectedCandidate?.stepMm ??
-                purlinResult?.loadSummary.autoMaxStepMm ??
-                null
-              }
-              spanM={input.spanM}
-            />
+            <FrameGraphicsSvg model={frameGraphicsModel} />
           </div>
           <div className="results-section">
             <h3 className="results-section-title">Схема фермы</h3>
-            {trussResult ? (
-              <TrussVisualDiagram roofType={input.roofType} trussResult={trussResult} />
-            ) : (
               <div className="results-empty">Данные фермы недоступны.</div>
-            )}
           </div>
         </div>
       ) : activeTab === 'purlin' ? (
