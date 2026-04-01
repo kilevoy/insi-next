@@ -1917,6 +1917,7 @@ export function ResultsPanel({
         : []
       : activeTab === 'summary' ||
           activeTab === 'selection-summary' ||
+          activeTab === 'graphics' ||
           activeTab === 'enclosing' ||
           activeTab === 'methodology'
       ? [
@@ -2032,6 +2033,32 @@ export function ResultsPanel({
           input.tubeS345PriceRubPerKg,
           input.roofType,
         )
+      ) : activeTab === 'graphics' ? (
+        <div className="tab-pane animate-in">
+          <div className="results-section">
+            <h3 className="results-section-title">Графика</h3>
+            <PurlinTrussDiagram
+              selectedPurlinFamily={purlinSpecificationState.selectedCandidate?.family ?? null}
+              roofSlopeDeg={input.roofSlopeDeg}
+              roofType={input.roofType}
+              selectedPurlinProfile={purlinSpecificationState.selectedCandidate?.profile ?? null}
+              selectedPurlinStepMm={
+                purlinSpecificationState.selectedCandidate?.stepMm ??
+                purlinResult?.loadSummary.autoMaxStepMm ??
+                null
+              }
+              spanM={input.spanM}
+            />
+          </div>
+          <div className="results-section">
+            <h3 className="results-section-title">Схема фермы</h3>
+            {trussResult ? (
+              <TrussVisualDiagram roofType={input.roofType} trussResult={trussResult} />
+            ) : (
+              <div className="results-empty">Данные фермы недоступны.</div>
+            )}
+          </div>
+        </div>
       ) : activeTab === 'purlin' ? (
         <div className="tab-pane animate-in">
           <div className="results-section">

@@ -4,6 +4,7 @@ export type DomainTab =
   | 'purlin'
   | 'column'
   | 'truss'
+  | 'graphics'
   | 'summary'
   | 'selection-summary'
   | 'enclosing'
