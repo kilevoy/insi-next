@@ -21,6 +21,14 @@ const STYLES: Record<string, CSSProperties> = {
   floor: { stroke: '#111827', strokeWidth: 1.4 },
   outline: { stroke: '#1f2937', strokeWidth: 1.2, fill: 'none' },
   'column-node': { fill: '#1f2937', stroke: 'none' },
+  'preview-shadow': { fill: '#e2e8f0', stroke: 'none' },
+  'preview-wall-front': { fill: '#dbe4ee', stroke: '#334155', strokeWidth: 1.2 },
+  'preview-wall-side': { fill: '#cfd8e3', stroke: '#334155', strokeWidth: 1.2 },
+  'preview-roof-left': { fill: '#b7c4d4', stroke: '#334155', strokeWidth: 1.2 },
+  'preview-roof-right': { fill: '#aebccd', stroke: '#334155', strokeWidth: 1.2 },
+  'preview-gate': { fill: '#475569', stroke: '#1e293b', strokeWidth: 1.1 },
+  'preview-window': { fill: '#f1f5f9', stroke: '#64748b', strokeWidth: 0.9 },
+  'preview-outline': { stroke: '#1e293b', strokeWidth: 1.4, fill: 'none' },
 }
 
 const TEXT_STYLES: Record<string, CSSProperties> = {
@@ -71,6 +79,14 @@ export function FrameGraphicsBaseSvg({ model, ariaLabel }: FrameGraphicsBaseSvgP
           points={polyline.points.map((point) => `${point.x},${point.y}`).join(' ')}
           fill="none"
           style={styleByClass(polyline.className)}
+        />
+      ))}
+
+      {model.polygons.map((polygon, index) => (
+        <polygon
+          key={`polygon-${index}`}
+          points={polygon.points.map((point) => `${point.x},${point.y}`).join(' ')}
+          style={styleByClass(polygon.className)}
         />
       ))}
 
