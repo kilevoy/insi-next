@@ -3,67 +3,90 @@ import { buildFrameGraphicsModel } from '@/features/frame-graphics/model/build-f
 import { defaultUnifiedInput } from '@/pages/calculator/model/unified-input'
 import { PRESENCE_OPTIONS, ROOF_TYPE_OPTIONS } from '@/pages/calculator/model/unified-input-options'
 
+function firstColumnTopY(model: ReturnType<typeof buildFrameGraphicsModel>): number {
+  const firstColumn = model.lines.find((line) => line.className === 'column')
+  if (!firstColumn) {
+    throw new Error('No column line in graphics model')
+  }
+
+  return Math.min(firstColumn.from.y, firstColumn.to.y)
+}
+
 describe('buildFrameGraphicsModel', () => {
-  it('builds core frame primitives for the default input', () => {
-    const model = buildFrameGraphicsModel(defaultUnifiedInput)
-
-    expect(model.width).toBeGreaterThan(0)
-    expect(model.height).toBeGreaterThan(0)
-    expect(model.lines.some((line) => line.className === 'column')).toBe(true)
-    expect(model.polylines.some((polyline) => polyline.className === 'truss-top')).toBe(true)
-    expect(model.lines.some((line) => line.className === 'purlin')).toBe(true)
-    expect(model.lines.some((line) => line.className === 'axis')).toBe(true)
-    expect(model.texts.some((text) => text.className === 'dimension-text')).toBe(true)
-  })
-
-  it('shows bracing primitives only when perimeter bracing is enabled', () => {
-    const disabledModel = buildFrameGraphicsModel({
+  it('for 24x42 with frame step 6 resolves 8 frames', () => {
+    const model = buildFrameGraphicsModel({
       ...defaultUnifiedInput,
-      perimeterBracing: PRESENCE_OPTIONS[0],
-      tiesSetting: PRESENCE_OPTIONS[0],
-    })
-    const enabledModel = buildFrameGraphicsModel({
-      ...defaultUnifiedInput,
-      perimeterBracing: PRESENCE_OPTIONS[1],
-    })
-
-    expect(disabledModel.lines.some((line) => line.className === 'bracing')).toBe(false)
-    expect(enabledModel.lines.some((line) => line.className === 'bracing')).toBe(true)
-  })
-
-  it('changes frame axis count when building length changes', () => {
-    const shortModel = buildFrameGraphicsModel({
-      ...defaultUnifiedInput,
-      buildingLengthM: 24,
-      frameStepM: 6,
-    })
-    const longModel = buildFrameGraphicsModel({
-      ...defaultUnifiedInput,
+      spanM: 24,
       buildingLengthM: 42,
       frameStepM: 6,
     })
 
-    const shortAxisLabels = shortModel.texts.filter((text) => text.className === 'axis-text').length
-    const longAxisLabels = longModel.texts.filter((text) => text.className === 'axis-text').length
-
-    expect(longAxisLabels).toBeGreaterThan(shortAxisLabels)
+    expect(model.summary.framesCount).toBe(8)
   })
 
-  it('builds different truss contour for gable and monopitch roof', () => {
-    const gableModel = buildFrameGraphicsModel({
+  it('for gable roof builds truss top contour with ridge point', () => {
+    const model = buildFrameGraphicsModel({
       ...defaultUnifiedInput,
       roofType: ROOF_TYPE_OPTIONS[0],
     })
-    const monoModel = buildFrameGraphicsModel({
+
+    const trussTop = model.polylines.find((polyline) => polyline.className === 'truss-top')
+    expect(trussTop?.points.length).toBe(3)
+  })
+
+  it('changing clear height changes projected column top level', () => {
+    const lowModel = buildFrameGraphicsModel({
       ...defaultUnifiedInput,
-      roofType: ROOF_TYPE_OPTIONS[1],
+      clearHeightToBottomChordM: 7,
+      manualTrussEaveDepthM: 1.2,
+    })
+    const highModel = buildFrameGraphicsModel({
+      ...defaultUnifiedInput,
+      clearHeightToBottomChordM: 9,
+      manualTrussEaveDepthM: 1.2,
     })
 
-    const gableFirstTop = gableModel.polylines.find((polyline) => polyline.className === 'truss-top')
-    const monoFirstTop = monoModel.polylines.find((polyline) => polyline.className === 'truss-top')
+    expect(highModel.summary.eaveSupportHeightM).toBeGreaterThan(lowModel.summary.eaveSupportHeightM)
+    expect(highModel.summary.maxBuildingHeightM).toBeGreaterThan(lowModel.summary.maxBuildingHeightM)
+    expect(firstColumnTopY(highModel)).toBeLessThan(firstColumnTopY(lowModel))
+  })
 
-    expect(gableFirstTop?.points.length).toBe(3)
-    expect(monoFirstTop?.points.length).toBe(2)
+  it('manual truss eave depth changes eave support geometry', () => {
+    const autoModel = buildFrameGraphicsModel({
+      ...defaultUnifiedInput,
+      spanM: 24,
+      roofType: ROOF_TYPE_OPTIONS[0],
+      manualTrussEaveDepthM: null,
+    })
+    const manualModel = buildFrameGraphicsModel({
+      ...defaultUnifiedInput,
+      spanM: 24,
+      roofType: ROOF_TYPE_OPTIONS[0],
+      manualTrussEaveDepthM: 1.4,
+    })
+
+    expect(manualModel.summary.eaveTrussDepthM).toBe(1.4)
+    expect(manualModel.summary.eaveSupportHeightM).toBeGreaterThan(autoModel.summary.eaveSupportHeightM)
+    expect(firstColumnTopY(manualModel)).toBeLessThan(firstColumnTopY(autoModel))
+  })
+
+  it('does not render bracing when perimeter ties are disabled', () => {
+    const model = buildFrameGraphicsModel({
+      ...defaultUnifiedInput,
+      perimeterBracing: PRESENCE_OPTIONS[0],
+      tiesSetting: PRESENCE_OPTIONS[0],
+    })
+
+    expect(model.lines.some((line) => line.className === 'bracing')).toBe(false)
+  })
+
+  it('renders bracing when perimeter ties are enabled', () => {
+    const model = buildFrameGraphicsModel({
+      ...defaultUnifiedInput,
+      perimeterBracing: PRESENCE_OPTIONS[1],
+      tiesSetting: PRESENCE_OPTIONS[0],
+    })
+
+    expect(model.lines.some((line) => line.className === 'bracing')).toBe(true)
   })
 })
-

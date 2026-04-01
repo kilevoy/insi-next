@@ -24,7 +24,9 @@ const TEXT_STYLES: Record<string, CSSProperties> = {
 }
 
 function styleByClass(className: string | undefined): CSSProperties {
-  return className ? STYLES[className] ?? { stroke: '#111827', strokeWidth: 1.4 } : { stroke: '#111827', strokeWidth: 1.4 }
+  return className
+    ? STYLES[className] ?? { stroke: '#111827', strokeWidth: 1.4 }
+    : { stroke: '#111827', strokeWidth: 1.4 }
 }
 
 function textStyleByClass(className: string | undefined): CSSProperties {
@@ -37,7 +39,13 @@ export function FrameGraphicsSvg({ model }: FrameGraphicsSvgProps) {
       aria-label="Параметрическая инженерная графика каркаса"
       viewBox={`0 0 ${model.width} ${model.height}`}
       className="frame-graphics-svg"
-      style={{ width: '100%', height: 'auto', background: '#ffffff', border: '1px solid #d1d5db', borderRadius: 10 }}
+      style={{
+        width: '100%',
+        height: 'auto',
+        background: '#ffffff',
+        border: '1px solid #d1d5db',
+        borderRadius: 10,
+      }}
     >
       {model.lines.map((line, index) => (
         <line

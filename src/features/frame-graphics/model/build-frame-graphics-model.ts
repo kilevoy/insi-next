@@ -35,17 +35,31 @@ export type FrameGraphicsModel = {
   lines: LinePrimitive[]
   polylines: PolylinePrimitive[]
   texts: TextPrimitive[]
+  summary: {
+    spanM: number
+    lengthM: number
+    clearHeightToBottomChordM: number
+    eaveTrussDepthM: number
+    eaveSupportHeightM: number
+    maxBuildingHeightM: number
+    framesCount: number
+  }
 }
 
 const CANVAS_WIDTH = 1180
 const CANVAS_HEIGHT = 720
 const CANVAS_PADDING = 48
+
 const AXONOMETRIC_COS = 0.866
-const AXONOMETRIC_DEPTH_FACTOR = 0.35
+const AXONOMETRIC_DEPTH_XY = 0.35
 const PURLIN_STEP_FALLBACK_M = 1.5
 
 function isMonopitchRoof(roofType: string): boolean {
   return roofType.trim().toLowerCase().includes('односкат')
+}
+
+function isEnabledPresence(value: string | undefined): boolean {
+  return (value ?? '').trim().toLowerCase().includes('есть')
 }
 
 function roundLabel(value: number, digits = 2): string {
@@ -55,14 +69,14 @@ function roundLabel(value: number, digits = 2): string {
 function resolveFramePositions(lengthM: number, frameStepM: number): number[] {
   const stepM = frameStepM > 0 ? frameStepM : 6
   const positions: number[] = [0]
-
   let current = stepM
+
   while (current < lengthM - 1e-6) {
     positions.push(current)
     current += stepM
   }
 
-  if (lengthM > 0 && Math.abs(positions[positions.length - 1] - lengthM) > 1e-6) {
+  if (Math.abs(positions[positions.length - 1] - lengthM) > 1e-6) {
     positions.push(lengthM)
   }
 
@@ -80,6 +94,28 @@ function resolveFachwerkPositions(lengthM: number, fakhverkStepM: number): numbe
   }
 
   return positions
+}
+
+function resolvePurlinYPositions(spanM: number, roofType: UnifiedInputState['roofType'], purlinStepM: number): number[] {
+  const halfSpanM = spanM / 2
+  const positions = new Set<number>()
+  positions.add(0)
+  positions.add(spanM)
+
+  if (isMonopitchRoof(roofType)) {
+    for (let y = purlinStepM; y < spanM - 1e-6; y += purlinStepM) {
+      positions.add(y)
+    }
+    return Array.from(positions).sort((a, b) => a - b)
+  }
+
+  positions.add(halfSpanM)
+  for (let y = purlinStepM; y < halfSpanM - 1e-6; y += purlinStepM) {
+    positions.add(y)
+    positions.add(spanM - y)
+  }
+
+  return Array.from(positions).sort((a, b) => a - b)
 }
 
 function roofTopZ(
@@ -103,16 +139,17 @@ function collectPoints3D(
   polylines: Array<{ points: Point3D[] }>,
   labels: Array<{ at: Point3D }>,
 ): Point3D[] {
-  const segmentPoints = segments.flatMap((segment) => [segment.from, segment.to])
-  const polylinePoints = polylines.flatMap((polyline) => polyline.points)
-  const textPoints = labels.map((label) => label.at)
-  return [...segmentPoints, ...polylinePoints, ...textPoints]
+  return [
+    ...segments.flatMap((segment) => [segment.from, segment.to]),
+    ...polylines.flatMap((polyline) => polyline.points),
+    ...labels.map((label) => label.at),
+  ]
 }
 
 function projectBase(point: Point3D): Point {
   return {
     x: (point.x - point.y) * AXONOMETRIC_COS,
-    y: point.z - (point.x + point.y) * AXONOMETRIC_DEPTH_FACTOR,
+    y: point.z - (point.x + point.y) * AXONOMETRIC_DEPTH_XY,
   }
 }
 
@@ -121,12 +158,13 @@ export function buildFrameGraphicsModel(input: UnifiedInputState): FrameGraphics
   const spanM = Math.max(input.spanM, 1)
   const lengthM = Math.max(input.buildingLengthM, 1)
   const framePositions = resolveFramePositions(lengthM, input.frameStepM)
-  const fakhwerkPositions = resolveFachwerkPositions(lengthM, input.fakhverkStepM)
+  const fachwerkPositions = resolveFachwerkPositions(lengthM, input.fakhverkStepM)
   const halfSpanM = spanM / 2
   const monoRoof = isMonopitchRoof(input.roofType)
   const purlinStepM =
     input.manualMaxStepMm > 0 ? input.manualMaxStepMm / 1000 : PURLIN_STEP_FALLBACK_M
-  const tiesEnabled = input.perimeterBracing === 'есть' || input.tiesSetting === 'есть'
+  const purlinYPositions = resolvePurlinYPositions(spanM, input.roofType, purlinStepM)
+  const tiesEnabled = isEnabledPresence(input.perimeterBracing) || isEnabledPresence(input.tiesSetting)
 
   const segments3D: Array<{ from: Point3D; to: Point3D; className?: string }> = []
   const polylines3D: Array<{ points: Point3D[]; className?: string }> = []
@@ -178,103 +216,61 @@ export function buildFrameGraphicsModel(input: UnifiedInputState): FrameGraphics
       to: { x: frameX, y: spanM, z: heights.eaveSupportHeightM },
       className: 'truss-web',
     })
-
-    if (!monoRoof) {
-      segments3D.push({
-        from: { x: frameX, y: halfSpanM, z: input.clearHeightToBottomChordM },
-        to: { x: frameX, y: halfSpanM, z: heights.maxBuildingHeightM },
-        className: 'truss-web',
-      })
-    }
   }
 
-  for (const fakhwerkX of fakhwerkPositions) {
+  for (const yM of purlinYPositions) {
     segments3D.push({
-      from: { x: fakhwerkX, y: 0, z: 0 },
-      to: { x: fakhwerkX, y: 0, z: heights.eaveSupportHeightM },
+      from: { x: 0, y: yM, z: roofTopZ(input.roofType, yM, spanM, heights.eaveSupportHeightM, heights.roofRiseM) },
+      to: { x: lengthM, y: yM, z: roofTopZ(input.roofType, yM, spanM, heights.eaveSupportHeightM, heights.roofRiseM) },
+      className: 'purlin',
+    })
+  }
+
+  for (const xM of fachwerkPositions) {
+    segments3D.push({
+      from: { x: xM, y: 0, z: 0 },
+      to: { x: xM, y: 0, z: heights.eaveSupportHeightM },
       className: 'fachwerk',
     })
     segments3D.push({
-      from: { x: fakhwerkX, y: spanM, z: 0 },
-      to: { x: fakhwerkX, y: spanM, z: heights.eaveSupportHeightM },
+      from: { x: xM, y: spanM, z: 0 },
+      to: { x: xM, y: spanM, z: heights.eaveSupportHeightM },
       className: 'fachwerk',
     })
   }
 
-  if (purlinStepM > 0) {
-    if (monoRoof) {
-      for (let y = purlinStepM; y < spanM - 1e-6; y += purlinStepM) {
-        const z = roofTopZ(input.roofType, y, spanM, heights.eaveSupportHeightM, heights.roofRiseM)
-        segments3D.push({
-          from: { x: 0, y, z },
-          to: { x: lengthM, y, z },
-          className: 'purlin',
-        })
-      }
-    } else {
-      for (let y = purlinStepM; y < halfSpanM - 1e-6; y += purlinStepM) {
-        const leftZ = roofTopZ(input.roofType, y, spanM, heights.eaveSupportHeightM, heights.roofRiseM)
-        const rightY = spanM - y
-        const rightZ = roofTopZ(
-          input.roofType,
-          rightY,
-          spanM,
-          heights.eaveSupportHeightM,
-          heights.roofRiseM,
-        )
+  if (tiesEnabled) {
+    const tieEndX = framePositions[Math.min(1, framePositions.length - 1)]
+    const tieBackX = framePositions[Math.max(framePositions.length - 2, 0)]
 
-        segments3D.push({
-          from: { x: 0, y, z: leftZ },
-          to: { x: lengthM, y, z: leftZ },
-          className: 'purlin',
-        })
-        segments3D.push({
-          from: { x: 0, y: rightY, z: rightZ },
-          to: { x: lengthM, y: rightY, z: rightZ },
-          className: 'purlin',
-        })
-      }
-
-      segments3D.push({
-        from: { x: 0, y: halfSpanM, z: heights.maxBuildingHeightM },
-        to: { x: lengthM, y: halfSpanM, z: heights.maxBuildingHeightM },
-        className: 'purlin',
-      })
-    }
-  }
-
-  if (tiesEnabled && framePositions.length >= 2) {
-    const firstFrameX = framePositions[0]
-    const secondFrameX = framePositions[1]
-
-    segments3D.push({
-      from: { x: firstFrameX, y: 0, z: 0 },
-      to: { x: secondFrameX, y: 0, z: heights.eaveSupportHeightM },
-      className: 'bracing',
-    })
-    segments3D.push({
-      from: { x: firstFrameX, y: 0, z: heights.eaveSupportHeightM },
-      to: { x: secondFrameX, y: 0, z: 0 },
-      className: 'bracing',
-    })
-    segments3D.push({
-      from: { x: firstFrameX, y: spanM, z: 0 },
-      to: { x: secondFrameX, y: spanM, z: heights.eaveSupportHeightM },
-      className: 'bracing',
-    })
-    segments3D.push({
-      from: { x: firstFrameX, y: spanM, z: heights.eaveSupportHeightM },
-      to: { x: secondFrameX, y: spanM, z: 0 },
-      className: 'bracing',
-    })
     segments3D.push({
       from: { x: 0, y: 0, z: 0 },
+      to: { x: 0, y: 0, z: heights.eaveSupportHeightM },
+      className: 'bracing',
+    })
+    segments3D.push({
+      from: { x: 0, y: spanM, z: 0 },
       to: { x: 0, y: spanM, z: heights.eaveSupportHeightM },
       className: 'bracing',
     })
     segments3D.push({
-      from: { x: 0, y: 0, z: heights.eaveSupportHeightM },
-      to: { x: 0, y: spanM, z: 0 },
+      from: { x: tieEndX, y: 0, z: 0 },
+      to: { x: 0, y: 0, z: heights.eaveSupportHeightM },
+      className: 'bracing',
+    })
+    segments3D.push({
+      from: { x: tieEndX, y: 0, z: heights.eaveSupportHeightM },
+      to: { x: 0, y: 0, z: 0 },
+      className: 'bracing',
+    })
+    segments3D.push({
+      from: { x: tieBackX, y: spanM, z: 0 },
+      to: { x: lengthM, y: spanM, z: heights.eaveSupportHeightM },
+      className: 'bracing',
+    })
+    segments3D.push({
+      from: { x: tieBackX, y: spanM, z: heights.eaveSupportHeightM },
+      to: { x: lengthM, y: spanM, z: 0 },
       className: 'bracing',
     })
   }
@@ -298,6 +294,7 @@ export function buildFrameGraphicsModel(input: UnifiedInputState): FrameGraphics
     to: { x: lengthM, y: axisOffsetY, z: 0 },
     className: 'axis',
   })
+
   texts3D.push({
     at: { x: lengthM / 2, y: axisOffsetY - 1.05, z: 0 },
     text: `Длина ${roundLabel(lengthM, 1)} м`,
@@ -364,30 +361,34 @@ export function buildFrameGraphicsModel(input: UnifiedInputState): FrameGraphics
     }
   }
 
-  const lines: LinePrimitive[] = segments3D.map((segment) => ({
-    kind: 'line',
-    from: mapPoint(segment.from),
-    to: mapPoint(segment.to),
-    className: segment.className,
-  }))
-  const polylines: PolylinePrimitive[] = polylines3D.map((polyline) => ({
-    kind: 'polyline',
-    points: polyline.points.map(mapPoint),
-    className: polyline.className,
-  }))
-  const texts: TextPrimitive[] = texts3D.map((text) => ({
-    kind: 'text',
-    at: mapPoint(text.at),
-    text: text.text,
-    className: text.className,
-  }))
-
   return {
     width: CANVAS_WIDTH,
     height: CANVAS_HEIGHT,
-    lines,
-    polylines,
-    texts,
+    lines: segments3D.map((segment) => ({
+      kind: 'line',
+      from: mapPoint(segment.from),
+      to: mapPoint(segment.to),
+      className: segment.className,
+    })),
+    polylines: polylines3D.map((polyline) => ({
+      kind: 'polyline',
+      points: polyline.points.map(mapPoint),
+      className: polyline.className,
+    })),
+    texts: texts3D.map((text) => ({
+      kind: 'text',
+      at: mapPoint(text.at),
+      text: text.text,
+      className: text.className,
+    })),
+    summary: {
+      spanM,
+      lengthM,
+      clearHeightToBottomChordM: input.clearHeightToBottomChordM,
+      eaveTrussDepthM: heights.eaveTrussDepthM,
+      eaveSupportHeightM: heights.eaveSupportHeightM,
+      maxBuildingHeightM: heights.maxBuildingHeightM,
+      framesCount: framePositions.length,
+    },
   }
 }
-
