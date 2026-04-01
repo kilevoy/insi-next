@@ -12,7 +12,8 @@ import type { TrussCalculationResult } from '@/domain/truss/model/calculate-trus
 import { resolveTrussGeometryTemplate } from '@/domain/truss/model/truss-geometry'
 import { calculateEnclosing } from '@/domain/enclosing/model/calculate-enclosing'
 import { mapUnifiedInputToEnclosingInput } from '@/domain/enclosing/model/enclosing-mapper'
-import { FrameGraphicsPanel } from '@/features/frame-graphics/ui/frame-graphics-panel'
+import { buildFrameGraphicsModel } from '@/features/frame-graphics/model/build-frame-graphics-model'
+import { FrameGraphicsSvg } from '@/features/frame-graphics/ui/frame-graphics-svg'
 import { deriveHeights } from '../model/height-derivations'
 import { mapToColumnInput } from '../model/input-mapper'
 import type { UnifiedInputState } from '../model/unified-input'
@@ -1940,6 +1941,7 @@ export function ResultsPanel({
     purlinSpecificationSource === 'sort' ? selectedSortPurlinIndex : selectedLstkPurlinIndex
   const [enclosingClassKey, setEnclosingClassKey] = useState<EnclosingClassKey>('class-1-gost')
   const columnEffortsByType = useMemo(() => resolveColumnEffortsByType(input), [input])
+  const frameGraphicsModel = useMemo(() => buildFrameGraphicsModel(input), [input])
 
   return (
     <div className={`results-panel ${isPending ? 'pending' : ''}`}>
@@ -2022,9 +2024,43 @@ export function ResultsPanel({
           input.buildingLengthM,
           input.tubeS345PriceRubPerKg,
         )
-      ) : activeTab === 'graphics' ? (
+            ) : activeTab === 'graphics' ? (
         <div className="tab-pane animate-in">
-          <FrameGraphicsPanel input={input} />
+          <div className="results-section">
+            <h3 className="results-section-title">Схема каркаса</h3>
+            <FrameGraphicsSvg model={frameGraphicsModel} />
+            <p className="results-inline-note" style={{ marginTop: 10 }}>
+              Псевдо-аксонометрический вид каркаса строится по текущим параметрам расчета.
+            </p>
+            <div className="results-table-wrap" style={{ marginTop: 12 }}>
+              <table className="results-table">
+                <tbody>
+                  <tr>
+                    <th>Пролет</th>
+                    <td>{formatNumber(frameGraphicsModel.summary.spanM, 2)} м</td>
+                    <th>Длина</th>
+                    <td>{formatNumber(frameGraphicsModel.summary.lengthM, 2)} м</td>
+                  </tr>
+                  <tr>
+                    <th>Высота до низа несущих</th>
+                    <td>{formatNumber(frameGraphicsModel.summary.clearHeightToBottomChordM, 2)} м</td>
+                    <th>Высота фермы в карнизе</th>
+                    <td>{formatNumber(frameGraphicsModel.summary.eaveTrussDepthM, 2)} м</td>
+                  </tr>
+                  <tr>
+                    <th>Высота до опоры</th>
+                    <td>{formatNumber(frameGraphicsModel.summary.eaveSupportHeightM, 2)} м</td>
+                    <th>Максимальная высота</th>
+                    <td>{formatNumber(frameGraphicsModel.summary.maxBuildingHeightM, 2)} м</td>
+                  </tr>
+                  <tr>
+                    <th>Количество рам</th>
+                    <td colSpan={3}>{frameGraphicsModel.summary.framesCount}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       ) : activeTab === 'purlin' ? (
         <div className="tab-pane animate-in">
