@@ -26,7 +26,9 @@ const KZ = 1.0
 
 function project(point: Point3D): Point {
   return {
-    x: point.x * KX - point.y * KY,
+    // Keep the same geometry, but switch preview handedness so the facade is on the foreground
+    // and depth goes to the right in a stable "front-right" axonometric view.
+    x: point.x * KX + point.y * KY,
     y: -point.z * KZ + point.y * 0.42 + point.x * 0.06,
   }
 }
