@@ -18,6 +18,8 @@ import type { UnifiedInputState } from '../model/unified-input'
 import { MethodologyPanel } from './methodology-panel'
 import { PurlinTrussDiagram } from './purlin-truss-diagram'
 import { SelectionSummaryPage } from './selection-summary-page'
+import { TrussDrawing } from './TrussDrawing'
+import { buildTrussDrawingData } from './truss-drawing-adapter'
 import { TrussVisualDiagram } from './truss-visual-diagram'
 
 interface PriceImportStatus {
@@ -2052,9 +2054,29 @@ export function ResultsPanel({
           </div>
           <div className="results-section">
             <h3 className="results-section-title">Схема фермы</h3>
-            {trussResult ? (
-              <TrussVisualDiagram roofType={input.roofType} trussResult={trussResult} />
-            ) : (
+            {trussResult ? (() => {
+              const trussDrawingData = buildTrussDrawingData(input.roofType, trussResult)
+
+              if (!trussDrawingData) {
+                return <div className="results-empty">Данные геометрии фермы недоступны.</div>
+              }
+
+              return (
+                <TrussDrawing
+                  truss={trussDrawingData}
+                  display={{
+                    showAxes: true,
+                    showSupports: true,
+                    showNodes: true,
+                    showNodeLabels: true,
+                    showDimensions: true,
+                    showSplice: true,
+                    showMemberForces: true,
+                    showMemberLabels: true,
+                  }}
+                />
+              )
+            })() : (
               <div className="results-empty">Данные фермы недоступны.</div>
             )}
           </div>
