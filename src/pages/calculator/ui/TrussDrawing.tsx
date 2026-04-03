@@ -132,6 +132,11 @@ const defaultDisplay: Required<NonNullable<TrussDrawingProps['display']>> = {
 
 const VIEWBOX_WIDTH = 1400
 const VIEWBOX_HEIGHT = 860
+const AXIS_CIRCLE_RADIUS = 18
+const AXIS_LABEL_CENTER_Y = VIEWBOX_HEIGHT - 42
+const TITLE_Y = 48
+const SUBTITLE_Y = 80
+const AXIS_LETTERS = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'И'] as const
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
@@ -251,6 +256,70 @@ function uniqueSortedNodesByX(nodes: Node[]): Node[] {
 
 function uniqueSortedXPositions(values: number[]): number[] {
   return [...new Set(values.map((value) => Number(value.toFixed(3))))].sort((left, right) => left - right)
+}
+
+function resolveAxisStations(span: number): number[] {
+  if (span <= 0) {
+    return [0]
+  }
+
+  if (span % 6000 === 0) {
+    return Array.from({ length: span / 6000 + 1 }, (_, index) => index * 6000)
+  }
+
+  const intervalCount = Math.min(4, Math.max(2, Math.round(span / 6000)))
+
+  return Array.from({ length: intervalCount + 1 }, (_, index) => (span / intervalCount) * index)
+}
+
+function resolveReadableAngle(angleDeg: number): number {
+  if (angleDeg > 90) {
+    return angleDeg - 180
+  }
+
+  if (angleDeg < -90) {
+    return angleDeg + 180
+  }
+
+  return angleDeg
+}
+
+function resolveLineAngleDeg(start: SvgPoint, end: SvgPoint): number {
+  return resolveReadableAngle((Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI)
+}
+
+function resolveOffsetLinePoints(start: SvgPoint, end: SvgPoint, offsetPx: number) {
+  const dx = end.x - start.x
+  const dy = end.y - start.y
+  const length = Math.hypot(dx, dy) || 1
+  let normalX = -dy / length
+  let normalY = dx / length
+
+  if (normalY > 0) {
+    normalX *= -1
+    normalY *= -1
+  }
+
+  return {
+    start: {
+      x: start.x + normalX * offsetPx,
+      y: start.y + normalY * offsetPx,
+    },
+    end: {
+      x: end.x + normalX * offsetPx,
+      y: end.y + normalY * offsetPx,
+    },
+    normalX,
+    normalY,
+  }
+}
+
+function resolveMemberTextTransform(memberLine: MemberLine, point: SvgPoint, transform: ViewportTransform): string {
+  const start = toSvgPoint(memberLine.from, transform)
+  const end = toSvgPoint(memberLine.to, transform)
+  const angle = resolveLineAngleDeg(start, end)
+
+  return `rotate(${angle} ${point.x} ${point.y})`
 }
 
 function resolveSupportNodes(
@@ -413,34 +482,7 @@ function drawAxes(
   rightSupport: Node,
   ridgeNode: Node,
 ) {
-  const baselineLeft = toSvgPoint({ x: leftSupport.x, y: bounds.minY }, transform)
-  const baselineRight = toSvgPoint({ x: rightSupport.x, y: bounds.minY }, transform)
-  const centerX = toSvgPoint({ x: ridgeNode.x, y: bounds.minY }, transform).x
-  const topY = toSvgPoint({ x: ridgeNode.x, y: bounds.maxY }, transform).y - 26
-  const bottomY = baselineLeft.y + 32
-
-  return (
-    <g data-layer="axes" data-testid="layer-axes">
-      <line
-        stroke={styles.axis}
-        strokeDasharray="8 8"
-        strokeWidth={1}
-        x1={baselineLeft.x - 36}
-        x2={baselineRight.x + 36}
-        y1={baselineLeft.y}
-        y2={baselineRight.y}
-      />
-      <line
-        stroke={styles.axis}
-        strokeDasharray="8 8"
-        strokeWidth={1}
-        x1={centerX}
-        x2={centerX}
-        y1={topY}
-        y2={bottomY}
-      />
-    </g>
-  )
+  return drawSheetAxes(transform, bounds, leftSupport, rightSupport, ridgeNode)
 }
 
 export function drawSupports(
@@ -972,6 +1014,601 @@ export function drawMemberLabels(
   )
 }
 
+function drawSlopedTick(key: string, point: SvgPoint, angleDeg: number) {
+  const tickAngleRad = ((angleDeg + 60) * Math.PI) / 180
+  const size = 10
+
+  return (
+    <line
+      key={key}
+      stroke={styles.dimension}
+      strokeWidth={1.1}
+      x1={point.x - Math.cos(tickAngleRad) * size}
+      x2={point.x + Math.cos(tickAngleRad) * size}
+      y1={point.y - Math.sin(tickAngleRad) * size}
+      y2={point.y + Math.sin(tickAngleRad) * size}
+    />
+  )
+}
+
+function drawSheetAxes(
+  transform: ViewportTransform,
+  bounds: Bounds,
+  leftSupport: Node,
+  rightSupport: Node,
+  ridgeNode: Node,
+) {
+  const baselineLeft = toSvgPoint({ x: leftSupport.x, y: bounds.minY }, transform)
+  const baselineRight = toSvgPoint({ x: rightSupport.x, y: bounds.minY }, transform)
+  const centerX = toSvgPoint({ x: ridgeNode.x, y: bounds.minY }, transform).x
+  const topY = toSvgPoint({ x: ridgeNode.x, y: bounds.maxY }, transform).y - 22
+  const bottomY = AXIS_LABEL_CENTER_Y - AXIS_CIRCLE_RADIUS - 18
+  const axisStations = resolveAxisStations(rightSupport.x - leftSupport.x).map((offset) => leftSupport.x + offset)
+
+  return (
+    <g data-layer="axes" data-testid="layer-axes">
+      <text
+        fill={styles.primary}
+        fontFamily="'Segoe UI', 'Arial', sans-serif"
+        fontSize={22}
+        fontStyle="italic"
+        fontWeight={500}
+        textAnchor="middle"
+        x={transform.viewBoxWidth / 2}
+        y={TITLE_Y}
+      >
+        Геометрическая схема стропильной фермы
+      </text>
+      <text
+        fill={styles.primary}
+        fontFamily="'Segoe UI', 'Arial', sans-serif"
+        fontSize={14}
+        fontStyle="italic"
+        textAnchor="middle"
+        x={transform.viewBoxWidth / 2}
+        y={SUBTITLE_Y}
+      >
+        (размеры даны в осях, мм; усилия , кН)
+      </text>
+      <line
+        stroke={styles.axis}
+        strokeDasharray="8 8"
+        strokeWidth={1}
+        x1={baselineLeft.x - 36}
+        x2={baselineRight.x + 36}
+        y1={baselineLeft.y}
+        y2={baselineRight.y}
+      />
+      <line
+        stroke={styles.axis}
+        strokeDasharray="8 8"
+        strokeWidth={1}
+        x1={centerX}
+        x2={centerX}
+        y1={topY}
+        y2={bottomY}
+      />
+      {axisStations.map((axisX, index) => {
+        const point = toSvgPoint({ x: axisX, y: bounds.minY }, transform)
+        const letter = AXIS_LETTERS[index] ?? `${index + 1}`
+
+        return (
+          <g key={`axis-station-${axisX}`}>
+            <line
+              stroke={styles.axis}
+              strokeWidth={0.9}
+              x1={point.x}
+              x2={point.x}
+              y1={topY}
+              y2={bottomY}
+            />
+            <circle
+              cx={point.x}
+              cy={AXIS_LABEL_CENTER_Y}
+              fill={styles.bg}
+              r={AXIS_CIRCLE_RADIUS}
+              stroke={styles.axis}
+              strokeWidth={1}
+            />
+            <text
+              fill={styles.primary}
+              fontFamily="'Segoe UI', 'Arial', sans-serif"
+              fontSize={18}
+              fontStyle="italic"
+              textAnchor="middle"
+              x={point.x}
+              y={AXIS_LABEL_CENTER_Y + 7}
+            >
+              {letter}
+            </text>
+          </g>
+        )
+      })}
+    </g>
+  )
+}
+
+function drawSheetSplice(
+  spliceNodeIds: string[] | undefined,
+  nodeMap: Map<string, Node>,
+  transform: ViewportTransform,
+  bounds: Bounds,
+) {
+  if (!spliceNodeIds || spliceNodeIds.length === 0) {
+    return null
+  }
+
+  const spliceNodes = spliceNodeIds
+    .map((nodeId) => nodeMap.get(nodeId))
+    .filter((node): node is Node => Boolean(node))
+
+  if (spliceNodes.length === 0) {
+    return null
+  }
+
+  const spliceX = spliceNodes.reduce((sum, node) => sum + node.x, 0) / spliceNodes.length
+  const topPoint = toSvgPoint({ x: spliceX, y: bounds.maxY }, transform)
+  const bottomPoint = toSvgPoint({ x: spliceX, y: bounds.minY }, transform)
+  const noteY = bottomPoint.y + 54
+  const noteX = topPoint.x + 104
+
+  return (
+    <g data-layer="splice" data-testid="layer-splice">
+      <line
+        stroke={styles.splice}
+        strokeWidth={1.8}
+        x1={topPoint.x}
+        x2={topPoint.x}
+        y1={topPoint.y - 26}
+        y2={bottomPoint.y + 26}
+      />
+      <line
+        stroke={styles.splice}
+        strokeWidth={1.1}
+        x1={topPoint.x + 8}
+        x2={noteX - 12}
+        y1={noteY - 10}
+        y2={noteY - 10}
+      />
+      <line
+        stroke={styles.splice}
+        strokeWidth={1.1}
+        x1={topPoint.x + 8}
+        x2={topPoint.x + 18}
+        y1={noteY - 10}
+        y2={noteY - 14}
+      />
+      <text
+        fill={styles.splice}
+        fontFamily="'Segoe UI', 'Arial', sans-serif"
+        fontSize={transform.smallFontSize + 1}
+        fontStyle="italic"
+        paintOrder="stroke"
+        stroke={styles.textBg}
+        strokeWidth={4}
+        textAnchor="start"
+        x={noteX}
+        y={noteY}
+      >
+        Ось монтажного стыка
+      </text>
+    </g>
+  )
+}
+
+function drawSheetDimensions(
+  truss: TrussDrawingProps['truss'],
+  transform: ViewportTransform,
+  bounds: Bounds,
+  nodeMap: Map<string, Node>,
+  leftSupport: Node,
+  rightSupport: Node,
+  ridgeNode: Node,
+) {
+  const bottomNodes = resolveBottomDimensionNodes(truss, nodeMap, leftSupport, rightSupport)
+  const bottomXPositions = uniqueSortedXPositions(bottomNodes.map((node) => node.x))
+  const axisStations = resolveAxisStations(rightSupport.x - leftSupport.x).map((offset) => leftSupport.x + offset)
+  const topChordLines = buildMemberLines(truss.topChord, nodeMap)
+  const baselineLeft = toSvgPoint({ x: leftSupport.x, y: bounds.minY }, transform)
+  const baselineRight = toSvgPoint({ x: rightSupport.x, y: bounds.minY }, transform)
+  const supportTopLeft = toSvgPoint({ x: leftSupport.x, y: bounds.minY + truss.supportHeightLeft }, transform)
+  const supportTopRight = toSvgPoint({ x: rightSupport.x, y: bounds.minY + truss.supportHeightRight }, transform)
+  const ridgeBottom = toSvgPoint({ x: ridgeNode.x, y: bounds.minY }, transform)
+  const ridgeTop = toSvgPoint({ x: ridgeNode.x, y: bounds.minY + truss.ridgeHeight }, transform)
+  const panelDimensionY = Math.max(baselineLeft.y, baselineRight.y) + 48
+  const axisDimensionY = panelDimensionY + 42
+  const totalDimensionY = axisDimensionY + 48
+  const leftHeightDimensionX = transform.geometryLeft - 74
+  const ridgeHeightDimensionX = transform.geometryRight + 74
+  const extensionBottomY = AXIS_LABEL_CENTER_Y - AXIS_CIRCLE_RADIUS - 8
+  const elements: ReactElement[] = []
+
+  topChordLines.forEach((memberLine, index) => {
+    const start = toSvgPoint(memberLine.from, transform)
+    const end = toSvgPoint(memberLine.to, transform)
+    const offsetLine = resolveOffsetLinePoints(start, end, 24)
+    const textPoint = {
+      x: (offsetLine.start.x + offsetLine.end.x) / 2,
+      y: (offsetLine.start.y + offsetLine.end.y) / 2 - 6,
+    }
+    const angle = resolveLineAngleDeg(offsetLine.start, offsetLine.end)
+
+    elements.push(
+      <line
+        key={`top-dim-ext-a-${index}`}
+        stroke={styles.dimension}
+        strokeWidth={1}
+        x1={start.x}
+        x2={offsetLine.start.x}
+        y1={start.y}
+        y2={offsetLine.start.y}
+      />,
+    )
+    elements.push(
+      <line
+        key={`top-dim-ext-b-${index}`}
+        stroke={styles.dimension}
+        strokeWidth={1}
+        x1={end.x}
+        x2={offsetLine.end.x}
+        y1={end.y}
+        y2={offsetLine.end.y}
+      />,
+    )
+    elements.push(
+      <line
+        key={`top-dim-line-${index}`}
+        stroke={styles.dimension}
+        strokeWidth={1}
+        x1={offsetLine.start.x}
+        x2={offsetLine.end.x}
+        y1={offsetLine.start.y}
+        y2={offsetLine.end.y}
+      />,
+    )
+    elements.push(drawSlopedTick(`top-dim-tick-a-${index}`, offsetLine.start, angle))
+    elements.push(drawSlopedTick(`top-dim-tick-b-${index}`, offsetLine.end, angle))
+    elements.push(drawDimensionText(`top-dim-text-${index}`, textPoint.x, textPoint.y, formatMillimeters(memberLine.length), transform, angle))
+  })
+
+  bottomXPositions.forEach((xPosition, index) => {
+    const point = toSvgPoint({ x: xPosition, y: bounds.minY }, transform)
+
+    elements.push(
+      <line
+        key={`panel-ext-${index}`}
+        stroke={styles.dimension}
+        strokeWidth={transform.dimensionStrokeWidth}
+        x1={point.x}
+        x2={point.x}
+        y1={point.y}
+        y2={extensionBottomY}
+      />,
+    )
+  })
+
+  axisStations.forEach((axisX, index) => {
+    const point = toSvgPoint({ x: axisX, y: bounds.minY }, transform)
+
+    elements.push(
+      <line
+        key={`axis-ext-${index}`}
+        stroke={styles.axis}
+        strokeWidth={0.95}
+        x1={point.x}
+        x2={point.x}
+        y1={baselineLeft.y}
+        y2={extensionBottomY}
+      />,
+    )
+  })
+
+  for (let index = 0; index < bottomXPositions.length - 1; index += 1) {
+    const start = toSvgPoint({ x: bottomXPositions[index], y: bounds.minY }, transform)
+    const end = toSvgPoint({ x: bottomXPositions[index + 1], y: bounds.minY }, transform)
+    const sizeText = formatMillimeters(bottomXPositions[index + 1] - bottomXPositions[index])
+
+    elements.push(
+      <line
+        key={`panel-dim-${index}`}
+        stroke={styles.dimension}
+        strokeWidth={transform.dimensionStrokeWidth}
+        x1={start.x}
+        x2={end.x}
+        y1={panelDimensionY}
+        y2={panelDimensionY}
+      />,
+    )
+    elements.push(drawDimensionTerminator(start.x, panelDimensionY, 'horizontal', `panel-term-start-${index}`))
+    elements.push(drawDimensionTerminator(end.x, panelDimensionY, 'horizontal', `panel-term-end-${index}`))
+    elements.push(drawDimensionText(`panel-text-${index}`, (start.x + end.x) / 2, panelDimensionY - 8, sizeText, transform))
+  }
+
+  for (let index = 0; index < axisStations.length - 1; index += 1) {
+    const start = toSvgPoint({ x: axisStations[index], y: bounds.minY }, transform)
+    const end = toSvgPoint({ x: axisStations[index + 1], y: bounds.minY }, transform)
+    const sizeText = formatMillimeters(axisStations[index + 1] - axisStations[index])
+
+    elements.push(
+      <line
+        key={`axis-dim-${index}`}
+        stroke={styles.dimension}
+        strokeWidth={transform.dimensionStrokeWidth}
+        x1={start.x}
+        x2={end.x}
+        y1={axisDimensionY}
+        y2={axisDimensionY}
+      />,
+    )
+    elements.push(drawDimensionTerminator(start.x, axisDimensionY, 'horizontal', `axis-term-start-${index}`))
+    elements.push(drawDimensionTerminator(end.x, axisDimensionY, 'horizontal', `axis-term-end-${index}`))
+    elements.push(drawDimensionText(`axis-text-${index}`, (start.x + end.x) / 2, axisDimensionY - 8, sizeText, transform))
+  }
+
+  elements.push(
+    <line
+      key="total-dimension-line"
+      stroke={styles.dimension}
+      strokeWidth={transform.dimensionStrokeWidth}
+      x1={baselineLeft.x}
+      x2={baselineRight.x}
+      y1={totalDimensionY}
+      y2={totalDimensionY}
+    />,
+  )
+  elements.push(drawDimensionTerminator(baselineLeft.x, totalDimensionY, 'horizontal', 'total-term-start'))
+  elements.push(drawDimensionTerminator(baselineRight.x, totalDimensionY, 'horizontal', 'total-term-end'))
+  elements.push(
+    drawDimensionText(
+      'total-dimension-text',
+      (baselineLeft.x + baselineRight.x) / 2,
+      totalDimensionY - 10,
+      formatMillimeters(truss.span),
+      transform,
+    ),
+  )
+
+  elements.push(
+    <line
+      key="support-left-base-extension"
+      stroke={styles.dimension}
+      strokeWidth={transform.dimensionStrokeWidth}
+      x1={baselineLeft.x}
+      x2={leftHeightDimensionX}
+      y1={baselineLeft.y}
+      y2={baselineLeft.y}
+    />,
+  )
+  elements.push(
+    <line
+      key="support-left-top-extension"
+      stroke={styles.dimension}
+      strokeWidth={transform.dimensionStrokeWidth}
+      x1={supportTopLeft.x}
+      x2={leftHeightDimensionX}
+      y1={supportTopLeft.y}
+      y2={supportTopLeft.y}
+    />,
+  )
+  elements.push(
+    <line
+      key="support-left-dimension"
+      stroke={styles.dimension}
+      strokeWidth={transform.dimensionStrokeWidth}
+      x1={leftHeightDimensionX}
+      x2={leftHeightDimensionX}
+      y1={baselineLeft.y}
+      y2={supportTopLeft.y}
+    />,
+  )
+  elements.push(drawDimensionTerminator(leftHeightDimensionX, baselineLeft.y, 'vertical', 'support-left-term-bottom'))
+  elements.push(drawDimensionTerminator(leftHeightDimensionX, supportTopLeft.y, 'vertical', 'support-left-term-top'))
+  elements.push(
+    drawDimensionText(
+      'support-left-height-text',
+      leftHeightDimensionX - 14,
+      (baselineLeft.y + supportTopLeft.y) / 2,
+      formatMillimeters(truss.supportHeightLeft),
+      transform,
+      -90,
+    ),
+  )
+
+  if (Math.abs(truss.supportHeightRight - truss.supportHeightLeft) > 0.001) {
+    const rightHeightDimensionX = transform.geometryRight + 126
+
+    elements.push(
+      <line
+        key="support-right-base-extension"
+        stroke={styles.dimension}
+        strokeWidth={transform.dimensionStrokeWidth}
+        x1={baselineRight.x}
+        x2={rightHeightDimensionX}
+        y1={baselineRight.y}
+        y2={baselineRight.y}
+      />,
+    )
+    elements.push(
+      <line
+        key="support-right-top-extension"
+        stroke={styles.dimension}
+        strokeWidth={transform.dimensionStrokeWidth}
+        x1={supportTopRight.x}
+        x2={rightHeightDimensionX}
+        y1={supportTopRight.y}
+        y2={supportTopRight.y}
+      />,
+    )
+    elements.push(
+      <line
+        key="support-right-dimension"
+        stroke={styles.dimension}
+        strokeWidth={transform.dimensionStrokeWidth}
+        x1={rightHeightDimensionX}
+        x2={rightHeightDimensionX}
+        y1={baselineRight.y}
+        y2={supportTopRight.y}
+      />,
+    )
+    elements.push(drawDimensionTerminator(rightHeightDimensionX, baselineRight.y, 'vertical', 'support-right-term-bottom'))
+    elements.push(drawDimensionTerminator(rightHeightDimensionX, supportTopRight.y, 'vertical', 'support-right-term-top'))
+    elements.push(
+      drawDimensionText(
+        'support-right-height-text',
+        rightHeightDimensionX + 14,
+        (baselineRight.y + supportTopRight.y) / 2,
+        formatMillimeters(truss.supportHeightRight),
+        transform,
+        -90,
+      ),
+    )
+  }
+
+  elements.push(
+    <line
+      key="ridge-base-extension"
+      stroke={styles.dimension}
+      strokeWidth={transform.dimensionStrokeWidth}
+      x1={ridgeBottom.x}
+      x2={ridgeHeightDimensionX}
+      y1={ridgeBottom.y}
+      y2={ridgeBottom.y}
+    />,
+  )
+  elements.push(
+    <line
+      key="ridge-top-extension"
+      stroke={styles.dimension}
+      strokeWidth={transform.dimensionStrokeWidth}
+      x1={ridgeTop.x}
+      x2={ridgeHeightDimensionX}
+      y1={ridgeTop.y}
+      y2={ridgeTop.y}
+    />,
+  )
+  elements.push(
+    <line
+      key="ridge-dimension"
+      stroke={styles.dimension}
+      strokeWidth={transform.dimensionStrokeWidth}
+      x1={ridgeHeightDimensionX}
+      x2={ridgeHeightDimensionX}
+      y1={ridgeBottom.y}
+      y2={ridgeTop.y}
+    />,
+  )
+  elements.push(drawDimensionTerminator(ridgeHeightDimensionX, ridgeBottom.y, 'vertical', 'ridge-term-bottom'))
+  elements.push(drawDimensionTerminator(ridgeHeightDimensionX, ridgeTop.y, 'vertical', 'ridge-term-top'))
+  elements.push(
+    drawDimensionText(
+      'ridge-height-text',
+      ridgeHeightDimensionX + 14,
+      (ridgeBottom.y + ridgeTop.y) / 2,
+      formatMillimeters(truss.ridgeHeight),
+      transform,
+      -90,
+    ),
+  )
+
+  return (
+    <g data-layer="dimensions" data-testid="layer-dimensions">
+      {elements}
+    </g>
+  )
+}
+
+function drawRotatedMemberForces(
+  memberForces: MemberForce[] | undefined,
+  memberMap: Map<string, MemberLine>,
+  transform: ViewportTransform,
+) {
+  if (!memberForces || memberForces.length === 0) {
+    return null
+  }
+
+  const annotations = memberForces.flatMap((force) => {
+    const memberLine = memberMap.get(force.memberId)
+
+    if (!memberLine) {
+      return []
+    }
+
+    const point = resolveAnnotationPoint(memberLine, transform, -18, force.x, force.y)
+
+    return [
+      <text
+        dominantBaseline="central"
+        fill={styles.secondary}
+        fontFamily="'Segoe UI', 'Arial', sans-serif"
+        fontSize={transform.smallFontSize}
+        fontStyle="italic"
+        key={`force-rotated-${force.memberId}`}
+        paintOrder="stroke"
+        stroke={styles.textBg}
+        strokeWidth={4}
+        textAnchor="middle"
+        transform={resolveMemberTextTransform(memberLine, point, transform)}
+        x={point.x}
+        y={point.y}
+      >
+        {formatForce(force.value)}
+      </text>,
+    ]
+  })
+
+  return annotations.length > 0 ? (
+    <g data-layer="member-forces" data-testid="layer-member-forces">
+      {annotations}
+    </g>
+  ) : null
+}
+
+function drawRotatedMemberLabels(
+  memberLabels: MemberLabel[] | undefined,
+  memberMap: Map<string, MemberLine>,
+  transform: ViewportTransform,
+) {
+  if (!memberLabels || memberLabels.length === 0) {
+    return null
+  }
+
+  const annotations = memberLabels.flatMap((label) => {
+    const memberLine = memberMap.get(label.memberId)
+
+    if (!memberLine) {
+      return []
+    }
+
+    const point = resolveAnnotationPoint(memberLine, transform, 18, label.x, label.y)
+
+    return [
+      <text
+        dominantBaseline="central"
+        fill={styles.primary}
+        fontFamily="'Segoe UI', 'Arial', sans-serif"
+        fontSize={transform.smallFontSize}
+        fontStyle="italic"
+        key={`member-label-rotated-${label.memberId}`}
+        paintOrder="stroke"
+        stroke={styles.textBg}
+        strokeWidth={4}
+        textAnchor="middle"
+        transform={resolveMemberTextTransform(memberLine, point, transform)}
+        x={point.x}
+        y={point.y}
+      >
+        {label.text}
+      </text>,
+    ]
+  })
+
+  return annotations.length > 0 ? (
+    <g data-layer="member-labels" data-testid="layer-member-labels">
+      {annotations}
+    </g>
+  ) : null
+}
+
 const mockTopChord: MemberRef[] = [
   { id: 'TC1', from: 'T0', to: 'T1' },
   { id: 'TC2', from: 'T1', to: 'T2' },
@@ -1170,7 +1807,7 @@ export function TrussDrawing({
       {visible.showNodes && drawNodes(truss.nodes, transform)}
 
       {visible.showDimensions &&
-        drawDimensions(truss, transform, bounds, nodeMap, leftSupport, rightSupport, ridgeNode)}
+        drawSheetDimensions(truss, transform, bounds, nodeMap, leftSupport, rightSupport, ridgeNode)}
 
       {visible.showNodeLabels && (
         <g data-layer="labels" data-testid="layer-labels">
@@ -1178,9 +1815,9 @@ export function TrussDrawing({
         </g>
       )}
 
-      {visible.showSplice && drawSplice(truss.spliceNodeIds, nodeMap, transform, bounds)}
-      {visible.showMemberForces && drawMemberForces(truss.memberForces, memberMap, transform)}
-      {visible.showMemberLabels && drawMemberLabels(truss.memberLabels, memberMap, transform)}
+      {visible.showSplice && drawSheetSplice(truss.spliceNodeIds, nodeMap, transform, bounds)}
+      {visible.showMemberForces && drawRotatedMemberForces(truss.memberForces, memberMap, transform)}
+      {visible.showMemberLabels && drawRotatedMemberLabels(truss.memberLabels, memberMap, transform)}
     </svg>
   )
 }

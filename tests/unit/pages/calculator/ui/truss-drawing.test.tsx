@@ -50,7 +50,7 @@ describe('TrussDrawing helpers', () => {
 })
 
 describe('TrussDrawing', () => {
-  it('renders engineering layers, dimensions, splice and member annotations', () => {
+  it('renders a sheet-like engineering scheme close to the reference drawing', () => {
     render(
       <TrussDrawing
         truss={mockTrussData}
@@ -79,13 +79,22 @@ describe('TrussDrawing', () => {
     expect(within(svg).getByTestId('layer-member-forces')).toBeInTheDocument()
     expect(within(svg).getByTestId('layer-member-labels')).toBeInTheDocument()
 
+    expect(screen.getByText('Геометрическая схема стропильной фермы')).toBeInTheDocument()
+    expect(screen.getByText('(размеры даны в осях, мм; усилия , кН)')).toBeInTheDocument()
     expect(screen.getByText(/24\s?000/)).toBeInTheDocument()
+    expect(screen.getAllByText(/6\s?000/).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/3\s?000/).length).toBeGreaterThan(0)
     expect(screen.getByText(/900/)).toBeInTheDocument()
     expect(screen.getByText(/2\s?160/)).toBeInTheDocument()
-    expect(screen.getByText('Монтажный стык')).toBeInTheDocument()
+    expect(screen.getByText('Ось монтажного стыка')).toBeInTheDocument()
+    expect(screen.getByText('А')).toBeInTheDocument()
+    expect(screen.getByText('В')).toBeInTheDocument()
+    expect(screen.getByText('Д')).toBeInTheDocument()
     expect(screen.getAllByText('+145.0 kN').length).toBeGreaterThan(0)
     expect(screen.getByText('ВП-1')).toBeInTheDocument()
+
+    const firstForceLabel = within(screen.getByTestId('layer-member-forces')).getAllByText(/kN/)[0]
+    expect(firstForceLabel.getAttribute('transform')).toContain('rotate(')
   })
 
   it('hides optional layers when disabled', () => {
