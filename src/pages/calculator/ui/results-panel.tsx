@@ -16,9 +16,7 @@ import { deriveHeights } from '../model/height-derivations'
 import { mapToColumnInput } from '../model/input-mapper'
 import type { UnifiedInputState } from '../model/unified-input'
 import { MethodologyPanel } from './methodology-panel'
-import { PurlinTrussDiagram } from './purlin-truss-diagram'
 import { SelectionSummaryPage } from './selection-summary-page'
-import { TrussVisualDiagram } from './truss-visual-diagram'
 
 interface PriceImportStatus {
   isLoading: boolean
@@ -730,7 +728,6 @@ function renderTrussOverview(
   columnResult: ColumnCalculationResult | null,
   buildingLengthM: number,
   tubeS345PriceRubPerKg: number,
-  roofType: UnifiedInputState['roofType'],
 ) {
   if (!trussResult) {
     return (
@@ -786,7 +783,6 @@ function renderTrussOverview(
     <div className="tab-pane animate-in" data-testid="truss-panel">
       <div className="results-section">
         <h3 className="results-section-title">Фермы</h3>
-        <TrussVisualDiagram roofType={roofType} trussResult={trussResult} />
         <p className="results-inline-note">
           Обозначения: ВП — верхний пояс, НП — нижний пояс, ОРб — опорный раскос большой,
           ОР — опорный раскос, РР — рядовой раскос.
@@ -1917,7 +1913,6 @@ export function ResultsPanel({
         : []
       : activeTab === 'summary' ||
           activeTab === 'selection-summary' ||
-          activeTab === 'graphics' ||
           activeTab === 'enclosing' ||
           activeTab === 'methodology'
       ? [
@@ -1941,13 +1936,6 @@ export function ResultsPanel({
     purlinSpecificationSource === 'sort' ? sortPurlinCandidates : lstkPurlinCandidates
   const manualPurlinSelectedIndex =
     purlinSpecificationSource === 'sort' ? selectedSortPurlinIndex : selectedLstkPurlinIndex
-  const purlinSpecificationState = resolvePurlinSpecificationState(
-    purlinResult,
-    purlinSpecificationSource,
-    purlinSelectionMode,
-    selectedSortPurlinIndex,
-    selectedLstkPurlinIndex,
-  )
   const [enclosingClassKey, setEnclosingClassKey] = useState<EnclosingClassKey>('class-1-gost')
   const columnEffortsByType = useMemo(() => resolveColumnEffortsByType(input), [input])
 
@@ -2031,34 +2019,7 @@ export function ResultsPanel({
           columnResult,
           input.buildingLengthM,
           input.tubeS345PriceRubPerKg,
-          input.roofType,
         )
-      ) : activeTab === 'graphics' ? (
-        <div className="tab-pane animate-in">
-          <div className="results-section">
-            <h3 className="results-section-title">Графика</h3>
-            <PurlinTrussDiagram
-              selectedPurlinFamily={purlinSpecificationState.selectedCandidate?.family ?? null}
-              roofSlopeDeg={input.roofSlopeDeg}
-              roofType={input.roofType}
-              selectedPurlinProfile={purlinSpecificationState.selectedCandidate?.profile ?? null}
-              selectedPurlinStepMm={
-                purlinSpecificationState.selectedCandidate?.stepMm ??
-                purlinResult?.loadSummary.autoMaxStepMm ??
-                null
-              }
-              spanM={input.spanM}
-            />
-          </div>
-          <div className="results-section">
-            <h3 className="results-section-title">Схема фермы</h3>
-            {trussResult ? (
-              <TrussVisualDiagram roofType={input.roofType} trussResult={trussResult} />
-            ) : (
-              <div className="results-empty">Данные фермы недоступны.</div>
-            )}
-          </div>
-        </div>
       ) : activeTab === 'purlin' ? (
         <div className="tab-pane animate-in">
           <div className="results-section">
@@ -2129,22 +2090,6 @@ export function ResultsPanel({
                 </strong>
               </div>
             </div>
-          </div>
-
-          <div className="results-section">
-            <h3 className="results-section-title">Схема фермы с прогонами</h3>
-            <PurlinTrussDiagram
-              selectedPurlinFamily={purlinSpecificationState.selectedCandidate?.family ?? null}
-              roofSlopeDeg={input.roofSlopeDeg}
-              roofType={input.roofType}
-              selectedPurlinProfile={purlinSpecificationState.selectedCandidate?.profile ?? null}
-              selectedPurlinStepMm={
-                purlinSpecificationState.selectedCandidate?.stepMm ??
-                purlinResult?.loadSummary.autoMaxStepMm ??
-                null
-              }
-              spanM={input.spanM}
-            />
           </div>
 
           <div className="results-section-row">
