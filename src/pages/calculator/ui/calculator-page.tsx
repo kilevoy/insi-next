@@ -298,13 +298,6 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
               Прогоны
             </button>
             <button
-              className={`tab ${activeTab === 'graphics' ? 'active' : ''}`}
-              data-testid="tab-graphics"
-              onClick={() => setActiveTab('graphics')}
-            >
-              Графика
-            </button>
-            <button
               className={`tab ${activeTab === 'selection-summary' ? 'active' : ''}`}
               data-testid="tab-selection-summary"
               onClick={() => setActiveTab('selection-summary')}
