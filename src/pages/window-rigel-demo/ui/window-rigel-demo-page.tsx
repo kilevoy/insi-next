@@ -6,6 +6,19 @@ import { defaultWindowRigelInput, type WindowRigelInput } from '@/domain/window-
 import { windowRigelWindowConstructionLoads } from '@/domain/window-rigel/model/window-rigel-reference.generated'
 import { defaultUnifiedInput } from '@/pages/calculator/model/unified-input'
 
+const compactFieldLabelStyle = {
+  display: 'grid',
+  gap: 4,
+  lineHeight: 1.1,
+} as const
+
+const compactFieldControlStyle = {
+  padding: '7px 10px',
+  lineHeight: 1.1,
+  borderRadius: 10,
+  border: '1px solid rgba(148, 163, 184, 0.42)',
+} as const
+
 function parseNumberInput(value: string): number | null {
   const normalized = value.trim().replace(',', '.')
   if (!normalized) {
@@ -259,10 +272,11 @@ export function WindowRigelDemoPage() {
             alignItems: 'start',
           }}
         >
-          <label style={{ display: 'grid', gap: 6 }}>
+          <label style={compactFieldLabelStyle}>
             <span>Город</span>
             <select
               aria-label="Город"
+              style={compactFieldControlStyle}
               value={input.city}
               onChange={(event) => setInput((prev) => ({ ...prev, city: event.target.value }))}
             >
@@ -273,54 +287,65 @@ export function WindowRigelDemoPage() {
               ))}
             </select>
           </label>
-          <label style={{ display: 'grid', gap: 6 }}>
+          <label style={compactFieldLabelStyle}>
             <span>Высота окна, м</span>
             <input
               aria-label="Высота окна, м"
+              style={compactFieldControlStyle}
               value={String(input.windowHeightM).replace('.', ',')}
               onChange={handleNumberField('windowHeightM')}
             />
           </label>
-          <label style={{ display: 'grid', gap: 6 }}>
+          <label style={compactFieldLabelStyle}>
             <span>Шаг рам, м</span>
             <input
               aria-label="Шаг рам, м"
+              style={compactFieldControlStyle}
               value={String(input.frameStepM).replace('.', ',')}
               onChange={handleNumberField('frameStepM')}
             />
           </label>
-          <label style={{ display: 'grid', gap: 6 }}>
+          <label style={compactFieldLabelStyle}>
             <span>Тип окна</span>
-            <input aria-label="Тип окна" value={String(input.windowType)} onChange={handleNumberField('windowType')} />
+            <input
+              aria-label="Тип окна"
+              style={compactFieldControlStyle}
+              value={String(input.windowType)}
+              onChange={handleNumberField('windowType')}
+            />
           </label>
-          <label style={{ display: 'grid', gap: 6 }}>
+          <label style={compactFieldLabelStyle}>
             <span>Высота здания, м</span>
             <input
               aria-label="Высота здания, м"
+              style={compactFieldControlStyle}
               value={String(input.buildingHeightM).replace('.', ',')}
               onChange={handleNumberField('buildingHeightM')}
             />
           </label>
-          <label style={{ display: 'grid', gap: 6 }}>
+          <label style={compactFieldLabelStyle}>
             <span>Пролет здания, м</span>
             <input
               aria-label="Пролет здания, м"
+              style={compactFieldControlStyle}
               value={String(input.buildingSpanM).replace('.', ',')}
               onChange={handleNumberField('buildingSpanM')}
             />
           </label>
-          <label style={{ display: 'grid', gap: 6 }}>
+          <label style={compactFieldLabelStyle}>
             <span>Длина здания, м</span>
             <input
               aria-label="Длина здания, м"
+              style={compactFieldControlStyle}
               value={String(input.buildingLengthM).replace('.', ',')}
               onChange={handleNumberField('buildingLengthM')}
             />
           </label>
-          <label style={{ display: 'grid', gap: 6 }}>
+          <label style={compactFieldLabelStyle}>
             <span>Количество окон</span>
             <input
               aria-label="Количество окон"
+              style={compactFieldControlStyle}
               value={String(windowCount)}
               onChange={(event) => {
                 const parsed = parseNumberInput(event.target.value)
@@ -336,10 +361,11 @@ export function WindowRigelDemoPage() {
 
         <div style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
           <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
-            <label style={{ display: 'grid', gap: 6 }}>
+            <label style={compactFieldLabelStyle}>
               <span>Конструкция окна</span>
               <select
                 aria-label="Конструкция окна"
+                style={compactFieldControlStyle}
                 value={input.windowConstruction}
                 onChange={(event) => setInput((prev) => ({ ...prev, windowConstruction: event.target.value }))}
               >
@@ -350,10 +376,11 @@ export function WindowRigelDemoPage() {
                 ))}
               </select>
             </label>
-            <label style={{ display: 'grid', gap: 6 }}>
+            <label style={compactFieldLabelStyle}>
               <span>Макс. к-т использования</span>
               <input
                 aria-label="Макс. к-т использования"
+                style={compactFieldControlStyle}
                 value={String(input.maxUtilization).replace('.', ',')}
                 onChange={handleNumberField('maxUtilization')}
               />
