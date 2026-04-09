@@ -26,6 +26,7 @@ type CalculationState<T> = { result: T | null; error: string | null }
 type ThemeMode = 'light' | 'dark'
 const THEME_STORAGE_KEY = 'metalcalc-theme'
 const WINDOW_RIGEL_DEMO_PATH = '/window-rigel-demo'
+const CRANE_BEAM_DEMO_PATH = '/crane-beam-demo'
 
 interface PriceImportStatus {
   isLoading: boolean
@@ -67,6 +68,10 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
     typeof window !== 'undefined' && window.location.pathname.startsWith('/insi-next/')
       ? `/insi-next${WINDOW_RIGEL_DEMO_PATH}`
       : WINDOW_RIGEL_DEMO_PATH
+  const craneBeamDemoHref =
+    typeof window !== 'undefined' && window.location.pathname.startsWith('/insi-next/')
+      ? `/insi-next${CRANE_BEAM_DEMO_PATH}`
+      : CRANE_BEAM_DEMO_PATH
 
   useEffect(() => {
     window.localStorage.setItem(THEME_STORAGE_KEY, themeMode)
@@ -333,6 +338,14 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
               style={{ textDecoration: 'none' }}
             >
               {'\u041E\u043A\u043E\u043D\u043D\u044B\u0435 \u0440\u0438\u0433\u0435\u043B\u0438'}
+            </a>
+            <a
+              className="tab tab--utility"
+              data-testid="link-crane-beam-demo"
+              href={craneBeamDemoHref}
+              style={{ textDecoration: 'none' }}
+            >
+              {'\u041F\u043E\u0434\u043A\u0440\u0430\u043D\u043E\u0432\u0430\u044F \u0431\u0430\u043B\u043A\u0430'}
             </a>
             <button
               className={`tab tab--utility ${activeTab === 'methodology' ? 'active' : ''}`}

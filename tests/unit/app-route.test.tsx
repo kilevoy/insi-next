@@ -30,6 +30,7 @@ describe('App routing', () => {
 
     expect(screen.getByTestId('calculator-page')).toBeInTheDocument()
     expect(screen.getByTestId('link-window-rigel-demo')).toHaveAttribute('href', '/window-rigel-demo')
+    expect(screen.getByTestId('link-crane-beam-demo')).toHaveAttribute('href', '/crane-beam-demo')
   })
 
   it('renders the window rigel demo on the isolated route', () => {
@@ -51,6 +52,14 @@ describe('App routing', () => {
 
   it('renders the crane beam demo on the isolated route', () => {
     window.history.replaceState({}, '', '/crane-beam-demo')
+
+    render(<App />)
+
+    expect(screen.getByTestId('crane-beam-demo-page')).toBeInTheDocument()
+  })
+
+  it('renders the crane beam demo on the GitHub Pages route', () => {
+    window.history.replaceState({}, '', '/insi-next/crane-beam-demo')
 
     render(<App />)
 
