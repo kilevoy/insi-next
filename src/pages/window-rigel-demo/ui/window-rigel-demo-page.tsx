@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react'
+﻿import { useState, type ChangeEvent } from 'react'
 import insiLogo from '@/assets/insi-logo.png'
 import { purlinCityLoads } from '@/domain/purlin/model/purlin-reference.generated'
 import { calculateWindowRigel } from '@/domain/window-rigel/model/calculate-window-rigel'
@@ -41,7 +41,7 @@ function formatRub(value: number): string {
 }
 
 function resolveTubePriceRubPerKg(steelGrade: string): number {
-  return steelGrade.trim() === 'С245'
+  return steelGrade.trim() === 'РЎ245'
     ? defaultUnifiedInput.tubeS245PriceRubPerKg
     : defaultUnifiedInput.tubeS345PriceRubPerKg
 }
@@ -88,7 +88,7 @@ function WindowTypePicker({
 }) {
   return (
     <div style={{ display: 'grid', gap: 8 }}>
-      <span style={{ fontSize: 14, color: '#475569' }}>Тип окна</span>
+      <span style={{ fontSize: 14, color: '#475569' }}>РўРёРї РѕРєРЅР°</span>
       <div
         style={{
           display: 'grid',
@@ -103,7 +103,7 @@ function WindowTypePicker({
             <button
               key={windowType}
               type="button"
-              aria-label={`Тип окна ${windowType}`}
+              aria-label={`РўРёРї РѕРєРЅР° ${windowType}`}
               onClick={() => onSelect(windowType)}
               style={{
                 display: 'grid',
@@ -116,7 +116,7 @@ function WindowTypePicker({
               }}
             >
               <WindowTypeGlyph windowType={windowType} />
-              <span style={{ fontSize: 12, color: '#475569' }}>Тип {windowType}</span>
+              <span style={{ fontSize: 12, color: '#475569' }}>РўРёРї {windowType}</span>
             </button>
           )
         })}
@@ -147,10 +147,10 @@ function CandidateCard({
         <strong style={{ fontSize: 16 }}>
           {rank}. {candidate.profile}
         </strong>
-        <span style={{ color: '#475569' }}>Сталь: {candidate.steelGrade}</span>
-        <span style={{ color: '#475569' }}>Масса: {formatNumber(candidate.massKg)} кг</span>
+        <span style={{ color: '#475569' }}>РЎС‚Р°Р»СЊ: {candidate.steelGrade}</span>
+        <span style={{ color: '#475569' }}>РњР°СЃСЃР°: {formatNumber(candidate.massKg)} РєРі</span>
       </div>
-      <div style={{ fontSize: 12, color: '#64748b' }}>{`Коэффициенты: гибкость ${formatNumber(candidate.utilization.flexibility, 2)} · прочность ${formatNumber(candidate.utilization.strength, 2)} · прогиб ${formatNumber(candidate.utilization.deflection, 2)}`}</div>
+      <div style={{ fontSize: 12, color: '#64748b' }}>{`РљРѕСЌС„С„РёС†РёРµРЅС‚С‹: РіРёР±РєРѕСЃС‚СЊ ${formatNumber(candidate.utilization.flexibility, 2)} В· РїСЂРѕС‡РЅРѕСЃС‚СЊ ${formatNumber(candidate.utilization.strength, 2)} В· РїСЂРѕРіРёР± ${formatNumber(candidate.utilization.deflection, 2)}`}</div>
     </div>
   )
 }
@@ -177,7 +177,7 @@ function SpecificationCard({
         }}
       >
         <h3 style={{ margin: 0 }}>{title}</h3>
-        <div>Подходящий вариант не найден.</div>
+        <div>РџРѕРґС…РѕРґСЏС‰РёР№ РІР°СЂРёР°РЅС‚ РЅРµ РЅР°Р№РґРµРЅ.</div>
       </article>
     )
   }
@@ -200,13 +200,13 @@ function SpecificationCard({
     >
       <h3 style={{ margin: 0 }}>{title}</h3>
       <div style={{ display: 'grid', gap: 6, color: '#334155' }}>
-        <div>Профиль: {candidate.profile}</div>
-        <div>Сталь: {candidate.steelGrade}</div>
-        <div>Масса одного ригеля: {formatNumber(candidate.massKg)} кг</div>
-        <div>Количество окон: {windowCount}</div>
-        <div>Общая масса: {formatNumber(totalMassKg, 0)} кг</div>
+        <div>РџСЂРѕС„РёР»СЊ: {candidate.profile}</div>
+        <div>РЎС‚Р°Р»СЊ: {candidate.steelGrade}</div>
+        <div>РњР°СЃСЃР° РѕРґРЅРѕРіРѕ СЂРёРіРµР»СЏ: {formatNumber(candidate.massKg)} РєРі</div>
+        <div>РљРѕР»РёС‡РµСЃС‚РІРѕ РѕРєРѕРЅ: {windowCount}</div>
+        <div>РћР±С‰Р°СЏ РјР°СЃСЃР°: {formatNumber(totalMassKg, 0)} РєРі</div>
         <div>
-          Стоимость: {formatRub(totalCostRub)} руб. ({formatRub(priceRubPerTon)} руб/т)
+          РЎС‚РѕРёРјРѕСЃС‚СЊ: {formatRub(totalCostRub)} СЂСѓР±. ({formatRub(priceRubPerTon)} СЂСѓР±/С‚)
         </div>
       </div>
     </article>
@@ -249,7 +249,7 @@ export function WindowRigelDemoPage() {
       <section style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
         <img src={insiLogo} alt="INSI" style={{ width: 120, height: 120, objectFit: 'contain' }} />
         <div style={{ display: 'grid', gap: 4 }}>
-          <h1 style={{ margin: 0 }}>Подбор оконных ригелей</h1>
+          <h1 style={{ margin: 0 }}>РџРѕРґР±РѕСЂ РѕРєРѕРЅРЅС‹С… СЂРёРіРµР»РµР№</h1>
         </div>
       </section>
 
@@ -273,9 +273,9 @@ export function WindowRigelDemoPage() {
           }}
         >
           <label style={compactFieldLabelStyle}>
-            <span>Город</span>
+            <span>Р“РѕСЂРѕРґ</span>
             <select
-              aria-label="Город"
+              aria-label="Р“РѕСЂРѕРґ"
               style={compactFieldControlStyle}
               value={input.city}
               onChange={(event) => setInput((prev) => ({ ...prev, city: event.target.value }))}
@@ -288,63 +288,63 @@ export function WindowRigelDemoPage() {
             </select>
           </label>
           <label style={compactFieldLabelStyle}>
-            <span>Высота окна, м</span>
+            <span>Р’С‹СЃРѕС‚Р° РѕРєРЅР°, Рј</span>
             <input
-              aria-label="Высота окна, м"
+              aria-label="Р’С‹СЃРѕС‚Р° РѕРєРЅР°, Рј"
               style={compactFieldControlStyle}
               value={String(input.windowHeightM).replace('.', ',')}
               onChange={handleNumberField('windowHeightM')}
             />
           </label>
           <label style={compactFieldLabelStyle}>
-            <span>Шаг рам, м</span>
+            <span>РЁР°Рі СЂР°Рј, Рј</span>
             <input
-              aria-label="Шаг рам, м"
+              aria-label="РЁР°Рі СЂР°Рј, Рј"
               style={compactFieldControlStyle}
               value={String(input.frameStepM).replace('.', ',')}
               onChange={handleNumberField('frameStepM')}
             />
           </label>
           <label style={compactFieldLabelStyle}>
-            <span>Тип окна</span>
+            <span>РўРёРї РѕРєРЅР°</span>
             <input
-              aria-label="Тип окна"
+              aria-label="РўРёРї РѕРєРЅР°"
               style={compactFieldControlStyle}
               value={String(input.windowType)}
               onChange={handleNumberField('windowType')}
             />
           </label>
           <label style={compactFieldLabelStyle}>
-            <span>Высота здания, м</span>
+            <span>Р’С‹СЃРѕС‚Р° Р·РґР°РЅРёСЏ, Рј</span>
             <input
-              aria-label="Высота здания, м"
+              aria-label="Р’С‹СЃРѕС‚Р° Р·РґР°РЅРёСЏ, Рј"
               style={compactFieldControlStyle}
               value={String(input.buildingHeightM).replace('.', ',')}
               onChange={handleNumberField('buildingHeightM')}
             />
           </label>
           <label style={compactFieldLabelStyle}>
-            <span>Пролет здания, м</span>
+            <span>РџСЂРѕР»РµС‚ Р·РґР°РЅРёСЏ, Рј</span>
             <input
-              aria-label="Пролет здания, м"
+              aria-label="РџСЂРѕР»РµС‚ Р·РґР°РЅРёСЏ, Рј"
               style={compactFieldControlStyle}
               value={String(input.buildingSpanM).replace('.', ',')}
               onChange={handleNumberField('buildingSpanM')}
             />
           </label>
           <label style={compactFieldLabelStyle}>
-            <span>Длина здания, м</span>
+            <span>Р”Р»РёРЅР° Р·РґР°РЅРёСЏ, Рј</span>
             <input
-              aria-label="Длина здания, м"
+              aria-label="Р”Р»РёРЅР° Р·РґР°РЅРёСЏ, Рј"
               style={compactFieldControlStyle}
               value={String(input.buildingLengthM).replace('.', ',')}
               onChange={handleNumberField('buildingLengthM')}
             />
           </label>
           <label style={compactFieldLabelStyle}>
-            <span>Количество окон</span>
+            <span>РљРѕР»РёС‡РµСЃС‚РІРѕ РѕРєРѕРЅ</span>
             <input
-              aria-label="Количество окон"
+              aria-label="РљРѕР»РёС‡РµСЃС‚РІРѕ РѕРєРѕРЅ"
               style={compactFieldControlStyle}
               value={String(windowCount)}
               onChange={(event) => {
@@ -362,9 +362,9 @@ export function WindowRigelDemoPage() {
         <div style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
           <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
             <label style={compactFieldLabelStyle}>
-              <span>Конструкция окна</span>
+              <span>РљРѕРЅСЃС‚СЂСѓРєС†РёСЏ РѕРєРЅР°</span>
               <select
-                aria-label="Конструкция окна"
+                aria-label="РљРѕРЅСЃС‚СЂСѓРєС†РёСЏ РѕРєРЅР°"
                 style={compactFieldControlStyle}
                 value={input.windowConstruction}
                 onChange={(event) => setInput((prev) => ({ ...prev, windowConstruction: event.target.value }))}
@@ -377,9 +377,9 @@ export function WindowRigelDemoPage() {
               </select>
             </label>
             <label style={compactFieldLabelStyle}>
-              <span>Макс. к-т использования</span>
+              <span>РњР°РєСЃ. Рє-С‚ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ</span>
               <input
-                aria-label="Макс. к-т использования"
+                aria-label="РњР°РєСЃ. Рє-С‚ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ"
                 style={compactFieldControlStyle}
                 value={String(input.maxUtilization).replace('.', ',')}
                 onChange={handleNumberField('maxUtilization')}
@@ -403,7 +403,7 @@ export function WindowRigelDemoPage() {
           boxShadow: '0 18px 50px rgba(15, 23, 42, 0.05)',
         }}
       >
-        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#64748b' }}>Нагрузки</h2>
+        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#64748b' }}>РќР°РіСЂСѓР·РєРё</h2>
         <div
           style={{
             display: 'grid',
@@ -413,10 +413,10 @@ export function WindowRigelDemoPage() {
             fontSize: 14,
           }}
         >
-          <div>Ветер: {formatNumber(result.loads.windLoadKpa, 3)} кПа</div>
-          <div>Вертикальная: {formatNumber(result.loads.verticalLoadKpa, 3)} кПа</div>
-          <div>Горизонтальная I сл.: {formatNumber(result.loads.horizontalLoadCase1Kpa, 6)} кПа</div>
-          <div>Горизонтальная II сл.: {formatNumber(result.loads.horizontalLoadCase2Kpa, 6)} кПа</div>
+          <div>Р’РµС‚РµСЂ: {formatNumber(result.loads.windLoadKpa, 3)} РєРџР°</div>
+          <div>Р’РµСЂС‚РёРєР°Р»СЊРЅР°СЏ: {formatNumber(result.loads.verticalLoadKpa, 3)} РєРџР°</div>
+          <div>Р“РѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ I СЃР».: {formatNumber(result.loads.horizontalLoadCase1Kpa, 6)} РєРџР°</div>
+          <div>Р“РѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ II СЃР».: {formatNumber(result.loads.horizontalLoadCase2Kpa, 6)} РєРџР°</div>
         </div>
       </section>
 
@@ -437,7 +437,7 @@ export function WindowRigelDemoPage() {
             boxShadow: '0 18px 50px rgba(15, 23, 42, 0.08)',
           }}
         >
-          <h2 style={{ margin: 0 }}>Спецификация</h2>
+          <h2 style={{ margin: 0 }}>РЎРїРµС†РёС„РёРєР°С†РёСЏ</h2>
           <div
             style={{
               display: 'grid',
@@ -445,8 +445,8 @@ export function WindowRigelDemoPage() {
               gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
             }}
           >
-            <SpecificationCard title="Лучший нижний ригель" candidate={bestBottomCandidate} windowCount={windowCount} />
-            <SpecificationCard title="Лучший верхний ригель" candidate={bestTopCandidate} windowCount={windowCount} />
+            <SpecificationCard title="Р›СѓС‡С€РёР№ РЅРёР¶РЅРёР№ СЂРёРіРµР»СЊ" candidate={bestBottomCandidate} windowCount={windowCount} />
+            <SpecificationCard title="Р›СѓС‡С€РёР№ РІРµСЂС…РЅРёР№ СЂРёРіРµР»СЊ" candidate={bestTopCandidate} windowCount={windowCount} />
           </div>
         </article>
       </section>
@@ -468,13 +468,13 @@ export function WindowRigelDemoPage() {
             boxShadow: '0 18px 50px rgba(15, 23, 42, 0.08)',
           }}
         >
-          <h2 style={{ margin: 0 }}>Нижний ригель</h2>
+          <h2 style={{ margin: 0 }}>РќРёР¶РЅРёР№ СЂРёРіРµР»СЊ</h2>
           {result.bottomCandidates.length > 0 ? (
             result.bottomCandidates.map((candidate, index) => (
               <CandidateCard key={`${candidate.ordinal}-${candidate.steelGrade}`} rank={index + 1} candidate={candidate} />
             ))
           ) : (
-            <div>Подходящих нижних ригелей не найдено.</div>
+            <div>РџРѕРґС…РѕРґСЏС‰РёС… РЅРёР¶РЅРёС… СЂРёРіРµР»РµР№ РЅРµ РЅР°Р№РґРµРЅРѕ.</div>
           )}
         </article>
 
@@ -488,16 +488,17 @@ export function WindowRigelDemoPage() {
             boxShadow: '0 18px 50px rgba(15, 23, 42, 0.08)',
           }}
         >
-          <h2 style={{ margin: 0 }}>Верхний ригель</h2>
+          <h2 style={{ margin: 0 }}>Р’РµСЂС…РЅРёР№ СЂРёРіРµР»СЊ</h2>
           {result.workbookEffectiveTopCandidates.length > 0 ? (
             result.workbookEffectiveTopCandidates.map((candidate, index) => (
               <CandidateCard key={`${candidate.ordinal}-${candidate.steelGrade}`} rank={index + 1} candidate={candidate} />
             ))
           ) : (
-            <div>Подходящих верхних ригелей не найдено.</div>
+            <div>РџРѕРґС…РѕРґСЏС‰РёС… РІРµСЂС…РЅРёС… СЂРёРіРµР»РµР№ РЅРµ РЅР°Р№РґРµРЅРѕ.</div>
           )}
         </article>
       </section>
     </main>
   )
 }
+
