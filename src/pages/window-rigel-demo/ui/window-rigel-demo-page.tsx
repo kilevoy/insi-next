@@ -316,17 +316,17 @@ export function WindowRigelDemoPage() {
     }
 
   return (
-    <main
-      data-testid="window-rigel-demo-page"
-      style={{
-        padding: 24,
-        display: 'grid',
-        gap: 16,
-        maxWidth: 1240,
-        margin: '0 auto',
-        background: '#f8fafc',
-      }}
-    >
+    <div className="app-shell">
+      <main
+        data-testid="window-rigel-demo-page"
+        className="page"
+        style={{
+          display: 'grid',
+          gap: 16,
+          maxWidth: 'none',
+          padding: '28px 0 64px',
+        }}
+      >
       <section
         style={{
           display: 'flex',
@@ -685,6 +685,7 @@ export function WindowRigelDemoPage() {
           )}
         </article>
       </section>
-    </main>
+      </main>
+    </div>
   )
 }
