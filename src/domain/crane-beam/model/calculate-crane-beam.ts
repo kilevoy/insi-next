@@ -162,6 +162,14 @@ type WorkbookSelectionBaseline = {
   stiffenerStepM: number
 }
 
+type CraneBeamSelectedCandidate = {
+  profile: string
+  weightKg: number
+  utilization: number
+  maxUtilizationPercent: number
+  stiffenerStepM: number
+}
+
 const workbookSelectionBaselines = new Map<string, WorkbookSelectionBaseline>([
   [
     buildSelectionKey({
@@ -369,6 +377,17 @@ const workbookCandidateMetricOverrides = new Map<
 
 function findCandidateByProfile(profile: string): CraneBeamCandidate | undefined {
   return craneBeamCandidateCatalog.find((candidate) => candidate.profile === profile)
+}
+
+function isSimpleCatalogSelectionScenario(input: CraneBeamInput) {
+  return (
+    input.dutyGroup !== '7\u041a' &&
+    input.dutyGroup !== '8\u041a' &&
+    input.craneCountInSpan === oneCrane &&
+    input.craneRail === railP50 &&
+    input.beamSpanM === 6 &&
+    input.brakeStructure === noBrakeStructure
+  )
 }
 
 function resolveCraneCatalogRow(input: CraneBeamInput): CraneCatalogRow {
@@ -756,7 +775,46 @@ export function evaluateCraneBeamCandidateMetrics(
   return { ai, aj: adjustedAj, an, bn: adjustedBn, ca, cu, cv }
 }
 
+export function selectCraneBeamCandidate(input: CraneBeamInput): CraneBeamSelectedCandidate | undefined {
+  if (!isSimpleCatalogSelectionScenario(input)) {
+    return undefined
+  }
+
+  const maxUtilizationPercent = 85
+  const selected = craneBeamCandidateCatalog
+    .filter((candidate) => !candidate.excluded)
+    .filter((candidate) => candidate.bMm <= 320)
+    .map((candidate) => {
+      const metrics = evaluateCraneBeamCandidateMetrics(candidate, input)
+      return {
+        candidate,
+        utilization: metrics.cv,
+        weightKg: candidate.unitMassKgPerM * input.beamSpanM + candidate.ordinal * 0.00001,
+      }
+    })
+    .filter((item) => item.utilization <= maxUtilizationPercent / 100)
+    .sort((left, right) => left.weightKg - right.weightKg)[0]
+
+  if (!selected) {
+    return undefined
+  }
+
+  return {
+    profile: selected.candidate.profile,
+    weightKg: selected.weightKg,
+    utilization: selected.utilization,
+    maxUtilizationPercent,
+    stiffenerStepM: input.beamSpanM,
+  }
+}
+
 function resolveSelection(input: CraneBeamInput): CraneBeamCalculationResult['selection'] {
+  const selectedCandidate = selectCraneBeamCandidate(input)
+
+  if (selectedCandidate) {
+    return selectedCandidate
+  }
+
   const selectionKey = buildSelectionKey(input)
   const baseline = workbookSelectionBaselines.get(selectionKey)
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   calculateCraneBeam,
   evaluateCraneBeamCandidateMetrics,
+  selectCraneBeamCandidate,
 } from '../../src/domain/crane-beam/model/calculate-crane-beam'
 import { defaultCraneBeamInput } from '../../src/domain/crane-beam/model/crane-beam-input'
 import { craneBeamCandidateCatalog } from '../../src/domain/crane-beam/model/crane-beam-reference.generated'
@@ -153,5 +154,26 @@ describe('crane beam calculation', () => {
     expect(metrics.ca).toBeCloseTo(0.39745991144260423, 10)
     expect(metrics.cu).toBeCloseTo(0.3931061309964103, 10)
     expect(metrics.cv).toBeCloseTo(0.39745991144260423, 10)
+  })
+  it('selects the workbook profile from the candidate catalog for simple one-crane scenarios', () => {
+    const scenarios = [
+      { input: {}, profile: '35\u04281', utilization: 0.5464725962825525 },
+      { input: { loadCapacityT: 5, craneSpanM: 12 }, profile: '40\u04111', utilization: 0.7433378901094819 },
+      { input: { loadCapacityT: 5, craneSpanM: 30 }, profile: '25\u041a1', utilization: 0.8061917861860983 },
+      { input: { loadCapacityT: 8, craneSpanM: 24 }, profile: '35\u04281', utilization: 0.7705498308205987 },
+      { input: { loadCapacityT: 10, craneSpanM: 36 }, profile: '35\u04282', utilization: 0.820171462051368 },
+      { input: { suspensionType: '\u0436\u0435\u0441\u0442\u043a\u0438\u0439' }, profile: '35\u04281', utilization: 0.5921948772890895 },
+    ] as const
+
+    for (const scenario of scenarios) {
+      const selection = selectCraneBeamCandidate({
+        ...defaultCraneBeamInput,
+        ...scenario.input,
+      })
+
+      expect(selection).toBeDefined()
+      expect(selection?.profile).toBe(scenario.profile)
+      expect(selection?.utilization).toBeCloseTo(scenario.utilization, 10)
+    }
   })
 })
