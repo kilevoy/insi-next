@@ -342,30 +342,8 @@ export function WindowRigelDemoPage() {
       >
         <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
           <img src={insiLogo} alt="INSI" style={{ width: 120, height: 120, objectFit: 'contain' }} />
-          <div style={{ display: 'grid', gap: 4 }}>
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 'fit-content',
-                minHeight: 24,
-                padding: '0 8px',
-                borderRadius: 999,
-                background: 'rgba(15, 118, 110, 0.08)',
-                color: '#0f766e',
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-              }}
-            >
-              INSI Demo
-            </span>
+          <div>
             <h1 style={{ margin: 0, fontSize: 30, lineHeight: 1.08, color: '#0f172a' }}>{text.title}</h1>
-            <div style={{ color: '#475569', maxWidth: 620, lineHeight: 1.4, fontSize: 14 }}>
-              {'\u0411\u044B\u0441\u0442\u0440\u044B\u0439 \u043F\u043E\u0434\u0431\u043E\u0440 \u0441 \u0432\u0438\u0437\u0443\u0430\u043B\u044C\u043D\u043E \u0447\u0438\u0441\u0442\u043E\u0439 \u0444\u043E\u0440\u043C\u043E\u0439, \u044F\u0432\u043D\u044B\u043C \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u043E\u043C \u0438 \u0443\u0434\u043E\u0431\u043D\u044B\u043C \u043F\u0435\u0440\u0435\u0445\u043E\u0434\u043E\u043C \u0432 \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u0439 \u043A\u0430\u043B\u044C\u043A\u0443\u043B\u044F\u0442\u043E\u0440.'}
-            </div>
           </div>
         </div>
         <a
