@@ -1,5 +1,15 @@
 import { useState, type ChangeEvent } from 'react'
 import insiLogo from '@/assets/insi-logo.png'
+import {
+  craneBeamBrakeStructures,
+  craneBeamCountsInSpan,
+  craneBeamDutyGroups,
+  craneBeamRails,
+  craneBeamSuspensionTypes,
+  defaultCraneBeamInput,
+  type CraneBeamInput,
+} from '@/domain/crane-beam/model/crane-beam-input'
+import { craneBeamWorkbookMap } from '@/domain/crane-beam/model/crane-beam-workbook-map'
 
 const fieldLabelStyle = {
   display: 'grid',
@@ -51,48 +61,6 @@ const text = {
   yes: '\u0435\u0441\u0442\u044C',
 } as const
 
-type CraneBeamInput = {
-  loadCapacityT: number
-  craneSpanM: number
-  wheelLoadKn: number
-  wheelCount: number
-  trolleyMassT: number
-  craneBaseMm: number
-  craneGaugeMm: number
-  suspensionType: string
-  dutyGroup: string
-  craneCountInSpan: string
-  craneRail: string
-  railFootWidthM: number
-  railHeightM: number
-  beamSpanM: number
-  brakeStructure: string
-  stiffenerStepM: number
-  tbnKn: number
-  qbnKn: number
-}
-
-const defaultInput: CraneBeamInput = {
-  loadCapacityT: 5,
-  craneSpanM: 24,
-  wheelLoadKn: 60,
-  wheelCount: 4,
-  trolleyMassT: 2,
-  craneBaseMm: 3700,
-  craneGaugeMm: 4700,
-  suspensionType: text.flexible,
-  dutyGroup: '3\u041A',
-  craneCountInSpan: text.oneCrane,
-  craneRail: 'P50',
-  railFootWidthM: 0.132,
-  railHeightM: 0.152,
-  beamSpanM: 6,
-  brakeStructure: text.no,
-  stiffenerStepM: 0,
-  tbnKn: 6,
-  qbnKn: 2,
-}
-
 function parseNumberInput(value: string): number | null {
   const normalized = value.trim().replace(',', '.')
   if (!normalized) {
@@ -112,7 +80,7 @@ function formatNumber(value: number, digits = 3): string {
 }
 
 export function CraneBeamDemoPage() {
-  const [input, setInput] = useState<CraneBeamInput>(defaultInput)
+  const [input, setInput] = useState<CraneBeamInput>(defaultCraneBeamInput)
   const mainCalculatorHref =
     typeof window === 'undefined' ? '/' : resolveMainCalculatorHref(window.location.pathname)
 
@@ -245,8 +213,11 @@ export function CraneBeamDemoPage() {
                 value={input.suspensionType}
                 onChange={(event) => setInput((prev) => ({ ...prev, suspensionType: event.target.value }))}
               >
-                <option value={text.flexible}>{text.flexible}</option>
-                <option value={text.rigid}>{text.rigid}</option>
+                {craneBeamSuspensionTypes.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </label>
             <label style={fieldLabelStyle}>
@@ -257,11 +228,11 @@ export function CraneBeamDemoPage() {
                 value={input.dutyGroup}
                 onChange={(event) => setInput((prev) => ({ ...prev, dutyGroup: event.target.value }))}
               >
-                <option value="1\u041A">1\u041A</option>
-                <option value="2\u041A">2\u041A</option>
-                <option value="3\u041A">3\u041A</option>
-                <option value="4\u041A">4\u041A</option>
-                <option value="5\u041A">5\u041A</option>
+                {craneBeamDutyGroups.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </label>
             <label style={fieldLabelStyle}>
@@ -272,8 +243,11 @@ export function CraneBeamDemoPage() {
                 value={input.craneCountInSpan}
                 onChange={(event) => setInput((prev) => ({ ...prev, craneCountInSpan: event.target.value }))}
               >
-                <option value={text.oneCrane}>{text.oneCrane}</option>
-                <option value={text.twoCranes}>{text.twoCranes}</option>
+                {craneBeamCountsInSpan.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </label>
             <label style={fieldLabelStyle}>
@@ -284,8 +258,11 @@ export function CraneBeamDemoPage() {
                 value={input.craneRail}
                 onChange={(event) => setInput((prev) => ({ ...prev, craneRail: event.target.value }))}
               >
-                <option value="P50">P50</option>
-                <option value="KP70">KP70</option>
+                {craneBeamRails.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </label>
             <label style={fieldLabelStyle}>
@@ -308,8 +285,11 @@ export function CraneBeamDemoPage() {
                 value={input.brakeStructure}
                 onChange={(event) => setInput((prev) => ({ ...prev, brakeStructure: event.target.value }))}
               >
-                <option value={text.no}>{text.no}</option>
-                <option value={text.yes}>{text.yes}</option>
+                {craneBeamBrakeStructures.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </label>
             <label style={fieldLabelStyle}>
@@ -341,6 +321,9 @@ export function CraneBeamDemoPage() {
               <div style={{ display: 'grid', gap: 8, color: '#334155', lineHeight: 1.45 }}>
                 <div>
                   {text.progress}: <strong>{'\u043A\u0430\u0440\u043A\u0430\u0441 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u044B \u0433\u043E\u0442\u043E\u0432'}</strong>
+                </div>
+                <div>
+                  Workbook `Сводка`: {craneBeamWorkbookMap.summaryDerived.selectedProfile}
                 </div>
                 <div>
                   {text.loadCapacityT}: {formatNumber(input.loadCapacityT, 0)}
