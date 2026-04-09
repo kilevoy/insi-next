@@ -306,18 +306,87 @@ export function CraneBeamDemoPage() {
             <article
               style={{
                 display: 'grid',
-                gap: 12,
+                gap: 16,
                 padding: 18,
                 borderRadius: 14,
-                background: '#f8fafc',
-                border: '1px solid rgba(148, 163, 184, 0.18)',
+                background: 'linear-gradient(180deg, #f8fafc 0%, #f2f6fa 100%)',
+                border: '1px solid rgba(148, 163, 184, 0.22)',
               }}
             >
               <h2 style={{ margin: 0, fontSize: 20, color: '#0f172a' }}>{text.result}</h2>
-              <div style={{ display: 'grid', gap: 8, color: '#334155', lineHeight: 1.45 }}>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gap: 10,
+                  padding: 14,
+                  borderRadius: 12,
+                  background: '#ffffff',
+                  border: '1px solid rgba(148, 163, 184, 0.16)',
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
+                  Профиль
+                </div>
+                <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1, color: '#0f172a' }}>
+                  {result.selection.profile || '—'}
+                </div>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', color: '#334155' }}>
+                  <span>Вес: <strong>{formatNumber(result.selection.weightKg, 3)}</strong> кг</span>
+                  <span>К-т использования: <strong>{formatNumber(result.selection.utilization, 3)}</strong></span>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gap: 10,
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                }}
+              >
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>Mx</div>
+                  <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
+                    {formatNumber(result.loads.designMxGeneralKnM, 3)}
+                  </div>
+                  <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН·м</div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>My</div>
+                  <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
+                    {formatNumber(result.loads.designMyGeneralKnM, 3)}
+                  </div>
+                  <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН·м</div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>Q</div>
+                  <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
+                    {formatNumber(result.loads.designQGeneralKn, 3)}
+                  </div>
+                  <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН</div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>Qоп</div>
+                  <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
+                    {formatNumber(result.loads.designQAdditionalKn, 3)}
+                  </div>
+                  <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН</div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gap: 4,
+                  paddingTop: 2,
+                  color: '#64748b',
+                  fontSize: 13,
+                  lineHeight: 1.4,
+                }}
+              >
                 <div>
                   {text.progress}:{' '}
-                  <strong>
+                  <strong style={{ color: '#334155' }}>
                     {result.selection.profile
                       ? 'первый Excel-baseline подключен'
                       : 'идёт поэтапный перенос workbook'}
@@ -325,28 +394,6 @@ export function CraneBeamDemoPage() {
                 </div>
                 <div>
                   Workbook `Сводка`: {craneBeamWorkbookMap.summaryDerived.selectedProfile}
-                </div>
-                <div>
-                  Профиль: <strong>{result.selection.profile || 'ещё не подобран'}</strong>
-                </div>
-                <div>
-                  Вес: <strong>{formatNumber(result.selection.weightKg, 3)}</strong> кг
-                </div>
-                <div>
-                  К-т использования:{' '}
-                  <strong>{formatNumber(result.selection.utilization, 3)}</strong>
-                </div>
-                <div>
-                  Mx: <strong>{formatNumber(result.loads.designMxGeneralKnM, 3)}</strong> кН·м
-                </div>
-                <div>
-                  My: <strong>{formatNumber(result.loads.designMyGeneralKnM, 3)}</strong> кН·м
-                </div>
-                <div>
-                  Q: <strong>{formatNumber(result.loads.designQGeneralKn, 3)}</strong> кН
-                </div>
-                <div>
-                  Qоп: <strong>{formatNumber(result.loads.designQAdditionalKn, 3)}</strong> кН
                 </div>
               </div>
             </article>
