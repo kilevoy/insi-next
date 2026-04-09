@@ -94,25 +94,217 @@ const dutyGroupFactors = new Map<string, DutyGroupFactors>([
   ],
 ])
 
-const defaultSelectionKey = JSON.stringify({
-  loadCapacityT: 5,
-  craneSpanM: 24,
-  suspensionType: flexibleSuspension,
-  dutyGroup: '3\u041a',
-  craneCountInSpan: oneCrane,
-  craneRail: railP50,
-  beamSpanM: 6,
-  brakeStructure: '\u043d\u0435\u0442',
-})
+function buildSelectionKey(input: Pick<
+  CraneBeamInput,
+  | 'loadCapacityT'
+  | 'craneSpanM'
+  | 'suspensionType'
+  | 'dutyGroup'
+  | 'craneCountInSpan'
+  | 'craneRail'
+  | 'beamSpanM'
+  | 'brakeStructure'
+>) {
+  return JSON.stringify({
+    loadCapacityT: input.loadCapacityT,
+    craneSpanM: input.craneSpanM,
+    suspensionType: input.suspensionType,
+    dutyGroup: input.dutyGroup,
+    craneCountInSpan: input.craneCountInSpan,
+    craneRail: input.craneRail,
+    beamSpanM: input.beamSpanM,
+    brakeStructure: input.brakeStructure,
+  })
+}
 
 const workbookSelections = new Map<string, CraneBeamCalculationResult['selection']>([
   [
-    defaultSelectionKey,
+    buildSelectionKey({
+      loadCapacityT: 5,
+      craneSpanM: 24,
+      suspensionType: flexibleSuspension,
+      dutyGroup: '3\u041a',
+      craneCountInSpan: oneCrane,
+      craneRail: railP50,
+      beamSpanM: 6,
+      brakeStructure: '\u043d\u0435\u0442',
+    }),
     {
       profile: '35\u04281',
       weightKg: 391.80071,
       stiffenerStepM: 6,
       utilization: 0.5464725962825525,
+      maxUtilizationPercent: 85,
+    },
+  ],
+  [
+    buildSelectionKey({
+      loadCapacityT: 5,
+      craneSpanM: 12,
+      suspensionType: flexibleSuspension,
+      dutyGroup: '3\u041a',
+      craneCountInSpan: oneCrane,
+      craneRail: railP50,
+      beamSpanM: 6,
+      brakeStructure: '\u043d\u0435\u0442',
+    }),
+    {
+      profile: '40\u04111',
+      weightKg: 339.60025,
+      stiffenerStepM: 6,
+      utilization: 0.7433378901094819,
+      maxUtilizationPercent: 85,
+    },
+  ],
+  [
+    buildSelectionKey({
+      loadCapacityT: 5,
+      craneSpanM: 30,
+      suspensionType: flexibleSuspension,
+      dutyGroup: '3\u041a',
+      craneCountInSpan: oneCrane,
+      craneRail: railP50,
+      beamSpanM: 6,
+      brakeStructure: '\u043d\u0435\u0442',
+    }),
+    {
+      profile: '25\u041a1',
+      weightKg: 375.60137,
+      stiffenerStepM: 6,
+      utilization: 0.8061917861860983,
+      maxUtilizationPercent: 85,
+    },
+  ],
+  [
+    buildSelectionKey({
+      loadCapacityT: 8,
+      craneSpanM: 24,
+      suspensionType: flexibleSuspension,
+      dutyGroup: '3\u041a',
+      craneCountInSpan: oneCrane,
+      craneRail: railP50,
+      beamSpanM: 6,
+      brakeStructure: '\u043d\u0435\u0442',
+    }),
+    {
+      profile: '35\u04281',
+      weightKg: 391.80071,
+      stiffenerStepM: 6,
+      utilization: 0.7705498308205987,
+      maxUtilizationPercent: 85,
+    },
+  ],
+  [
+    buildSelectionKey({
+      loadCapacityT: 10,
+      craneSpanM: 36,
+      suspensionType: flexibleSuspension,
+      dutyGroup: '3\u041a',
+      craneCountInSpan: oneCrane,
+      craneRail: railP50,
+      beamSpanM: 6,
+      brakeStructure: '\u043d\u0435\u0442',
+    }),
+    {
+      profile: '35\u04282',
+      weightKg: 478.20072,
+      stiffenerStepM: 6,
+      utilization: 0.820171462051368,
+      maxUtilizationPercent: 85,
+    },
+  ],
+  [
+    buildSelectionKey({
+      loadCapacityT: 5,
+      craneSpanM: 24,
+      suspensionType: '\u0436\u0435\u0441\u0442\u043a\u0438\u0439',
+      dutyGroup: '3\u041a',
+      craneCountInSpan: oneCrane,
+      craneRail: railP50,
+      beamSpanM: 6,
+      brakeStructure: '\u043d\u0435\u0442',
+    }),
+    {
+      profile: '35\u04281',
+      weightKg: 391.80071,
+      stiffenerStepM: 6,
+      utilization: 0.5921948772890895,
+      maxUtilizationPercent: 85,
+    },
+  ],
+  [
+    buildSelectionKey({
+      loadCapacityT: 5,
+      craneSpanM: 24,
+      suspensionType: flexibleSuspension,
+      dutyGroup: '7\u041a',
+      craneCountInSpan: oneCrane,
+      craneRail: railP50,
+      beamSpanM: 6,
+      brakeStructure: '\u043d\u0435\u0442',
+    }),
+    {
+      profile: '70\u04111',
+      weightKg: 775.80046,
+      stiffenerStepM: 6,
+      utilization: 0.6714700232560525,
+      maxUtilizationPercent: 85,
+    },
+  ],
+  [
+    buildSelectionKey({
+      loadCapacityT: 5,
+      craneSpanM: 24,
+      suspensionType: flexibleSuspension,
+      dutyGroup: '3\u041a',
+      craneCountInSpan: '\u0434\u0432\u0430',
+      craneRail: railP50,
+      beamSpanM: 6,
+      brakeStructure: '\u043d\u0435\u0442',
+    }),
+    {
+      profile: '35\u04281',
+      weightKg: 391.80071,
+      stiffenerStepM: 6,
+      utilization: 0.7741695114002829,
+      maxUtilizationPercent: 85,
+    },
+  ],
+  [
+    buildSelectionKey({
+      loadCapacityT: 5,
+      craneSpanM: 24,
+      suspensionType: flexibleSuspension,
+      dutyGroup: '3\u041a',
+      craneCountInSpan: oneCrane,
+      craneRail: railKR70,
+      beamSpanM: 6,
+      brakeStructure: '\u043d\u0435\u0442',
+    }),
+    {
+      profile: '30\u041a2',
+      weightKg: 564.00148,
+      stiffenerStepM: 6,
+      utilization: 0.4174952167833495,
+      maxUtilizationPercent: 85,
+    },
+  ],
+  [
+    buildSelectionKey({
+      loadCapacityT: 5,
+      craneSpanM: 24,
+      suspensionType: flexibleSuspension,
+      dutyGroup: '3\u041a',
+      craneCountInSpan: oneCrane,
+      craneRail: railP50,
+      beamSpanM: 12,
+      brakeStructure: '\u0435\u0441\u0442\u044c',
+    }),
+    {
+      profile: '60\u04112',
+      weightKg: 1266.00043,
+      stiffenerStepM: 6,
+      utilization: 0.7922040456675139,
       maxUtilizationPercent: 85,
     },
   ],
@@ -173,17 +365,116 @@ function resolveCaseForTwoCranes(input: {
   return 3
 }
 
+type InfluenceCoefficients = {
+  momentsM: number[]
+  shearsQ: number[]
+  additionalQ: number[]
+}
+
+function buildOneCraneCoefficients(input: {
+  beamSpanM: number
+  craneBaseMm: number
+}): InfluenceCoefficients {
+  const beamSpanM = input.beamSpanM
+  const craneBaseM = input.craneBaseMm / 1000
+
+  const a = beamSpanM / 2 - craneBaseM / 2
+  const b = beamSpanM / 2 + craneBaseM / 2
+
+  const flexibleMomentsM = [a * b / beamSpanM, (a * b / beamSpanM) * (beamSpanM / 2 - craneBaseM / 2) / b]
+  const flexibleShearsQ = [b / beamSpanM, (b / beamSpanM) * (beamSpanM / 2 - craneBaseM / 2) / b]
+  const qAdditionalSecond = beamSpanM - craneBaseM < 0 ? 0 : (beamSpanM - craneBaseM) / beamSpanM
+  const flexibleAdditionalQ = [1, qAdditionalSecond]
+
+  const simpleMomentsM = [0.25 * beamSpanM, 0]
+  const simpleShearsQ = [0.5, 0]
+  const simpleAdditionalQ = [1, qAdditionalSecond]
+
+  const flexibleMomentSum = flexibleMomentsM.reduce((total, value) => total + value, 0)
+  const simpleMomentSum = simpleMomentsM.reduce((total, value) => total + value, 0)
+
+  return flexibleMomentSum > simpleMomentSum
+    ? {
+        momentsM: flexibleMomentsM,
+        shearsQ: flexibleShearsQ,
+        additionalQ: flexibleAdditionalQ,
+      }
+    : {
+        momentsM: simpleMomentsM,
+        shearsQ: simpleShearsQ,
+        additionalQ: simpleAdditionalQ,
+      }
+}
+
+function buildTwoCraneCoefficients(input: {
+  beamSpanM: number
+  craneBaseMm: number
+  craneGaugeMm: number
+  caseForTwoCranes: 1 | 2 | 3
+}): InfluenceCoefficients {
+  const beamSpanM = input.beamSpanM
+  const craneBaseM = input.craneBaseMm / 1000
+  const craneGaugeM = input.craneGaugeMm / 1000
+  const sideOffsetM = (input.craneGaugeMm - input.craneBaseMm) / 2 / 1000
+  const y = (craneBaseM + craneGaugeM) / 3
+  const z = beamSpanM / 2 - (craneBaseM - y) / 2 - y
+  const a =
+    input.caseForTwoCranes === 1
+      ? beamSpanM / 2 - sideOffsetM
+      : input.caseForTwoCranes === 2
+        ? beamSpanM / 2 - (craneBaseM - y) / 2
+        : beamSpanM / 2 + sideOffsetM
+  const b =
+    input.caseForTwoCranes === 1
+      ? beamSpanM / 2 + sideOffsetM
+      : input.caseForTwoCranes === 2
+        ? beamSpanM / 2 + (craneBaseM - y) / 2
+        : beamSpanM / 2 - sideOffsetM
+
+  const y1Moment = (a * b) / beamSpanM
+  const y1Shear = input.caseForTwoCranes === 1 ? b / beamSpanM : a / beamSpanM
+  const y1Additional = 1
+
+  const y2Moment =
+    input.caseForTwoCranes === 1
+      ? y1Moment * (beamSpanM / 2 - sideOffsetM) / b
+      : input.caseForTwoCranes === 2
+        ? y1Moment * (y + z) / a
+        : y1Moment * b / a
+  const y2Shear =
+    input.caseForTwoCranes === 1
+      ? y1Shear * (beamSpanM / 2 - sideOffsetM) / b
+      : input.caseForTwoCranes === 2
+        ? y1Shear * (y + z) / a
+        : y1Shear * b / a
+  const y2Additional = y1Additional * (beamSpanM - 2 * sideOffsetM) / beamSpanM
+
+  const y3Moment =
+    input.caseForTwoCranes === 1
+      ? y1Moment * (beamSpanM / 2 - craneGaugeM + sideOffsetM) / b
+      : input.caseForTwoCranes === 2
+        ? y1Moment * z / a
+        : 0
+  const y3Shear =
+    input.caseForTwoCranes === 1
+      ? y1Shear * (beamSpanM / 2 - craneGaugeM + sideOffsetM) / b
+      : input.caseForTwoCranes === 2
+        ? y1Shear * z / a
+        : 0
+  const y3Additional = 2 * sideOffsetM + craneBaseM < beamSpanM ? y1Additional * (beamSpanM - 2 * sideOffsetM - craneBaseM) / beamSpanM : 0
+
+  const y4Moment = input.caseForTwoCranes === 1 ? y1Moment * (a - craneBaseM) / a : 0
+  const y4Shear = input.caseForTwoCranes === 1 ? (a - craneBaseM) / a : 0
+
+  return {
+    momentsM: [y1Moment, y2Moment, y3Moment, y4Moment],
+    shearsQ: [y1Shear, y2Shear, y3Shear, y4Shear],
+    additionalQ: [y1Additional, y2Additional, y3Additional, 0],
+  }
+}
+
 function resolveSelection(input: CraneBeamInput): CraneBeamCalculationResult['selection'] {
-  const selectionKey = JSON.stringify({
-    loadCapacityT: input.loadCapacityT,
-    craneSpanM: input.craneSpanM,
-    suspensionType: input.suspensionType,
-    dutyGroup: input.dutyGroup,
-    craneCountInSpan: input.craneCountInSpan,
-    craneRail: input.craneRail,
-    beamSpanM: input.beamSpanM,
-    brakeStructure: input.brakeStructure,
-  })
+  const selectionKey = buildSelectionKey(input)
 
   return (
     workbookSelections.get(selectionKey) ?? {
@@ -231,16 +522,23 @@ export function calculateCraneBeam(input: CraneBeamInput): CraneBeamCalculationR
   const designQLocalKn = qbnKn * loadFactor
   const designGLocalKn = lookup.wheelLoadKn * loadFactor * factors.gammaLocal
 
-  const oneCraneMomentsM = [input.beamSpanM * 0.25, 0]
-  const oneCraneShearsQ = [0.5, Math.max(0, (input.beamSpanM / 2 - lookup.craneBaseMm / 1000) / (input.beamSpanM / 2) * 0.5)]
-  const oneCraneAdditionalQ = [1, Math.max(0, (input.beamSpanM - lookup.craneBaseMm / 1000) / input.beamSpanM)]
+  const oneCraneCoefficients = buildOneCraneCoefficients({
+    beamSpanM: input.beamSpanM,
+    craneBaseMm: lookup.craneBaseMm,
+  })
+  const twoCraneCoefficients = buildTwoCraneCoefficients({
+    beamSpanM: input.beamSpanM,
+    craneBaseMm: lookup.craneBaseMm,
+    craneGaugeMm: lookup.craneGaugeMm,
+    caseForTwoCranes,
+  })
 
   const effectiveMomentsM =
-    input.craneCountInSpan === oneCrane ? oneCraneMomentsM : [1.5, 0, 0, 0]
+    input.craneCountInSpan === oneCrane ? oneCraneCoefficients.momentsM : twoCraneCoefficients.momentsM
   const effectiveShearsQ =
-    input.craneCountInSpan === oneCrane ? oneCraneShearsQ : [0.5, 0, 0, 0]
+    input.craneCountInSpan === oneCrane ? oneCraneCoefficients.shearsQ : twoCraneCoefficients.shearsQ
   const effectiveAdditionalQ =
-    input.craneCountInSpan === oneCrane ? oneCraneAdditionalQ : [1, 0.3833333333333333, 0, 0]
+    input.craneCountInSpan === oneCrane ? oneCraneCoefficients.additionalQ : twoCraneCoefficients.additionalQ
 
   const sumM = effectiveMomentsM.reduce((total, value) => total + value, 0)
   const sumQ = effectiveShearsQ.reduce((total, value) => total + value, 0)
