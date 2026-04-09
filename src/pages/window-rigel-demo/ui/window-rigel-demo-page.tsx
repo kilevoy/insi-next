@@ -21,6 +21,7 @@ const compactFieldControlStyle = {
 
 const text = {
   title: '\u041F\u043E\u0434\u0431\u043E\u0440 \u043E\u043A\u043E\u043D\u043D\u044B\u0445 \u0440\u0438\u0433\u0435\u043B\u0435\u0439',
+  backToCalculator: '\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u0439 \u043A\u0430\u043B\u044C\u043A\u0443\u043B\u044F\u0442\u043E\u0440',
   city: '\u0413\u043E\u0440\u043E\u0434',
   windowHeight: '\u0412\u044B\u0441\u043E\u0442\u0430 \u043E\u043A\u043D\u0430, \u043C',
   frameStep: '\u0428\u0430\u0433 \u0440\u0430\u043C, \u043C',
@@ -88,6 +89,10 @@ function resolveTubePriceRubPerKg(
   prices: { tubeS245PriceRubPerKg: number; tubeS345PriceRubPerKg: number },
 ): number {
   return steelGrade.trim() === '\u0421245' ? prices.tubeS245PriceRubPerKg : prices.tubeS345PriceRubPerKg
+}
+
+function resolveMainCalculatorHref(pathname: string): string {
+  return pathname.startsWith('/insi-next/') ? '/insi-next/' : '/'
 }
 
 function WindowTypeGlyph({ windowType }: { windowType: number }) {
@@ -283,6 +288,8 @@ export function WindowRigelDemoPage() {
   const [tubeS245PriceRubPerKg, setTubeS245PriceRubPerKg] = useState(defaultUnifiedInput.tubeS245PriceRubPerKg)
   const [tubeS345PriceRubPerKg, setTubeS345PriceRubPerKg] = useState(defaultUnifiedInput.tubeS345PriceRubPerKg)
   const result = calculateWindowRigel(input)
+  const mainCalculatorHref =
+    typeof window === 'undefined' ? '/' : resolveMainCalculatorHref(window.location.pathname)
   const cityOptions = purlinCityLoads.map((item) => item.city)
   const windowConstructionOptions = windowRigelWindowConstructionLoads.map((item) => item.name)
   const bestBottomCandidate = result.bottomCandidates[0]
@@ -314,6 +321,18 @@ export function WindowRigelDemoPage() {
         <img src={insiLogo} alt="INSI" style={{ width: 120, height: 120, objectFit: 'contain' }} />
         <div style={{ display: 'grid', gap: 4 }}>
           <h1 style={{ margin: 0 }}>{text.title}</h1>
+          <a
+            href={mainCalculatorHref}
+            style={{
+              justifySelf: 'start',
+              color: '#0f766e',
+              fontSize: 14,
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
+            {text.backToCalculator}
+          </a>
         </div>
       </section>
 

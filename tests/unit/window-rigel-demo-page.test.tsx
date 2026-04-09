@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { WindowRigelDemoPage } from '../../src/pages/window-rigel-demo/ui/window-rigel-demo-page'
 
 const text = {
+  backToCalculator: '\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u0439 \u043A\u0430\u043B\u044C\u043A\u0443\u043B\u044F\u0442\u043E\u0440',
   city: '\u0413\u043E\u0440\u043E\u0434',
   construction: '\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F \u043E\u043A\u043D\u0430',
   maxUtilization: '\u041C\u0430\u043A\u0441. \u043A-\u0442 \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u043D\u0438\u044F',
@@ -23,6 +24,7 @@ describe('WindowRigelDemoPage', () => {
     render(<WindowRigelDemoPage />)
 
     expect(screen.getByTestId('window-rigel-demo-page')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: text.backToCalculator })).toHaveAttribute('href', '/')
     expect(screen.getAllByText(/кв\.120х3/).length).toBeGreaterThanOrEqual(2)
     expect(screen.getAllByText('Сталь: С245').length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Коэффициенты: гибкость 0,76 · прочность 0,82 · прогиб 0,87/)[0]).toBeInTheDocument()
