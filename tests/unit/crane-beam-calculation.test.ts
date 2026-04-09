@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { calculateCraneBeam } from '../../src/domain/crane-beam/model/calculate-crane-beam'
+import {
+  calculateCraneBeam,
+  evaluateCraneBeamCandidateMetrics,
+} from '../../src/domain/crane-beam/model/calculate-crane-beam'
 import { defaultCraneBeamInput } from '../../src/domain/crane-beam/model/crane-beam-input'
+import { craneBeamCandidateCatalog } from '../../src/domain/crane-beam/model/crane-beam-reference.generated'
 
 describe('crane beam calculation', () => {
   it('matches the workbook default case on the first lookup and summary outputs', () => {
@@ -133,5 +137,21 @@ describe('crane beam calculation', () => {
       expect(result.selection.utilization).toBeCloseTo(scenario.utilization, 10)
       expect(result.selection.maxUtilizationPercent).toBeCloseTo(85, 10)
     }
+  })
+
+  it('matches workbook candidate metrics for profile 35Ш2 in the default scenario', () => {
+    const candidate = craneBeamCandidateCatalog.find((item) => item.profile === '35\u04282')
+
+    expect(candidate).toBeDefined()
+
+    const metrics = evaluateCraneBeamCandidateMetrics(candidate!, defaultCraneBeamInput)
+
+    expect(metrics.ai).toBeCloseTo(0.3467106950383975, 10)
+    expect(metrics.aj).toBeCloseTo(0.21532754494158082, 10)
+    expect(metrics.an).toBeCloseTo(0.2939546961851967, 10)
+    expect(metrics.bn).toBeCloseTo(0.3376607230355512, 10)
+    expect(metrics.ca).toBeCloseTo(0.39745991144260423, 10)
+    expect(metrics.cu).toBeCloseTo(0.3931061309964103, 10)
+    expect(metrics.cv).toBeCloseTo(0.39745991144260423, 10)
   })
 })
