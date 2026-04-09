@@ -8,15 +8,19 @@ import { defaultUnifiedInput } from '@/pages/calculator/model/unified-input'
 
 const compactFieldLabelStyle = {
   display: 'grid',
-  gap: 4,
-  lineHeight: 1.1,
+  gap: 6,
+  lineHeight: 1.15,
 } as const
 
 const compactFieldControlStyle = {
-  padding: '7px 10px',
-  lineHeight: 1.1,
-  borderRadius: 10,
-  border: '1px solid rgba(148, 163, 184, 0.42)',
+  minHeight: 44,
+  padding: '10px 12px',
+  lineHeight: 1.2,
+  borderRadius: 14,
+  border: '1px solid rgba(148, 163, 184, 0.24)',
+  background: 'rgba(255,255,255,0.96)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.65)',
+  color: '#0f172a',
 } as const
 
 const text = {
@@ -136,8 +140,19 @@ function WindowTypePicker({
   onSelect: (windowType: number) => void
 }) {
   return (
-    <div style={{ display: 'grid', gap: 8 }}>
-      <span style={{ fontSize: 14, color: '#475569' }}>{text.windowType}</span>
+    <div
+      style={{
+        display: 'grid',
+        gap: 10,
+        padding: 18,
+        borderRadius: 22,
+        border: '1px solid rgba(148, 163, 184, 0.16)',
+        background:
+          'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.94) 100%)',
+        boxShadow: '0 16px 40px rgba(15, 23, 42, 0.06)',
+      }}
+    >
+      <span style={{ fontSize: 14, color: '#0f172a', fontWeight: 700 }}>{text.windowType}</span>
       <div
         style={{
           display: 'grid',
@@ -157,15 +172,20 @@ function WindowTypePicker({
               style={{
                 display: 'grid',
                 gap: 6,
-                padding: 8,
-                borderRadius: 12,
-                border: isActive ? '2px solid #0f766e' : '1px solid rgba(148, 163, 184, 0.30)',
-                background: isActive ? 'rgba(153, 246, 228, 0.25)' : 'rgba(248, 250, 252, 0.95)',
+                padding: 10,
+                borderRadius: 16,
+                border: isActive ? '1px solid rgba(15, 118, 110, 0.45)' : '1px solid rgba(148, 163, 184, 0.18)',
+                background: isActive
+                  ? 'linear-gradient(180deg, rgba(204, 251, 241, 0.92) 0%, rgba(240, 253, 250, 0.98) 100%)'
+                  : 'rgba(255, 255, 255, 0.92)',
+                boxShadow: isActive
+                  ? '0 12px 26px rgba(15, 118, 110, 0.12)'
+                  : '0 10px 22px rgba(15, 23, 42, 0.04)',
                 cursor: 'pointer',
               }}
             >
               <WindowTypeGlyph windowType={windowType} />
-              <span style={{ fontSize: 12, color: '#475569' }}>{`${'\u0422\u0438\u043F'} ${windowType}`}</span>
+              <span style={{ fontSize: 12, color: '#334155', fontWeight: 600 }}>{`${'\u0422\u0438\u043F'} ${windowType}`}</span>
             </button>
           )
         })}
@@ -185,11 +205,13 @@ function CandidateCard({
     <div
       style={{
         display: 'grid',
-        gap: 6,
-        padding: 12,
-        borderRadius: 14,
-        background: 'rgba(148, 163, 184, 0.10)',
-        border: '1px solid rgba(148, 163, 184, 0.18)',
+        gap: 8,
+        padding: 16,
+        borderRadius: 18,
+        background:
+          'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.95) 100%)',
+        border: '1px solid rgba(148, 163, 184, 0.16)',
+        boxShadow: '0 14px 32px rgba(15, 23, 42, 0.05)',
       }}
     >
       <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
@@ -203,7 +225,7 @@ function CandidateCard({
           {text.mass}: {formatNumber(candidate.massKg)} {text.kg}
         </span>
       </div>
-      <div style={{ fontSize: 12, color: '#64748b' }}>
+      <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.45 }}>
         {`${text.coefficients}: ${text.flexibility} ${formatNumber(candidate.utilization.flexibility, 2)} · ${text.strength} ${formatNumber(candidate.utilization.strength, 2)} · ${text.deflection} ${formatNumber(candidate.utilization.deflection, 2)}`}
       </div>
     </div>
@@ -226,11 +248,13 @@ function SpecificationCard({
       <article
         style={{
           display: 'grid',
-          gap: 10,
-          padding: 20,
-          borderRadius: 18,
-          background: 'rgba(255,255,255,0.88)',
-          boxShadow: '0 18px 50px rgba(15, 23, 42, 0.08)',
+          gap: 12,
+          padding: 22,
+          borderRadius: 24,
+          background:
+            'linear-gradient(180deg, rgba(255,255,255,0.99) 0%, rgba(248,250,252,0.95) 100%)',
+          border: '1px solid rgba(148, 163, 184, 0.16)',
+          boxShadow: '0 22px 56px rgba(15, 23, 42, 0.08)',
         }}
       >
         <h3 style={{ margin: 0 }}>{title}</h3>
@@ -248,15 +272,17 @@ function SpecificationCard({
     <article
       style={{
         display: 'grid',
-        gap: 10,
-        padding: 20,
-        borderRadius: 18,
-        background: 'rgba(255,255,255,0.88)',
-        boxShadow: '0 18px 50px rgba(15, 23, 42, 0.08)',
+        gap: 12,
+        padding: 22,
+        borderRadius: 24,
+        background:
+          'linear-gradient(180deg, rgba(255,255,255,0.99) 0%, rgba(248,250,252,0.95) 100%)',
+        border: '1px solid rgba(148, 163, 184, 0.16)',
+        boxShadow: '0 22px 56px rgba(15, 23, 42, 0.08)',
       }}
     >
-      <h3 style={{ margin: 0 }}>{title}</h3>
-      <div style={{ display: 'grid', gap: 6, color: '#334155' }}>
+      <h3 style={{ margin: 0, fontSize: 18, color: '#0f172a' }}>{title}</h3>
+      <div style={{ display: 'grid', gap: 8, color: '#334155', lineHeight: 1.45 }}>
         <div>
           {text.profile}: {candidate.profile}
         </div>
@@ -315,13 +341,57 @@ export function WindowRigelDemoPage() {
   return (
     <main
       data-testid="window-rigel-demo-page"
-      style={{ padding: 24, display: 'grid', gap: 16, maxWidth: 1200, margin: '0 auto' }}
+      style={{
+        padding: 24,
+        display: 'grid',
+        gap: 20,
+        maxWidth: 1240,
+        margin: '0 auto',
+        background:
+          'radial-gradient(circle at top left, rgba(204, 251, 241, 0.85) 0%, rgba(248,250,252,0) 28%), radial-gradient(circle at top right, rgba(191, 219, 254, 0.55) 0%, rgba(248,250,252,0) 24%), #f8fafc',
+      }}
     >
-      <section style={{ display: 'flex', gap: 18, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+      <section
+        style={{
+          display: 'flex',
+          gap: 18,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          padding: '22px 24px',
+          borderRadius: 30,
+          background:
+            'linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(240,253,250,0.92) 52%, rgba(239,246,255,0.94) 100%)',
+          border: '1px solid rgba(148, 163, 184, 0.14)',
+          boxShadow: '0 24px 70px rgba(15, 23, 42, 0.08)',
+        }}
+      >
         <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
           <img src={insiLogo} alt="INSI" style={{ width: 120, height: 120, objectFit: 'contain' }} />
           <div style={{ display: 'grid', gap: 4 }}>
-            <h1 style={{ margin: 0 }}>{text.title}</h1>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 'fit-content',
+                minHeight: 28,
+                padding: '0 10px',
+                borderRadius: 999,
+                background: 'rgba(15, 118, 110, 0.10)',
+                color: '#0f766e',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}
+            >
+              INSI Demo
+            </span>
+            <h1 style={{ margin: 0, fontSize: 36, lineHeight: 1.05, color: '#0f172a' }}>{text.title}</h1>
+            <div style={{ color: '#475569', maxWidth: 620, lineHeight: 1.45 }}>
+              Быстрый подбор с визуально чистой формой, явным результатом и удобным переходом в основной калькулятор.
+            </div>
           </div>
         </div>
         <a
@@ -331,14 +401,14 @@ export function WindowRigelDemoPage() {
             alignItems: 'center',
             justifyContent: 'center',
             minHeight: 44,
-            padding: '0 18px',
-            borderRadius: 12,
-            background: '#0f766e',
+            padding: '0 20px',
+            borderRadius: 14,
+            background: 'linear-gradient(180deg, #0f766e 0%, #0b5f59 100%)',
             color: '#f8fafc',
             fontSize: 14,
             fontWeight: 700,
             textDecoration: 'none',
-            boxShadow: '0 12px 24px rgba(15, 118, 110, 0.22)',
+            boxShadow: '0 16px 30px rgba(15, 118, 110, 0.24)',
           }}
         >
           {text.backToCalculator}
@@ -348,18 +418,20 @@ export function WindowRigelDemoPage() {
       <section
         style={{
           display: 'grid',
-          gap: 20,
+          gap: 22,
           gridTemplateColumns: 'minmax(0, 1.25fr) minmax(360px, 0.95fr)',
-          padding: 20,
-          borderRadius: 18,
-          background: 'rgba(255,255,255,0.82)',
-          boxShadow: '0 18px 50px rgba(15, 23, 42, 0.08)',
+          padding: 24,
+          borderRadius: 30,
+          background:
+            'linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(248,250,252,0.95) 100%)',
+          border: '1px solid rgba(148, 163, 184, 0.14)',
+          boxShadow: '0 24px 64px rgba(15, 23, 42, 0.07)',
         }}
       >
         <div
           style={{
             display: 'grid',
-            gap: 16,
+            gap: 18,
             gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
             alignItems: 'start',
           }}
@@ -451,8 +523,8 @@ export function WindowRigelDemoPage() {
           </label>
         </div>
 
-        <div style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
-          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+        <div style={{ display: 'grid', gap: 18, alignContent: 'start' }}>
+          <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
             <label style={compactFieldLabelStyle}>
               <span>{text.construction}</span>
               <select
@@ -478,7 +550,7 @@ export function WindowRigelDemoPage() {
               />
             </label>
           </div>
-          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+          <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
             <label style={compactFieldLabelStyle}>
               <span>{text.tubeS245}</span>
               <input
@@ -522,14 +594,16 @@ export function WindowRigelDemoPage() {
       <section
         style={{
           display: 'grid',
-          gap: 8,
-          padding: '14px 16px',
-          borderRadius: 18,
-          background: 'rgba(255,255,255,0.72)',
-          boxShadow: '0 18px 50px rgba(15, 23, 42, 0.05)',
+          gap: 10,
+          padding: '18px 20px',
+          borderRadius: 24,
+          background:
+            'linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(248,250,252,0.93) 100%)',
+          border: '1px solid rgba(148, 163, 184, 0.14)',
+          boxShadow: '0 18px 44px rgba(15, 23, 42, 0.05)',
         }}
       >
-        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#64748b' }}>{text.loads}</h2>
+        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#0f172a' }}>{text.loads}</h2>
         <div
           style={{
             display: 'grid',
@@ -564,14 +638,16 @@ export function WindowRigelDemoPage() {
         <article
           style={{
             display: 'grid',
-            gap: 16,
-            padding: 20,
-            borderRadius: 18,
-            background: 'rgba(255,255,255,0.88)',
-            boxShadow: '0 18px 50px rgba(15, 23, 42, 0.08)',
+            gap: 18,
+            padding: 24,
+            borderRadius: 28,
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(240,253,250,0.86) 100%)',
+            border: '1px solid rgba(15, 118, 110, 0.14)',
+            boxShadow: '0 24px 56px rgba(15, 118, 110, 0.10)',
           }}
         >
-          <h2 style={{ margin: 0 }}>{text.result}</h2>
+          <h2 style={{ margin: 0, fontSize: 24, color: '#0f172a' }}>{text.result}</h2>
           <div
             style={{
               display: 'grid',
@@ -606,13 +682,15 @@ export function WindowRigelDemoPage() {
           style={{
             display: 'grid',
             gap: 16,
-            padding: 20,
-            borderRadius: 18,
-            background: 'rgba(255,255,255,0.88)',
-            boxShadow: '0 18px 50px rgba(15, 23, 42, 0.08)',
+            padding: 22,
+            borderRadius: 26,
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.94) 100%)',
+            border: '1px solid rgba(148, 163, 184, 0.15)',
+            boxShadow: '0 20px 48px rgba(15, 23, 42, 0.06)',
           }}
         >
-          <h2 style={{ margin: 0 }}>{text.bottomRigel}</h2>
+          <h2 style={{ margin: 0, fontSize: 22, color: '#0f172a' }}>{text.bottomRigel}</h2>
           {result.bottomCandidates.length > 0 ? (
             result.bottomCandidates.map((candidate, index) => (
               <CandidateCard key={`${candidate.ordinal}-${candidate.steelGrade}`} rank={index + 1} candidate={candidate} />
@@ -626,13 +704,15 @@ export function WindowRigelDemoPage() {
           style={{
             display: 'grid',
             gap: 16,
-            padding: 20,
-            borderRadius: 18,
-            background: 'rgba(255,255,255,0.88)',
-            boxShadow: '0 18px 50px rgba(15, 23, 42, 0.08)',
+            padding: 22,
+            borderRadius: 26,
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.94) 100%)',
+            border: '1px solid rgba(148, 163, 184, 0.15)',
+            boxShadow: '0 20px 48px rgba(15, 23, 42, 0.06)',
           }}
         >
-          <h2 style={{ margin: 0 }}>{text.topRigel}</h2>
+          <h2 style={{ margin: 0, fontSize: 22, color: '#0f172a' }}>{text.topRigel}</h2>
           {result.workbookEffectiveTopCandidates.length > 0 ? (
             result.workbookEffectiveTopCandidates.map((candidate, index) => (
               <CandidateCard key={`${candidate.ordinal}-${candidate.steelGrade}`} rank={index + 1} candidate={candidate} />
