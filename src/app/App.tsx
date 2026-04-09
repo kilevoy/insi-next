@@ -1,4 +1,5 @@
 import { CalculatorPage } from '@/pages/calculator/ui/calculator-page'
+import { WindowRigelDemoPage } from '@/pages/window-rigel-demo/ui/window-rigel-demo-page'
 
 export type DomainTab =
   | 'purlin'
@@ -10,5 +11,9 @@ export type DomainTab =
   | 'methodology'
 
 export function App() {
+  if (typeof window !== 'undefined' && window.location.pathname === '/window-rigel-demo') {
+    return <WindowRigelDemoPage />
+  }
+
   return <CalculatorPage initialDomain="column" />
 }
