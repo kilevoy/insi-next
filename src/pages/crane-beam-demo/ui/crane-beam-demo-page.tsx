@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent } from 'react'
 import insiLogo from '@/assets/insi-logo.png'
+import { calculateCraneBeam } from '@/domain/crane-beam/model/calculate-crane-beam'
 import {
   craneBeamBrakeStructures,
   craneBeamCountsInSpan,
@@ -28,37 +29,31 @@ const fieldControlStyle = {
 } as const
 
 const text = {
-  title: '\u041F\u043E\u0434\u0431\u043E\u0440 \u043F\u0440\u043E\u043A\u0430\u0442\u043D\u043E\u0439 \u043F\u043E\u0434\u043A\u0440\u0430\u043D\u043E\u0432\u043E\u0439 \u0431\u0430\u043B\u043A\u0438',
-  backToCalculator: '\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u0439 \u043A\u0430\u043B\u044C\u043A\u0443\u043B\u044F\u0442\u043E\u0440',
-  result: '\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442 \u043F\u043E\u0434\u0431\u043E\u0440\u0430',
-  progress: '\u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u0435\u0440\u0435\u043D\u043E\u0441\u0430',
-  roadmap: '\u0427\u0442\u043E \u0434\u0430\u043B\u044C\u0448\u0435',
+  title: '\u041f\u043e\u0434\u0431\u043e\u0440 \u043f\u0440\u043e\u043a\u0430\u0442\u043d\u043e\u0439 \u043f\u043e\u0434\u043a\u0440\u0430\u043d\u043e\u0432\u043e\u0439 \u0431\u0430\u043b\u043a\u0438',
+  backToCalculator: '\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043e\u0441\u043d\u043e\u0432\u043d\u043e\u0439 \u043a\u0430\u043b\u044c\u043a\u0443\u043b\u044f\u0442\u043e\u0440',
+  result: '\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u043f\u043e\u0434\u0431\u043e\u0440\u0430',
+  progress: '\u0421\u0442\u0430\u0442\u0443\u0441 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u0430',
+  roadmap: '\u0427\u0442\u043e \u0434\u0430\u043b\u044c\u0448\u0435',
   note:
-    '\u0421\u0442\u0440\u0430\u043D\u0438\u0446\u0430 \u0443\u0436\u0435 \u0433\u043E\u0442\u043E\u0432\u0430 \u043A \u043F\u0435\u0440\u0435\u043D\u043E\u0441\u0443 \u043B\u043E\u0433\u0438\u043A\u0438 \u0438\u0437 Excel. \u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u043C \u0448\u0430\u0433\u043E\u043C \u043F\u0440\u0438\u0432\u044F\u0436\u0435\u043C \u0444\u043E\u0440\u043C\u0443\u043B\u044B \u0438 \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0438 \u043A \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u043C \u043A\u0430\u043A \u0432 workbook.',
-  loadCapacityT: '\u0413\u0440\u0443\u0437\u043E\u043F\u043E\u0434\u044A\u0435\u043C\u043D\u043E\u0441\u0442\u044C, \u0442',
-  craneSpanM: '\u041F\u0440\u043E\u043B\u0435\u0442 \u043A\u0440\u0430\u043D\u0430, \u043C',
-  wheelLoadKn: '\u041D\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u043D\u0430 \u043A\u043E\u043B\u0435\u0441\u043E, \u043A\u041D',
-  wheelCount: '\u0427\u0438\u0441\u043B\u043E \u043A\u043E\u043B\u0435\u0441',
-  trolleyMassT: '\u041C\u0430\u0441\u0441\u0430 \u0442\u0435\u043B\u0435\u0436\u043A\u0438 \u043A\u0440\u0430\u043D\u0430, \u0442',
-  craneBaseMm: '\u0411\u0430\u0437\u0430 \u043A\u0440\u0430\u043D\u0430, \u043C\u043C',
-  craneGaugeMm: '\u0413\u0430\u0431\u0430\u0440\u0438\u0442 \u043A\u0440\u0430\u043D\u0430, \u043C\u043C',
-  suspensionType: '\u0422\u0438\u043F \u043F\u043E\u0434\u0432\u0435\u0441\u0430',
-  dutyGroup: '\u0413\u0440\u0443\u043F\u043F\u0430 \u0440\u0435\u0436\u0438\u043C\u0430 \u0440\u0430\u0431\u043E\u0442\u044B',
-  craneCountInSpan: '\u041A\u043E\u043B-\u0432\u043E \u043A\u0440\u0430\u043D\u043E\u0432 \u0432 \u043F\u0440\u043E\u043B\u0435\u0442\u0435',
-  craneRail: '\u041F\u043E\u0434\u043A\u0440\u0430\u043D\u043E\u0432\u044B\u0439 \u0440\u0435\u043B\u044C\u0441',
-  railFootWidthM: '\u0428\u0438\u0440\u0438\u043D\u0430 \u043F\u043E\u0434\u043E\u0448\u0432\u044B \u0440\u0435\u043B\u044C\u0441\u0430, \u043C',
-  railHeightM: '\u0412\u044B\u0441\u043E\u0442\u0430 \u043A\u0440\u0430\u043D\u043E\u0432\u043E\u0433\u043E \u0440\u0435\u043B\u044C\u0441\u0430, \u043C',
-  beamSpanM: '\u041F\u0440\u043E\u043B\u0435\u0442 \u041F\u0411, \u043C',
-  brakeStructure: '\u0422\u043E\u0440\u043C\u043E\u0437\u043D\u0430\u044F \u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F',
-  stiffenerStepM: '\u0428\u0430\u0433 \u0440\u0435\u0431\u0435\u0440, \u043C',
-  tbnKn: 'Tb\u043D, \u043A\u041D',
-  qbnKn: 'Qb\u043D, \u043A\u041D',
-  flexible: '\u0433\u0438\u0431\u043A\u0438\u0439',
-  rigid: '\u0436\u0435\u0441\u0442\u043A\u0438\u0439',
-  oneCrane: '\u043E\u0434\u0438\u043D',
-  twoCranes: '\u0434\u0432\u0430',
-  no: '\u043D\u0435\u0442',
-  yes: '\u0435\u0441\u0442\u044C',
+    '\u0421\u0442\u0440\u0430\u043d\u0438\u0446\u0430 \u0443\u0436\u0435 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442 \u043f\u0435\u0440\u0432\u044b\u0439 \u0441\u0432\u0435\u0440\u0435\u043d\u043d\u044b\u0439 baseline \u0438\u0437 Excel. \u0421\u043b\u0435\u0434\u0443\u044e\u0449\u0438\u043c \u0448\u0430\u0433\u043e\u043c \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0451\u043c \u043f\u043e\u043b\u043d\u044b\u0439 \u043f\u043e\u0434\u0431\u043e\u0440 \u0441\u043e\u0440\u0442\u0430\u043c\u0435\u043d\u0442\u0430 \u0438 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438 \u043f\u043e \u0432\u0441\u0435\u043c \u0440\u0435\u0436\u0438\u043c\u0430\u043c.',
+  loadCapacityT: '\u0413\u0440\u0443\u0437\u043e\u043f\u043e\u0434\u044a\u0435\u043c\u043d\u043e\u0441\u0442\u044c, \u0442',
+  craneSpanM: '\u041f\u0440\u043e\u043b\u0435\u0442 \u043a\u0440\u0430\u043d\u0430, \u043c',
+  wheelLoadKn: '\u041d\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u043d\u0430 \u043a\u043e\u043b\u0435\u0441\u043e, \u043a\u041d',
+  wheelCount: '\u0427\u0438\u0441\u043b\u043e \u043a\u043e\u043b\u0435\u0441',
+  trolleyMassT: '\u041c\u0430\u0441\u0441\u0430 \u0442\u0435\u043b\u0435\u0436\u043a\u0438 \u043a\u0440\u0430\u043d\u0430, \u0442',
+  craneBaseMm: '\u0411\u0430\u0437\u0430 \u043a\u0440\u0430\u043d\u0430, \u043c\u043c',
+  craneGaugeMm: '\u0413\u0430\u0431\u0430\u0440\u0438\u0442 \u043a\u0440\u0430\u043d\u0430, \u043c\u043c',
+  suspensionType: '\u0422\u0438\u043f \u043f\u043e\u0434\u0432\u0435\u0441\u0430',
+  dutyGroup: '\u0413\u0440\u0443\u043f\u043f\u0430 \u0440\u0435\u0436\u0438\u043c\u0430 \u0440\u0430\u0431\u043e\u0442\u044b',
+  craneCountInSpan: '\u041a\u043e\u043b-\u0432\u043e \u043a\u0440\u0430\u043d\u043e\u0432 \u0432 \u043f\u0440\u043e\u043b\u0435\u0442\u0435',
+  craneRail: '\u041f\u043e\u0434\u043a\u0440\u0430\u043d\u043e\u0432\u044b\u0439 \u0440\u0435\u043b\u044c\u0441',
+  railFootWidthM: '\u0428\u0438\u0440\u0438\u043d\u0430 \u043f\u043e\u0434\u043e\u0448\u0432\u044b \u0440\u0435\u043b\u044c\u0441\u0430, \u043c',
+  railHeightM: '\u0412\u044b\u0441\u043e\u0442\u0430 \u043a\u0440\u0430\u043d\u043e\u0432\u043e\u0433\u043e \u0440\u0435\u043b\u044c\u0441\u0430, \u043c',
+  beamSpanM: '\u041f\u0440\u043e\u043b\u0435\u0442 \u041f\u0411, \u043c',
+  brakeStructure: '\u0422\u043e\u0440\u043c\u043e\u0437\u043d\u0430\u044f \u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u044f',
+  stiffenerStepM: '\u0428\u0430\u0433 \u0440\u0435\u0431\u0435\u0440, \u043c',
+  tbnKn: 'Tb\u043d, \u043a\u041d',
+  qbnKn: 'Qb\u043d, \u043a\u041d',
 } as const
 
 function parseNumberInput(value: string): number | null {
@@ -81,6 +76,7 @@ function formatNumber(value: number, digits = 3): string {
 
 export function CraneBeamDemoPage() {
   const [input, setInput] = useState<CraneBeamInput>(defaultCraneBeamInput)
+  const result = calculateCraneBeam(input)
   const mainCalculatorHref =
     typeof window === 'undefined' ? '/' : resolveMainCalculatorHref(window.location.pathname)
 
@@ -320,22 +316,38 @@ export function CraneBeamDemoPage() {
               <h2 style={{ margin: 0, fontSize: 20, color: '#0f172a' }}>{text.result}</h2>
               <div style={{ display: 'grid', gap: 8, color: '#334155', lineHeight: 1.45 }}>
                 <div>
-                  {text.progress}: <strong>{'\u043A\u0430\u0440\u043A\u0430\u0441 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u044B \u0433\u043E\u0442\u043E\u0432'}</strong>
+                  {text.progress}:{' '}
+                  <strong>
+                    {result.selection.profile
+                      ? '\u043f\u0435\u0440\u0432\u044b\u0439 Excel-baseline \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d'
+                      : '\u0438\u0434\u0451\u0442 \u043f\u043e\u044d\u0442\u0430\u043f\u043d\u044b\u0439 \u043f\u0435\u0440\u0435\u043d\u043e\u0441 workbook'}
+                  </strong>
                 </div>
                 <div>
-                  Workbook `Сводка`: {craneBeamWorkbookMap.summaryDerived.selectedProfile}
+                  Workbook `\u0421\u0432\u043e\u0434\u043a\u0430`: {craneBeamWorkbookMap.summaryDerived.selectedProfile}
                 </div>
                 <div>
-                  {text.loadCapacityT}: {formatNumber(input.loadCapacityT, 0)}
+                  \u041f\u0440\u043e\u0444\u0438\u043b\u044c:{' '}
+                  <strong>{result.selection.profile || '\u0435\u0449\u0451 \u043d\u0435 \u043f\u043e\u0434\u043e\u0431\u0440\u0430\u043d'}</strong>
                 </div>
                 <div>
-                  {text.craneSpanM}: {formatNumber(input.craneSpanM, 0)}
+                  \u0412\u0435\u0441: <strong>{formatNumber(result.selection.weightKg, 3)}</strong> \u043a\u0433
                 </div>
                 <div>
-                  {text.beamSpanM}: {formatNumber(input.beamSpanM, 0)}
+                  \u041a-\u0442 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u043d\u0438\u044f:{' '}
+                  <strong>{formatNumber(result.selection.utilization, 3)}</strong>
                 </div>
                 <div>
-                  {text.wheelLoadKn}: {formatNumber(input.wheelLoadKn, 0)}
+                  Mx: <strong>{formatNumber(result.loads.designMxGeneralKnM, 3)}</strong> \u043a\u041d\u00b7\u043c
+                </div>
+                <div>
+                  My: <strong>{formatNumber(result.loads.designMyGeneralKnM, 3)}</strong> \u043a\u041d\u00b7\u043c
+                </div>
+                <div>
+                  Q: <strong>{formatNumber(result.loads.designQGeneralKn, 3)}</strong> \u043a\u041d
+                </div>
+                <div>
+                  Q\u043e\u043f: <strong>{formatNumber(result.loads.designQAdditionalKn, 3)}</strong> \u043a\u041d
                 </div>
               </div>
             </article>
