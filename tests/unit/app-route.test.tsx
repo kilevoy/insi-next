@@ -48,4 +48,12 @@ describe('App routing', () => {
 
     expect(screen.getByTestId('window-rigel-demo-page')).toBeInTheDocument()
   })
+
+  it('renders the crane beam demo on the isolated route', () => {
+    window.history.replaceState({}, '', '/crane-beam-demo')
+
+    render(<App />)
+
+    expect(screen.getByTestId('crane-beam-demo-page')).toBeInTheDocument()
+  })
 })
