@@ -319,35 +319,34 @@ export function CraneBeamDemoPage() {
                   {text.progress}:{' '}
                   <strong>
                     {result.selection.profile
-                      ? '\u043f\u0435\u0440\u0432\u044b\u0439 Excel-baseline \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d'
-                      : '\u0438\u0434\u0451\u0442 \u043f\u043e\u044d\u0442\u0430\u043f\u043d\u044b\u0439 \u043f\u0435\u0440\u0435\u043d\u043e\u0441 workbook'}
+                      ? 'первый Excel-baseline подключен'
+                      : 'идёт поэтапный перенос workbook'}
                   </strong>
                 </div>
                 <div>
-                  Workbook `\u0421\u0432\u043e\u0434\u043a\u0430`: {craneBeamWorkbookMap.summaryDerived.selectedProfile}
+                  Workbook `Сводка`: {craneBeamWorkbookMap.summaryDerived.selectedProfile}
                 </div>
                 <div>
-                  \u041f\u0440\u043e\u0444\u0438\u043b\u044c:{' '}
-                  <strong>{result.selection.profile || '\u0435\u0449\u0451 \u043d\u0435 \u043f\u043e\u0434\u043e\u0431\u0440\u0430\u043d'}</strong>
+                  Профиль: <strong>{result.selection.profile || 'ещё не подобран'}</strong>
                 </div>
                 <div>
-                  \u0412\u0435\u0441: <strong>{formatNumber(result.selection.weightKg, 3)}</strong> \u043a\u0433
+                  Вес: <strong>{formatNumber(result.selection.weightKg, 3)}</strong> кг
                 </div>
                 <div>
-                  \u041a-\u0442 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u043d\u0438\u044f:{' '}
+                  К-т использования:{' '}
                   <strong>{formatNumber(result.selection.utilization, 3)}</strong>
                 </div>
                 <div>
-                  Mx: <strong>{formatNumber(result.loads.designMxGeneralKnM, 3)}</strong> \u043a\u041d\u00b7\u043c
+                  Mx: <strong>{formatNumber(result.loads.designMxGeneralKnM, 3)}</strong> кН·м
                 </div>
                 <div>
-                  My: <strong>{formatNumber(result.loads.designMyGeneralKnM, 3)}</strong> \u043a\u041d\u00b7\u043c
+                  My: <strong>{formatNumber(result.loads.designMyGeneralKnM, 3)}</strong> кН·м
                 </div>
                 <div>
-                  Q: <strong>{formatNumber(result.loads.designQGeneralKn, 3)}</strong> \u043a\u041d
+                  Q: <strong>{formatNumber(result.loads.designQGeneralKn, 3)}</strong> кН
                 </div>
                 <div>
-                  Q\u043e\u043f: <strong>{formatNumber(result.loads.designQAdditionalKn, 3)}</strong> \u043a\u041d
+                  Qоп: <strong>{formatNumber(result.loads.designQAdditionalKn, 3)}</strong> кН
                 </div>
               </div>
             </article>
