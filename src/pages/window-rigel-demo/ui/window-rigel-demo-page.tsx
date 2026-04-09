@@ -317,23 +317,32 @@ export function WindowRigelDemoPage() {
       data-testid="window-rigel-demo-page"
       style={{ padding: 24, display: 'grid', gap: 16, maxWidth: 1200, margin: '0 auto' }}
     >
-      <section style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
-        <img src={insiLogo} alt="INSI" style={{ width: 120, height: 120, objectFit: 'contain' }} />
-        <div style={{ display: 'grid', gap: 4 }}>
-          <h1 style={{ margin: 0 }}>{text.title}</h1>
-          <a
-            href={mainCalculatorHref}
-            style={{
-              justifySelf: 'start',
-              color: '#0f766e',
-              fontSize: 14,
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
-          >
-            {text.backToCalculator}
-          </a>
+      <section style={{ display: 'flex', gap: 18, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
+          <img src={insiLogo} alt="INSI" style={{ width: 120, height: 120, objectFit: 'contain' }} />
+          <div style={{ display: 'grid', gap: 4 }}>
+            <h1 style={{ margin: 0 }}>{text.title}</h1>
+          </div>
         </div>
+        <a
+          href={mainCalculatorHref}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 44,
+            padding: '0 18px',
+            borderRadius: 12,
+            background: '#0f766e',
+            color: '#f8fafc',
+            fontSize: 14,
+            fontWeight: 700,
+            textDecoration: 'none',
+            boxShadow: '0 12px 24px rgba(15, 118, 110, 0.22)',
+          }}
+        >
+          {text.backToCalculator}
+        </a>
       </section>
 
       <section
