@@ -244,10 +244,10 @@ export function WindowRigelDemoPage() {
   return (
     <main
       data-testid="window-rigel-demo-page"
-      style={{ padding: 24, display: 'grid', gap: 24, maxWidth: 1200, margin: '0 auto' }}
+      style={{ padding: 24, display: 'grid', gap: 16, maxWidth: 1200, margin: '0 auto' }}
     >
       <section style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
-        <img src={insiLogo} alt="INSI" style={{ width: 92, height: 92, objectFit: 'contain' }} />
+        <img src={insiLogo} alt="INSI" style={{ width: 120, height: 120, objectFit: 'contain' }} />
         <div style={{ display: 'grid', gap: 4 }}>
           <h1 style={{ margin: 0 }}>Подбор оконных ригелей</h1>
         </div>
