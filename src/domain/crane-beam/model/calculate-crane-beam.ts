@@ -384,10 +384,13 @@ function isSimpleCatalogSelectionScenario(input: CraneBeamInput) {
     input.dutyGroup !== '7\u041a' &&
     input.dutyGroup !== '8\u041a' &&
     input.craneCountInSpan === oneCrane &&
-    input.craneRail === railP50 &&
     input.beamSpanM === 6 &&
     input.brakeStructure === noBrakeStructure
   )
+}
+
+function resolveRequiredRailSeatWidthMm(input: CraneBeamInput) {
+  return input.craneRail === railP50 ? 175 : 300
 }
 
 function resolveCraneCatalogRow(input: CraneBeamInput): CraneCatalogRow {
@@ -781,8 +784,10 @@ export function selectCraneBeamCandidate(input: CraneBeamInput): CraneBeamSelect
   }
 
   const maxUtilizationPercent = 85
+  const requiredRailSeatWidthMm = resolveRequiredRailSeatWidthMm(input)
   const selected = craneBeamCandidateCatalog
     .filter((candidate) => !candidate.excluded)
+    .filter((candidate) => candidate.bMm >= requiredRailSeatWidthMm)
     .filter((candidate) => candidate.bMm <= 320)
     .map((candidate) => {
       const metrics = evaluateCraneBeamCandidateMetrics(candidate, input)
