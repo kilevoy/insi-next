@@ -25,6 +25,7 @@ type ColumnGroupKey = 'extreme' | 'fachwerk' | 'middle'
 type CalculationState<T> = { result: T | null; error: string | null }
 type ThemeMode = 'light' | 'dark'
 const THEME_STORAGE_KEY = 'metalcalc-theme'
+const WINDOW_RIGEL_DEMO_PATH = '/window-rigel-demo'
 
 interface PriceImportStatus {
   isLoading: boolean
@@ -62,6 +63,10 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
   })
   const { input, setField, setFields } = useCalculatorStore()
   const [isPending, startTransition] = useTransition()
+  const windowRigelDemoHref =
+    typeof window !== 'undefined' && window.location.pathname.startsWith('/insi-next/')
+      ? `/insi-next${WINDOW_RIGEL_DEMO_PATH}`
+      : WINDOW_RIGEL_DEMO_PATH
 
   useEffect(() => {
     window.localStorage.setItem(THEME_STORAGE_KEY, themeMode)
@@ -321,6 +326,14 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
           </div>
 
           <div className="topbar-utility-group">
+            <a
+              className="tab tab--utility"
+              data-testid="link-window-rigel-demo"
+              href={windowRigelDemoHref}
+              style={{ textDecoration: 'none' }}
+            >
+              {'\u041E\u043A\u043E\u043D\u043D\u044B\u0435 \u0440\u0438\u0433\u0435\u043B\u0438'}
+            </a>
             <button
               className={`tab tab--utility ${activeTab === 'methodology' ? 'active' : ''}`}
               data-testid="tab-methodology"

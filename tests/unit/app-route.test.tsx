@@ -29,6 +29,7 @@ describe('App routing', () => {
     render(<App />)
 
     expect(screen.getByTestId('calculator-page')).toBeInTheDocument()
+    expect(screen.getByTestId('link-window-rigel-demo')).toHaveAttribute('href', '/window-rigel-demo')
   })
 
   it('renders the window rigel demo on the isolated route', () => {
