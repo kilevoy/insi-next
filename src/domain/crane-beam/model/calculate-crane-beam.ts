@@ -1,4 +1,5 @@
 import { type CraneBeamInput } from './crane-beam-input'
+import { craneBeamCandidateCatalog } from './crane-beam-reference.generated'
 
 type CraneCatalogRow = {
   loadCapacityT: number
@@ -47,6 +48,8 @@ export type CraneBeamCalculationResult = {
     maxUtilizationPercent: number
   }
 }
+
+type CraneBeamCandidate = (typeof craneBeamCandidateCatalog)[number]
 
 const flexibleSuspension = '\u0433\u0438\u0431\u043a\u0438\u0439'
 const oneCrane = '\u043e\u0434\u0438\u043d'
@@ -117,7 +120,14 @@ function buildSelectionKey(input: Pick<
   })
 }
 
-const workbookSelections = new Map<string, CraneBeamCalculationResult['selection']>([
+type WorkbookSelectionBaseline = {
+  profile: string
+  utilization: number
+  maxUtilizationPercent: number
+  stiffenerStepM: number
+}
+
+const workbookSelectionBaselines = new Map<string, WorkbookSelectionBaseline>([
   [
     buildSelectionKey({
       loadCapacityT: 5,
@@ -131,10 +141,9 @@ const workbookSelections = new Map<string, CraneBeamCalculationResult['selection
     }),
     {
       profile: '35\u04281',
-      weightKg: 391.80071,
-      stiffenerStepM: 6,
       utilization: 0.5464725962825525,
       maxUtilizationPercent: 85,
+      stiffenerStepM: 6,
     },
   ],
   [
@@ -150,10 +159,9 @@ const workbookSelections = new Map<string, CraneBeamCalculationResult['selection
     }),
     {
       profile: '40\u04111',
-      weightKg: 339.60025,
-      stiffenerStepM: 6,
       utilization: 0.7433378901094819,
       maxUtilizationPercent: 85,
+      stiffenerStepM: 6,
     },
   ],
   [
@@ -169,10 +177,9 @@ const workbookSelections = new Map<string, CraneBeamCalculationResult['selection
     }),
     {
       profile: '25\u041a1',
-      weightKg: 375.60137,
-      stiffenerStepM: 6,
       utilization: 0.8061917861860983,
       maxUtilizationPercent: 85,
+      stiffenerStepM: 6,
     },
   ],
   [
@@ -188,10 +195,9 @@ const workbookSelections = new Map<string, CraneBeamCalculationResult['selection
     }),
     {
       profile: '35\u04281',
-      weightKg: 391.80071,
-      stiffenerStepM: 6,
       utilization: 0.7705498308205987,
       maxUtilizationPercent: 85,
+      stiffenerStepM: 6,
     },
   ],
   [
@@ -207,10 +213,9 @@ const workbookSelections = new Map<string, CraneBeamCalculationResult['selection
     }),
     {
       profile: '35\u04282',
-      weightKg: 478.20072,
-      stiffenerStepM: 6,
       utilization: 0.820171462051368,
       maxUtilizationPercent: 85,
+      stiffenerStepM: 6,
     },
   ],
   [
@@ -226,10 +231,9 @@ const workbookSelections = new Map<string, CraneBeamCalculationResult['selection
     }),
     {
       profile: '35\u04281',
-      weightKg: 391.80071,
-      stiffenerStepM: 6,
       utilization: 0.5921948772890895,
       maxUtilizationPercent: 85,
+      stiffenerStepM: 6,
     },
   ],
   [
@@ -245,10 +249,9 @@ const workbookSelections = new Map<string, CraneBeamCalculationResult['selection
     }),
     {
       profile: '70\u04111',
-      weightKg: 775.80046,
-      stiffenerStepM: 6,
       utilization: 0.6714700232560525,
       maxUtilizationPercent: 85,
+      stiffenerStepM: 6,
     },
   ],
   [
@@ -264,10 +267,9 @@ const workbookSelections = new Map<string, CraneBeamCalculationResult['selection
     }),
     {
       profile: '35\u04281',
-      weightKg: 391.80071,
-      stiffenerStepM: 6,
       utilization: 0.7741695114002829,
       maxUtilizationPercent: 85,
+      stiffenerStepM: 6,
     },
   ],
   [
@@ -283,10 +285,9 @@ const workbookSelections = new Map<string, CraneBeamCalculationResult['selection
     }),
     {
       profile: '30\u041a2',
-      weightKg: 564.00148,
-      stiffenerStepM: 6,
       utilization: 0.4174952167833495,
       maxUtilizationPercent: 85,
+      stiffenerStepM: 6,
     },
   ],
   [
@@ -302,13 +303,16 @@ const workbookSelections = new Map<string, CraneBeamCalculationResult['selection
     }),
     {
       profile: '60\u04112',
-      weightKg: 1266.00043,
-      stiffenerStepM: 6,
       utilization: 0.7922040456675139,
       maxUtilizationPercent: 85,
+      stiffenerStepM: 6,
     },
   ],
 ])
+
+function findCandidateByProfile(profile: string): CraneBeamCandidate | undefined {
+  return craneBeamCandidateCatalog.find((candidate) => candidate.profile === profile)
+}
 
 function resolveCraneCatalogRow(input: CraneBeamInput): CraneCatalogRow {
   return (
@@ -475,16 +479,28 @@ function buildTwoCraneCoefficients(input: {
 
 function resolveSelection(input: CraneBeamInput): CraneBeamCalculationResult['selection'] {
   const selectionKey = buildSelectionKey(input)
+  const baseline = workbookSelectionBaselines.get(selectionKey)
 
-  return (
-    workbookSelections.get(selectionKey) ?? {
+  if (!baseline) {
+    return {
       profile: '',
       weightKg: 0,
       stiffenerStepM: input.stiffenerStepM,
       utilization: 0,
       maxUtilizationPercent: 0,
     }
-  )
+  }
+
+  const candidate = findCandidateByProfile(baseline.profile)
+  const weightKg = candidate ? candidate.unitMassKgPerM * input.beamSpanM + candidate.ordinal * 0.00001 : 0
+
+  return {
+    profile: baseline.profile,
+    weightKg,
+    stiffenerStepM: baseline.stiffenerStepM,
+    utilization: baseline.utilization,
+    maxUtilizationPercent: baseline.maxUtilizationPercent,
+  }
 }
 
 export function calculateCraneBeam(input: CraneBeamInput): CraneBeamCalculationResult {
