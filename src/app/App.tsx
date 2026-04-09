@@ -10,8 +10,12 @@ export type DomainTab =
   | 'enclosing'
   | 'methodology'
 
+function isWindowRigelDemoRoute(pathname: string): boolean {
+  return pathname === '/window-rigel-demo' || pathname.endsWith('/window-rigel-demo')
+}
+
 export function App() {
-  if (typeof window !== 'undefined' && window.location.pathname === '/window-rigel-demo') {
+  if (typeof window !== 'undefined' && isWindowRigelDemoRoute(window.location.pathname)) {
     return <WindowRigelDemoPage />
   }
 

@@ -39,4 +39,12 @@ describe('App routing', () => {
     expect(screen.getByTestId('window-rigel-demo-page')).toBeInTheDocument()
     expect(screen.getByText('Подбор оконных ригелей')).toBeInTheDocument()
   })
+
+  it('renders the window rigel demo on the GitHub Pages route', () => {
+    window.history.replaceState({}, '', '/insi-next/window-rigel-demo')
+
+    render(<App />)
+
+    expect(screen.getByTestId('window-rigel-demo-page')).toBeInTheDocument()
+  })
 })
