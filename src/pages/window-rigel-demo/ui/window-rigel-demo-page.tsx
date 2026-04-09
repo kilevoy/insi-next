@@ -334,16 +334,16 @@ export function WindowRigelDemoPage() {
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
-          padding: '18px 20px',
+          padding: '12px 18px',
           borderRadius: 16,
           background: '#ffffff',
           border: '1px solid rgba(148, 163, 184, 0.18)',
         }}
       >
         <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
-          <img src={insiLogo} alt="INSI" style={{ width: 120, height: 120, objectFit: 'contain' }} />
+          <img src={insiLogo} alt="INSI" style={{ width: 100, height: 100, objectFit: 'contain' }} />
           <div>
-            <h1 style={{ margin: 0, fontSize: 30, lineHeight: 1.08, color: '#0f172a' }}>{text.title}</h1>
+            <h1 style={{ margin: 0, fontSize: 28, lineHeight: 1.05, color: '#0f172a' }}>{text.title}</h1>
           </div>
         </div>
         <a
