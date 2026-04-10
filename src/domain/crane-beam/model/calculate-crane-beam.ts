@@ -97,6 +97,17 @@ const dutyDeflectionLimits = new Map<string, { cs: number; ct: number }>([
   ['8\u041a', { cs: 0.01, ct: 0.003 }],
 ])
 
+const bracedDutyDeflectionLimits = new Map<string, { cs: number; ct: number }>([
+  ['1\u041a', { cs: 0.03, ct: 0.00002 }],
+  ['2\u041a', { cs: 0.03, ct: 0.00002 }],
+  ['3\u041a', { cs: 0.03, ct: 0.00002 }],
+  ['4\u041a', { cs: 0.03, ct: 0.00001 }],
+  ['5\u041a', { cs: 0.03, ct: 0.00001 }],
+  ['6\u041a', { cs: 0.03, ct: 0.00001 }],
+  ['7\u041a', { cs: 0.024, ct: 0.000005 }],
+  ['8\u041a', { cs: 0.02, ct: 0.000005 }],
+])
+
 const craneCatalog: CraneCatalogRow[] = [
   { loadCapacityT: 5, craneSpanM: 12, craneBaseMm: 3700, craneGaugeMm: 4700, wheelLoadKn: 50, trolleyMassT: 2 },
   { loadCapacityT: 5, craneSpanM: 18, craneBaseMm: 3700, craneGaugeMm: 4700, wheelLoadKn: 55, trolleyMassT: 2 },
@@ -386,12 +397,7 @@ function findCandidateByProfile(profile: string): CraneBeamCandidate | undefined
 }
 
 export function supportsCraneBeamCatalogSelection(input: CraneBeamInput) {
-  return (
-    input.dutyGroup !== '8\u041a' &&
-    input.craneCountInSpan === oneCrane &&
-    input.beamSpanM === 6 &&
-    input.brakeStructure === noBrakeStructure
-  )
+  return input.dutyGroup !== '8\u041a'
 }
 
 function resolveRequiredRailSeatWidthMm(input: CraneBeamInput) {
@@ -609,11 +615,14 @@ function buildTwoCraneCoefficients(input: {
 }
 
 function resolveBrakePanelLengthM(input: CraneBeamInput) {
-  return input.brakeStructure === noBrakeStructure ? input.beamSpanM : 1.5
+  return input.brakeStructure === noBrakeStructure ? input.beamSpanM : 0.01
 }
 
 function resolveDutyDeflectionLimits(input: CraneBeamInput) {
-  return dutyDeflectionLimits.get(input.dutyGroup) ?? { cs: 0.015, ct: 0.012 }
+  const limits =
+    input.brakeStructure === noBrakeStructure ? dutyDeflectionLimits : bracedDutyDeflectionLimits
+
+  return limits.get(input.dutyGroup) ?? { cs: 0.015, ct: 0.012 }
 }
 
 function buildWorkbookLoadSummary(input: CraneBeamInput, lookup: CraneBeamCalculationResult['lookup'], derived: CraneBeamCalculationResult['derived']): WorkbookLoadSummary {
@@ -635,15 +644,12 @@ function buildWorkbookLoadSummary(input: CraneBeamInput, lookup: CraneBeamCalcul
     input.craneCountInSpan === oneCrane ? oneCraneFatigueCoefficients.momentsM : twoCraneCoefficients.momentsM
   const fatigueShearsQ =
     input.craneCountInSpan === oneCrane ? oneCraneFatigueCoefficients.shearsQ : twoCraneCoefficients.shearsQ
-  const deflectionMomentsM =
-    input.craneCountInSpan === oneCrane
-      ? [
-          ((input.beamSpanM / 2 - lookup.craneBaseMm / 2000) * (input.beamSpanM / 2 + lookup.craneBaseMm / 2000)) / input.beamSpanM,
-          ((((input.beamSpanM / 2 - lookup.craneBaseMm / 2000) * (input.beamSpanM / 2 + lookup.craneBaseMm / 2000)) / input.beamSpanM) *
-            (input.beamSpanM / 2 - lookup.craneBaseMm / 2000)) /
-            (input.beamSpanM / 2 + lookup.craneBaseMm / 2000),
-        ]
-      : twoCraneCoefficients.momentsM
+  const deflectionMomentsM = [
+    ((input.beamSpanM / 2 - lookup.craneBaseMm / 2000) * (input.beamSpanM / 2 + lookup.craneBaseMm / 2000)) / input.beamSpanM,
+    ((((input.beamSpanM / 2 - lookup.craneBaseMm / 2000) * (input.beamSpanM / 2 + lookup.craneBaseMm / 2000)) / input.beamSpanM) *
+      (input.beamSpanM / 2 - lookup.craneBaseMm / 2000)) /
+      (input.beamSpanM / 2 + lookup.craneBaseMm / 2000),
+  ]
 
   const fatigueMomentSum = fatigueMomentsM.reduce((total, value) => total + value, 0)
   const fatigueShearSum = fatigueShearsQ.reduce((total, value) => total + value, 0)

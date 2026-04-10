@@ -196,20 +196,34 @@ describe('crane beam calculation', () => {
     }
   })
 
-  it('falls back from catalog selection for scenarios whose workbook checks are not fully transferred yet', () => {
+  it('selects the workbook profile from the candidate catalog for two-crane and brake scenarios', () => {
     const scenarios = [
-      { input: { craneCountInSpan: '\u0434\u0432\u0430' } },
-      { input: { beamSpanM: 12, brakeStructure: '\u0435\u0441\u0442\u044c' } },
+      {
+        input: { craneCountInSpan: '\u0434\u0432\u0430' },
+        profile: '35\u04281',
+        utilization: 0.7741695114002829,
+      },
+      {
+        input: { beamSpanM: 12, brakeStructure: '\u0435\u0441\u0442\u044c' },
+        profile: '60\u04112',
+        utilization: 0.7922040456675139,
+      },
     ] as const
 
     for (const scenario of scenarios) {
-      const input = {
+      const selection = selectCraneBeamCandidate({
         ...defaultCraneBeamInput,
         ...scenario.input,
-      }
+      })
 
-      expect(supportsCraneBeamCatalogSelection(input)).toBe(false)
-      expect(selectCraneBeamCandidate(input)).toBeUndefined()
+      expect(selection).toBeDefined()
+      expect(selection?.profile).toBe(scenario.profile)
+      expect(selection?.utilization).toBeCloseTo(scenario.utilization, 10)
     }
+  })
+
+  it('falls back from catalog selection for scenarios whose workbook checks are not fully transferred yet', () => {
+    expect(supportsCraneBeamCatalogSelection({ ...defaultCraneBeamInput, dutyGroup: '8\u041a' })).toBe(false)
+    expect(selectCraneBeamCandidate({ ...defaultCraneBeamInput, dutyGroup: '8\u041a' })).toBeUndefined()
   })
 })
