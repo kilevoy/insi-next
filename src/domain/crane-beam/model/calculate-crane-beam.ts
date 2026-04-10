@@ -54,7 +54,13 @@ type CraneBeamCandidateMetrics = {
   ai: number
   aj: number
   an: number
+  au: number
+  ax: number
+  ay: number
+  az: number
   bn: number
+  bm: number
+  bv: number
   ca: number
   cu: number
   cv: number
@@ -381,7 +387,6 @@ function findCandidateByProfile(profile: string): CraneBeamCandidate | undefined
 
 export function supportsCraneBeamCatalogSelection(input: CraneBeamInput) {
   return (
-    input.dutyGroup !== '7\u041a' &&
     input.dutyGroup !== '8\u041a' &&
     input.craneCountInSpan === oneCrane &&
     input.beamSpanM === 6 &&
@@ -457,6 +462,7 @@ type InfluenceCoefficients = {
 type WorkbookLoadSummary = {
   fatigueMomentKnM: number
   fatigueLocalMomentKnM: number
+  fatigueTorsionKn: number
   designMomentKnM: number
   designLocalMomentKnM: number
   designMtLocalKnM: number
@@ -644,11 +650,13 @@ function buildWorkbookLoadSummary(input: CraneBeamInput, lookup: CraneBeamCalcul
   const deflectionMomentSum = deflectionMomentsM.reduce((total, value) => total + value, 0)
 
   const wheelDesignKn = lookup.wheelLoadKn * loadFactor
+  const wheelFatigueKn = lookup.wheelLoadKn * derived.fatigueNvyn
   const qbnDesignKn = derived.qbnKn * loadFactor
 
   return {
-    fatigueMomentKnM: gammaG * wheelDesignKn * derived.gammaLocal * fatigueMomentSum * psi,
-    fatigueLocalMomentKnM: qbnDesignKn * fatigueMomentSum * psi,
+    fatigueMomentKnM: gammaG * wheelFatigueKn * derived.gammaLocal * fatigueMomentSum * psi,
+    fatigueLocalMomentKnM: derived.qbnKn * fatigueMomentSum * psi,
+    fatigueTorsionKn: derived.tbnKn,
     designMomentKnM: gammaG * wheelDesignKn * derived.gammaLocal * fatigueMomentSum * psi,
     designLocalMomentKnM: qbnDesignKn * fatigueMomentSum * psi,
     designMtLocalKnM: lookup.wheelLoadKn * loadFactor * derived.gammaLocal * 0.2 * lookup.railFootWidthM + 0.75 * qbnDesignKn * lookup.railHeightM * psi,
@@ -703,6 +711,31 @@ export function evaluateCraneBeamCandidateMetrics(
     }),
   }
   const workbookLoads = buildWorkbookLoadSummary(input, lookup, derived)
+  const loadFactor = 1.2
+  const gammaG = 1.06
+  const gammaDGeneral = 1.2
+  const psi = input.craneCountInSpan === oneCrane ? 1 : 0.85
+  const oneCraneCoefficients = buildOneCraneCoefficients({
+    beamSpanM: input.beamSpanM,
+    craneBaseMm: lookup.craneBaseMm,
+  })
+  const twoCraneCoefficients = buildTwoCraneCoefficients({
+    beamSpanM: input.beamSpanM,
+    craneBaseMm: lookup.craneBaseMm,
+    craneGaugeMm: lookup.craneGaugeMm,
+    caseForTwoCranes: derived.caseForTwoCranes,
+  })
+  const summaryMomentsM =
+    input.craneCountInSpan === oneCrane ? oneCraneCoefficients.momentsM : twoCraneCoefficients.momentsM
+  const summaryShearsQ =
+    input.craneCountInSpan === oneCrane ? oneCraneCoefficients.shearsQ : twoCraneCoefficients.shearsQ
+  const summaryMomentSum = summaryMomentsM.reduce((total, value) => total + value, 0)
+  const summaryShearSum = summaryShearsQ.reduce((total, value) => total + value, 0)
+  const summaryWheelDesignKn = lookup.wheelLoadKn * loadFactor * gammaDGeneral
+  const summaryLocalDesignKn = derived.qbnKn * loadFactor
+  const summaryMomentKnM = gammaG * summaryWheelDesignKn * summaryMomentSum * psi
+  const summaryLocalMomentKnM = summaryLocalDesignKn * summaryMomentSum * psi
+  const summaryShearKn = summaryLocalDesignKn * summaryShearSum * psi
   const railInertiaCm4 =
     railHeadInertiaCm4[input.craneRail as keyof typeof railHeadInertiaCm4] ?? railHeadInertiaCm4[railP50]
   const combinedRailInertiaCm4 =
@@ -726,8 +759,8 @@ export function evaluateCraneBeamCandidateMetrics(
   const adCm4 = ixCm4 + combinedRailInertiaCm4
   const akCm = pressureDistributionFactor * (adCm4 / (webThicknessMm / 10)) ** (1 / 3)
 
-  const afMpa = (workbookLoads.fatigueMomentKnM / (wxCm3 / 1_000_000) + workbookLoads.fatigueLocalMomentKnM / (wyCm3 / 1_000_000)) / 1000
-  const agMpa = (workbookLoads.fatigueMomentKnM / (wxCm3 / 1_000_000) + workbookLoads.torsionDesignKn / (areaCm2 / 10_000)) / 1000
+  const afMpa = (workbookLoads.designMomentKnM / (wxCm3 / 1_000_000) + workbookLoads.designLocalMomentKnM / (wyCm3 / 1_000_000)) / 1000
+  const agMpa = (workbookLoads.designMomentKnM / (wxCm3 / 1_000_000) + workbookLoads.torsionDesignKn / (areaCm2 / 10_000)) / 1000
   const ai = Math.max(afMpa / ryMpa, agMpa / ryMpa)
 
   const aj =
@@ -747,15 +780,17 @@ export function evaluateCraneBeamCandidateMetrics(
       : (0.87 / ryMpa) *
         Math.sqrt(Math.max(afMpa, agMpa) ** 2 - Math.max(afMpa, agMpa) * alMpa + alMpa ** 2 + 3 * amMpa ** 2)
 
+  const baMpa = (workbookLoads.fatigueMomentKnM / (wxCm3 / 1_000_000) + workbookLoads.fatigueLocalMomentKnM / (wyCm3 / 1_000_000)) / 1000
+  const bbMpa = (workbookLoads.fatigueMomentKnM / (wxCm3 / 1_000_000) + workbookLoads.fatigueTorsionKn / (areaCm2 / 10_000)) / 1000
   const bcMpa = workbookLoads.localWheelFatigueKn / ((akCm / 100) * (flangeThicknessMm / 1000)) / 1000
   const bdMpa =
     (workbookLoads.localShearFatigueKn * (sxCm3 / 1_000_000)) /
     (ixCm4 / 100_000_000 * webThicknessMm / 1000) /
     1000
-  const beMpa = Math.sqrt(afMpa ** 2 - afMpa * bcMpa + bcMpa ** 2 + 3 * bdMpa ** 2)
-  const bfMpa = Math.sqrt(agMpa ** 2 - agMpa * bcMpa + bcMpa ** 2 + 3 * bdMpa ** 2)
+  const beMpa = Math.sqrt(baMpa ** 2 - baMpa * bcMpa + bcMpa ** 2 + 3 * bdMpa ** 2)
+  const bfMpa = Math.sqrt(bbMpa ** 2 - bbMpa * bcMpa + bcMpa ** 2 + 3 * bdMpa ** 2)
   const bgMpa = -beMpa
-  const bhMpa = -((workbookLoads.fatigueMomentKnM / (wxCm3 / 1_000_000) - workbookLoads.torsionDesignKn / (areaCm2 / 10_000)) / 1000)
+  const bhMpa = -((workbookLoads.fatigueMomentKnM / (wxCm3 / 1_000_000) - workbookLoads.fatigueTorsionKn / (areaCm2 / 10_000)) / 1000)
   const bk = 2 / (1 - bgMpa / beMpa)
   const bl = 2 / (1 - bhMpa / bfMpa)
   const bn = (fatigueGammaCoefficient * 106 * Math.max(bk, bl)) / (450 / 1.3)
@@ -774,16 +809,16 @@ export function evaluateCraneBeamCandidateMetrics(
     (0.75 * (acCm4 / 100_000_000) * (candidate.webHeightMm / 1000)) /
     1000
   const asMpa =
-    (workbookLoads.designMomentKnM / (ixCm4 / 100_000_000) * (candidate.webHeightMm / 1000 / 2) +
-      workbookLoads.designLocalMomentKnM / (iyCm4 / 100_000_000) * (candidate.webThicknessMm / 1000 / 2)) /
+    (summaryMomentKnM / (ixCm4 / 100_000_000) * (candidate.webHeightMm / 1000 / 2) +
+      summaryLocalMomentKnM / (iyCm4 / 100_000_000) * (candidate.webThicknessMm / 1000 / 2)) /
     1000
   const atMpa =
-    (workbookLoads.designMomentKnM / (ixCm4 / 100_000_000) * (candidate.webHeightMm / 1000 / 2) +
+    (summaryMomentKnM / (ixCm4 / 100_000_000) * (candidate.webHeightMm / 1000 / 2) +
       workbookLoads.torsionDesignKn / (areaCm2 / 10_000)) /
     1000
   const aoMpa = 0.25 * alMpa
   const apMpa = 0.3 * alMpa
-  const avMpa = workbookLoads.designQGeneralKn / (candidate.webThicknessMm / 1000 * candidate.webHeightMm / 1000) / 1000
+  const avMpa = summaryShearKn / (candidate.webThicknessMm / 1000 * candidate.webHeightMm / 1000) / 1000
   const awMpa = 0.25 * arMpa
   const ax = isFatigueSpecialDuty(input) ? (Math.max(asMpa, atMpa) + aoMpa) / ryMpa : 0
   const ay = isFatigueSpecialDuty(input) ? (alMpa + arMpa) / ryMpa : 0
@@ -795,7 +830,7 @@ export function evaluateCraneBeamCandidateMetrics(
           (Math.max(asMpa, atMpa) + aoMpa) ** 2 -
             (Math.max(asMpa, atMpa) + aoMpa) * alMpa +
             alMpa ** 2 +
-            3 * (workbookLoads.designQGeneralKn / (candidate.webThicknessMm / 1000 * candidate.webHeightMm / 1000) / 1000 + apMpa) ** 2,
+            3 * (summaryShearKn / (candidate.webThicknessMm / 1000 * candidate.webHeightMm / 1000) + apMpa) ** 2,
         )
       : 0
 
@@ -848,7 +883,21 @@ export function evaluateCraneBeamCandidateMetrics(
 
   void acCm4
 
-  return { ai, aj: adjustedAj, an, bn: adjustedBn, ca, cu, cv }
+  return {
+    ai,
+    aj: adjustedAj,
+    an,
+    au,
+    ax,
+    ay,
+    az,
+    bn: adjustedBn,
+    bm,
+    bv,
+    ca,
+    cu,
+    cv,
+  }
 }
 
 export function selectCraneBeamCandidate(input: CraneBeamInput): CraneBeamSelectedCandidate | undefined {

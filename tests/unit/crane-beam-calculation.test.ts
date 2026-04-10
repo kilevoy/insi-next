@@ -156,6 +156,22 @@ describe('crane beam calculation', () => {
     expect(metrics.cu).toBeCloseTo(0.3931061309964103, 10)
     expect(metrics.cv).toBeCloseTo(0.39745991144260423, 10)
   })
+
+  it('matches the workbook special-duty governing check for profile 70Б1', () => {
+    const candidate = craneBeamCandidateCatalog.find((item) => item.profile === '70\u04111')
+
+    expect(candidate).toBeDefined()
+
+    const metrics = evaluateCraneBeamCandidateMetrics(candidate!, {
+      ...defaultCraneBeamInput,
+      dutyGroup: '7\u041a',
+    })
+
+    expect(metrics.au).toBeCloseTo(0.6714700232560525, 10)
+    expect(metrics.bm).toBeCloseTo(0.6334471792230458, 10)
+    expect(metrics.cv).toBeCloseTo(metrics.au, 10)
+  })
+
   it('selects the workbook profile from the candidate catalog for simple one-crane scenarios', () => {
     const scenarios = [
       { input: {}, profile: '35\u04281', utilization: 0.5464725962825525 },
@@ -164,6 +180,7 @@ describe('crane beam calculation', () => {
       { input: { loadCapacityT: 8, craneSpanM: 24 }, profile: '35\u04281', utilization: 0.7705498308205987 },
       { input: { loadCapacityT: 10, craneSpanM: 36 }, profile: '35\u04282', utilization: 0.820171462051368 },
       { input: { suspensionType: '\u0436\u0435\u0441\u0442\u043a\u0438\u0439' }, profile: '35\u04281', utilization: 0.5921948772890895 },
+      { input: { dutyGroup: '7\u041a' }, profile: '70\u04111', utilization: 0.6714700232560525 },
       { input: { craneRail: '\u041a\u042070' }, profile: '30\u041a2', utilization: 0.4174952167833495 },
     ] as const
 
@@ -181,7 +198,6 @@ describe('crane beam calculation', () => {
 
   it('falls back from catalog selection for scenarios whose workbook checks are not fully transferred yet', () => {
     const scenarios = [
-      { input: { dutyGroup: '7\u041a' } },
       { input: { craneCountInSpan: '\u0434\u0432\u0430' } },
       { input: { beamSpanM: 12, brakeStructure: '\u0435\u0441\u0442\u044c' } },
     ] as const
