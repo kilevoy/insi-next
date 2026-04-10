@@ -459,6 +459,8 @@ type WorkbookLoadSummary = {
   fatigueLocalMomentKnM: number
   designMomentKnM: number
   designLocalMomentKnM: number
+  designMtLocalKnM: number
+  designQGeneralKn: number
   localWheelDesignKn: number
   localWheelFatigueKn: number
   localShearDesignKn: number
@@ -649,6 +651,8 @@ function buildWorkbookLoadSummary(input: CraneBeamInput, lookup: CraneBeamCalcul
     fatigueLocalMomentKnM: qbnDesignKn * fatigueMomentSum * psi,
     designMomentKnM: gammaG * wheelDesignKn * derived.gammaLocal * fatigueMomentSum * psi,
     designLocalMomentKnM: qbnDesignKn * fatigueMomentSum * psi,
+    designMtLocalKnM: lookup.wheelLoadKn * loadFactor * derived.gammaLocal * 0.2 * lookup.railFootWidthM + 0.75 * qbnDesignKn * lookup.railHeightM * psi,
+    designQGeneralKn: qbnDesignKn * fatigueShearSum * psi,
     localWheelDesignKn: lookup.wheelLoadKn * loadFactor * derived.gammaLocal,
     localWheelFatigueKn: lookup.wheelLoadKn * derived.fatigueNvyn * derived.gammaLocal,
     localShearDesignKn: qbnDesignKn * fatigueShearSum * psi,
@@ -658,6 +662,14 @@ function buildWorkbookLoadSummary(input: CraneBeamInput, lookup: CraneBeamCalcul
     deflectionWheelKnM: gammaG * lookup.wheelLoadKn * deflectionMomentSum,
     deflectionQbnKnM: derived.qbnKn * deflectionMomentSum,
   }
+}
+
+function isFatigueSpecialDuty(input: CraneBeamInput) {
+  return input.dutyGroup === '7\u041a' || input.dutyGroup === '8\u041a'
+}
+
+function finiteMetric(value: number) {
+  return Number.isFinite(value) ? value : 0
 }
 
 export function evaluateCraneBeamCandidateMetrics(
@@ -748,6 +760,45 @@ export function evaluateCraneBeamCandidateMetrics(
   const bl = 2 / (1 - bhMpa / bfMpa)
   const bn = (fatigueGammaCoefficient * 106 * Math.max(bk, bl)) / (450 / 1.3)
 
+  const cf = (candidate.webHeightMm / candidate.webThicknessMm) * Math.sqrt(ryMpa / steelElasticityMpa)
+  const aq =
+    input.stiffenerStepM === 0
+      ? cf <= 2.2
+        ? input.beamSpanM
+        : cf >= 3.2
+          ? 2 * candidate.webHeightMm / 1000
+          : 2.5 * candidate.webHeightMm / 1000
+      : input.stiffenerStepM
+  const arMpa =
+    (workbookLoads.designMtLocalKnM * (candidate.webThicknessMm / 1000) * aq) /
+    (0.75 * (acCm4 / 100_000_000) * (candidate.webHeightMm / 1000)) /
+    1000
+  const asMpa =
+    (workbookLoads.designMomentKnM / (ixCm4 / 100_000_000) * (candidate.webHeightMm / 1000 / 2) +
+      workbookLoads.designLocalMomentKnM / (iyCm4 / 100_000_000) * (candidate.webThicknessMm / 1000 / 2)) /
+    1000
+  const atMpa =
+    (workbookLoads.designMomentKnM / (ixCm4 / 100_000_000) * (candidate.webHeightMm / 1000 / 2) +
+      workbookLoads.torsionDesignKn / (areaCm2 / 10_000)) /
+    1000
+  const aoMpa = 0.25 * alMpa
+  const apMpa = 0.3 * alMpa
+  const avMpa = workbookLoads.designQGeneralKn / (candidate.webThicknessMm / 1000 * candidate.webHeightMm / 1000) / 1000
+  const awMpa = 0.25 * arMpa
+  const ax = isFatigueSpecialDuty(input) ? (Math.max(asMpa, atMpa) + aoMpa) / ryMpa : 0
+  const ay = isFatigueSpecialDuty(input) ? (alMpa + arMpa) / ryMpa : 0
+  const az = isFatigueSpecialDuty(input) ? (avMpa + apMpa + awMpa) / (0.58 * ryMpa) : 0
+  const au =
+    isFatigueSpecialDuty(input)
+      ? (0.87 / ryMpa) *
+        Math.sqrt(
+          (Math.max(asMpa, atMpa) + aoMpa) ** 2 -
+            (Math.max(asMpa, atMpa) + aoMpa) * alMpa +
+            alMpa ** 2 +
+            3 * (workbookLoads.designQGeneralKn / (candidate.webThicknessMm / 1000 * candidate.webHeightMm / 1000) / 1000 + apMpa) ** 2,
+        )
+      : 0
+
   const unsupportedLengthM = brakePanelLengthM
   const bw =
     (unsupportedLengthM === input.beamSpanM ? 1 : 1.54) *
@@ -768,10 +819,32 @@ export function evaluateCraneBeamCandidateMetrics(
         workbookLoads.deflectionQbnKnM /
         (10 * steelElasticityMpa * 1000 * (iyCm4 / 100_000_000))
   const cu = Math.max(cq / deflectionLimits.cs, cr / deflectionLimits.ct)
+  const bm =
+    isFatigueSpecialDuty(input)
+      ? Math.max(beMpa / (derived.alpha * 75 * bk), bfMpa / (derived.alpha * 106 * bl))
+      : 0
+  const btMpa = workbookLoads.localShearFatigueKn / (candidate.webThicknessMm / 1000 * candidate.webHeightMm / 1000) / 1000
+  const bv =
+    isFatigueSpecialDuty(input)
+      ? (0.5 * Math.sqrt(Math.max(beMpa, bfMpa) ** 2 + 0.36 * btMpa ** 2) + 0.4 * bcMpa + 0.5 * arMpa) / 106
+      : 0
   const override = workbookCandidateMetricOverrides.get(`${buildSelectionKey(input)}::${candidate.profile}`)
   const adjustedAj = override?.aj ?? aj
   const adjustedBn = override?.bn ?? bn
-  const cv = Math.max(ai, adjustedAj, an, adjustedBn, ca, cu)
+  const cv = Math.max(
+    finiteMetric(ai),
+    finiteMetric(adjustedAj),
+    finiteMetric(an),
+    finiteMetric(au),
+    finiteMetric(ax),
+    finiteMetric(ay),
+    finiteMetric(az),
+    finiteMetric(bm),
+    finiteMetric(adjustedBn),
+    finiteMetric(bv),
+    finiteMetric(ca),
+    finiteMetric(cu),
+  )
 
   void acCm4
 
