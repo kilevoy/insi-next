@@ -3,6 +3,7 @@ import {
   calculateCraneBeam,
   evaluateCraneBeamCandidateMetrics,
   selectCraneBeamCandidate,
+  supportsCraneBeamCatalogSelection,
 } from '../../src/domain/crane-beam/model/calculate-crane-beam'
 import { defaultCraneBeamInput } from '../../src/domain/crane-beam/model/crane-beam-input'
 import { craneBeamCandidateCatalog } from '../../src/domain/crane-beam/model/crane-beam-reference.generated'
@@ -175,6 +176,24 @@ describe('crane beam calculation', () => {
       expect(selection).toBeDefined()
       expect(selection?.profile).toBe(scenario.profile)
       expect(selection?.utilization).toBeCloseTo(scenario.utilization, 10)
+    }
+  })
+
+  it('falls back from catalog selection for scenarios whose workbook checks are not fully transferred yet', () => {
+    const scenarios = [
+      { input: { dutyGroup: '7\u041a' } },
+      { input: { craneCountInSpan: '\u0434\u0432\u0430' } },
+      { input: { beamSpanM: 12, brakeStructure: '\u0435\u0441\u0442\u044c' } },
+    ] as const
+
+    for (const scenario of scenarios) {
+      const input = {
+        ...defaultCraneBeamInput,
+        ...scenario.input,
+      }
+
+      expect(supportsCraneBeamCatalogSelection(input)).toBe(false)
+      expect(selectCraneBeamCandidate(input)).toBeUndefined()
     }
   })
 })

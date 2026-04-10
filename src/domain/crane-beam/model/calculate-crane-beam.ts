@@ -379,7 +379,7 @@ function findCandidateByProfile(profile: string): CraneBeamCandidate | undefined
   return craneBeamCandidateCatalog.find((candidate) => candidate.profile === profile)
 }
 
-function isSimpleCatalogSelectionScenario(input: CraneBeamInput) {
+export function supportsCraneBeamCatalogSelection(input: CraneBeamInput) {
   return (
     input.dutyGroup !== '7\u041a' &&
     input.dutyGroup !== '8\u041a' &&
@@ -779,7 +779,7 @@ export function evaluateCraneBeamCandidateMetrics(
 }
 
 export function selectCraneBeamCandidate(input: CraneBeamInput): CraneBeamSelectedCandidate | undefined {
-  if (!isSimpleCatalogSelectionScenario(input)) {
+  if (!supportsCraneBeamCatalogSelection(input)) {
     return undefined
   }
 
