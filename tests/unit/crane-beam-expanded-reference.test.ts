@@ -2,11 +2,11 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { calculateCraneBeam } from '../../src/domain/crane-beam/model/calculate-crane-beam'
-import { defaultCraneBeamInput } from '../../src/domain/crane-beam/model/crane-beam-input'
+import { defaultCraneBeamInput, type CraneBeamLoadCapacity } from '../../src/domain/crane-beam/model/crane-beam-input'
 
 type ExpandedParityReportRow = {
   scenario: {
-    loadCapacityT: number
+    loadCapacityT: CraneBeamLoadCapacity
     craneSpanM: number
     suspensionType: string
     dutyGroup: string

@@ -258,4 +258,17 @@ describe('crane beam calculation', () => {
     expect(result.lookup.railFootWidthM).toBeCloseTo(0.145, 10)
     expect(result.lookup.railHeightM).toBeCloseTo(0.165, 10)
   })
+
+  it('supports the additional workbook load capacities in catalog mode', () => {
+    const result = calculateCraneBeam({
+      ...defaultCraneBeamInput,
+      loadCapacityT: '16/3,2',
+      craneSpanM: 24,
+    })
+
+    expect(result.lookup.wheelLoadKn).toBeCloseTo(150, 10)
+    expect(result.lookup.trolleyMassT).toBeCloseTo(4.7, 10)
+    expect(result.lookup.craneBaseMm).toBeCloseTo(4400, 10)
+    expect(result.lookup.craneGaugeMm).toBeCloseTo(5600, 10)
+  })
 })

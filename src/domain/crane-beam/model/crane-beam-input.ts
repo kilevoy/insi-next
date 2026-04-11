@@ -1,6 +1,20 @@
+export const craneBeamLoadCapacities = [
+  5,
+  8,
+  10,
+  12.5,
+  16,
+  '16/3,2',
+  '20/5',
+  '32/5',
+  '50/12,5',
+] as const
+
+export type CraneBeamLoadCapacity = (typeof craneBeamLoadCapacities)[number]
+
 export type CraneBeamInput = {
   lookupMode: string
-  loadCapacityT: number
+  loadCapacityT: CraneBeamLoadCapacity
   craneSpanM: number
   wheelLoadKn: number
   wheelCount: number

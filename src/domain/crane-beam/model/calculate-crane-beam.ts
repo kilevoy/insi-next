@@ -1,9 +1,9 @@
-import { type CraneBeamInput } from './crane-beam-input'
+import { type CraneBeamInput, type CraneBeamLoadCapacity } from './crane-beam-input'
 import { craneBeamCandidateCatalog } from './crane-beam-reference.generated'
 import { craneBeamWorkbookSelectionBaselineEntries } from './crane-beam-selection-baselines.generated'
 
 type CraneCatalogRow = {
-  loadCapacityT: number
+  loadCapacityT: CraneBeamLoadCapacity
   craneSpanM: number
   craneBaseMm: number
   craneGaugeMm: number
@@ -125,6 +125,36 @@ const craneCatalog: CraneCatalogRow[] = [
   { loadCapacityT: 10, craneSpanM: 24, craneBaseMm: 4400, craneGaugeMm: 5400, wheelLoadKn: 95, trolleyMassT: 2.4 },
   { loadCapacityT: 10, craneSpanM: 30, craneBaseMm: 5000, craneGaugeMm: 6000, wheelLoadKn: 105, trolleyMassT: 2.4 },
   { loadCapacityT: 10, craneSpanM: 36, craneBaseMm: 5600, craneGaugeMm: 6600, wheelLoadKn: 125, trolleyMassT: 2.4 },
+  { loadCapacityT: 12.5, craneSpanM: 12, craneBaseMm: 4400, craneGaugeMm: 5500, wheelLoadKn: 105, trolleyMassT: 3 },
+  { loadCapacityT: 12.5, craneSpanM: 18, craneBaseMm: 4400, craneGaugeMm: 5500, wheelLoadKn: 120, trolleyMassT: 3 },
+  { loadCapacityT: 12.5, craneSpanM: 24, craneBaseMm: 4400, craneGaugeMm: 5500, wheelLoadKn: 135, trolleyMassT: 3 },
+  { loadCapacityT: 12.5, craneSpanM: 30, craneBaseMm: 5000, craneGaugeMm: 6100, wheelLoadKn: 155, trolleyMassT: 3 },
+  { loadCapacityT: 12.5, craneSpanM: 36, craneBaseMm: 5600, craneGaugeMm: 6700, wheelLoadKn: 170, trolleyMassT: 3 },
+  { loadCapacityT: 16, craneSpanM: 12, craneBaseMm: 4400, craneGaugeMm: 5600, wheelLoadKn: 120, trolleyMassT: 3.7 },
+  { loadCapacityT: 16, craneSpanM: 18, craneBaseMm: 4400, craneGaugeMm: 5600, wheelLoadKn: 140, trolleyMassT: 3.7 },
+  { loadCapacityT: 16, craneSpanM: 24, craneBaseMm: 4400, craneGaugeMm: 5600, wheelLoadKn: 150, trolleyMassT: 3.7 },
+  { loadCapacityT: 16, craneSpanM: 30, craneBaseMm: 5000, craneGaugeMm: 6200, wheelLoadKn: 170, trolleyMassT: 3.7 },
+  { loadCapacityT: 16, craneSpanM: 36, craneBaseMm: 5600, craneGaugeMm: 6800, wheelLoadKn: 185, trolleyMassT: 3.7 },
+  { loadCapacityT: '16/3,2', craneSpanM: 12, craneBaseMm: 4400, craneGaugeMm: 5600, wheelLoadKn: 120, trolleyMassT: 4.7 },
+  { loadCapacityT: '16/3,2', craneSpanM: 18, craneBaseMm: 4400, craneGaugeMm: 5600, wheelLoadKn: 140, trolleyMassT: 4.7 },
+  { loadCapacityT: '16/3,2', craneSpanM: 24, craneBaseMm: 4400, craneGaugeMm: 5600, wheelLoadKn: 150, trolleyMassT: 4.7 },
+  { loadCapacityT: '16/3,2', craneSpanM: 30, craneBaseMm: 5000, craneGaugeMm: 6200, wheelLoadKn: 170, trolleyMassT: 4.7 },
+  { loadCapacityT: '16/3,2', craneSpanM: 36, craneBaseMm: 5600, craneGaugeMm: 6800, wheelLoadKn: 190, trolleyMassT: 4.7 },
+  { loadCapacityT: '20/5', craneSpanM: 12, craneBaseMm: 4400, craneGaugeMm: 5600, wheelLoadKn: 155, trolleyMassT: 6.3 },
+  { loadCapacityT: '20/5', craneSpanM: 18, craneBaseMm: 4400, craneGaugeMm: 5600, wheelLoadKn: 170, trolleyMassT: 6.3 },
+  { loadCapacityT: '20/5', craneSpanM: 24, craneBaseMm: 4400, craneGaugeMm: 5600, wheelLoadKn: 180, trolleyMassT: 6.3 },
+  { loadCapacityT: '20/5', craneSpanM: 30, craneBaseMm: 5000, craneGaugeMm: 6200, wheelLoadKn: 200, trolleyMassT: 6.3 },
+  { loadCapacityT: '20/5', craneSpanM: 36, craneBaseMm: 5600, craneGaugeMm: 6800, wheelLoadKn: 135, trolleyMassT: 6.3 },
+  { loadCapacityT: '32/5', craneSpanM: 12, craneBaseMm: 5100, craneGaugeMm: 6300, wheelLoadKn: 215, trolleyMassT: 8.7 },
+  { loadCapacityT: '32/5', craneSpanM: 18, craneBaseMm: 5100, craneGaugeMm: 6300, wheelLoadKn: 235, trolleyMassT: 8.7 },
+  { loadCapacityT: '32/5', craneSpanM: 24, craneBaseMm: 5100, craneGaugeMm: 6300, wheelLoadKn: 260, trolleyMassT: 8.7 },
+  { loadCapacityT: '32/5', craneSpanM: 30, craneBaseMm: 5100, craneGaugeMm: 6300, wheelLoadKn: 280, trolleyMassT: 8.7 },
+  { loadCapacityT: '32/5', craneSpanM: 36, craneBaseMm: 5600, craneGaugeMm: 6800, wheelLoadKn: 320, trolleyMassT: 8.7 },
+  { loadCapacityT: '50/12,5', craneSpanM: 12, craneBaseMm: 5600, craneGaugeMm: 6860, wheelLoadKn: 310, trolleyMassT: 13.5 },
+  { loadCapacityT: '50/12,5', craneSpanM: 18, craneBaseMm: 5600, craneGaugeMm: 6860, wheelLoadKn: 360, trolleyMassT: 13.5 },
+  { loadCapacityT: '50/12,5', craneSpanM: 24, craneBaseMm: 5600, craneGaugeMm: 6860, wheelLoadKn: 380, trolleyMassT: 13.5 },
+  { loadCapacityT: '50/12,5', craneSpanM: 30, craneBaseMm: 5600, craneGaugeMm: 6860, wheelLoadKn: 415, trolleyMassT: 13.5 },
+  { loadCapacityT: '50/12,5', craneSpanM: 36, craneBaseMm: 5600, craneGaugeMm: 6860, wheelLoadKn: 455, trolleyMassT: 13.5 },
 ]
 
 const railDimensions = new Map<string, { railFootWidthM: number; railHeightM: number }>([

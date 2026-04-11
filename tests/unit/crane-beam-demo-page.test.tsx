@@ -23,13 +23,15 @@ describe('CraneBeamDemoPage', () => {
     expect(screen.getByText(text.result)).toBeInTheDocument()
   })
 
-  it('allows changing core numeric inputs', () => {
+  it('allows changing core inputs', () => {
     render(<CraneBeamDemoPage />)
 
     const capacityInput = screen.getByLabelText(text.loadCapacityT)
     fireEvent.change(capacityInput, { target: { value: '10' } })
+    fireEvent.change(screen.getByLabelText(text.craneSpanM), { target: { value: '30' } })
 
     expect(screen.getByLabelText(text.loadCapacityT)).toHaveValue('10')
+    expect(screen.getByLabelText(text.craneSpanM)).toHaveValue('30')
     expect(screen.getByText(text.result)).toBeInTheDocument()
   })
 

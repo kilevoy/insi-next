@@ -5,6 +5,7 @@ import {
   craneBeamBrakeStructures,
   craneBeamCountsInSpan,
   craneBeamDutyGroups,
+  craneBeamLoadCapacities,
   craneBeamLookupModes,
   craneBeamRails,
   craneBeamSuspensionTypes,
@@ -107,7 +108,6 @@ export function CraneBeamDemoPage() {
   const handleNumberField =
     <K extends keyof Pick<
       CraneBeamInput,
-      | 'loadCapacityT'
       | 'craneSpanM'
       | 'wheelLoadKn'
       | 'wheelCount'
@@ -239,12 +239,25 @@ export function CraneBeamDemoPage() {
             >
               <label style={fieldLabelStyle}>
                 <span>{text.loadCapacityT}</span>
-                <input
+                <select
                   aria-label={text.loadCapacityT}
                   style={fieldControlStyle}
-                  value={String(input.loadCapacityT).replace('.', ',')}
-                  onChange={handleNumberField('loadCapacityT')}
-                />
+                  value={String(input.loadCapacityT)}
+                  onChange={(event) =>
+                    setInput((prev) => ({
+                      ...prev,
+                      loadCapacityT:
+                        craneBeamLoadCapacities.find((option) => String(option) === event.target.value) ??
+                        prev.loadCapacityT,
+                    }))
+                  }
+                >
+                  {craneBeamLoadCapacities.map((option) => (
+                    <option key={String(option)} value={String(option)}>
+                      {String(option)}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label style={fieldLabelStyle}>
                 <span>{text.craneSpanM}</span>
