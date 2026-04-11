@@ -24,16 +24,31 @@ function isCraneBeamMethodologyRoute(pathname: string): boolean {
   return pathname === '/crane-beam-methodology' || pathname.endsWith('/crane-beam-methodology')
 }
 
+function resolveRoutePath(): string {
+  if (typeof window === 'undefined') {
+    return '/'
+  }
+
+  const hash = window.location.hash.trim()
+  if (hash.startsWith('#/')) {
+    return hash.slice(1)
+  }
+
+  return window.location.pathname
+}
+
 export function App() {
-  if (typeof window !== 'undefined' && isCraneBeamMethodologyRoute(window.location.pathname)) {
+  const routePath = resolveRoutePath()
+
+  if (isCraneBeamMethodologyRoute(routePath)) {
     return <CraneBeamMethodologyPage />
   }
 
-  if (typeof window !== 'undefined' && isCraneBeamDemoRoute(window.location.pathname)) {
+  if (isCraneBeamDemoRoute(routePath)) {
     return <CraneBeamDemoPage />
   }
 
-  if (typeof window !== 'undefined' && isWindowRigelDemoRoute(window.location.pathname)) {
+  if (isWindowRigelDemoRoute(routePath)) {
     return <WindowRigelDemoPage />
   }
 
