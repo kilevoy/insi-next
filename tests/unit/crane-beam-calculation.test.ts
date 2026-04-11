@@ -222,8 +222,40 @@ describe('crane beam calculation', () => {
     }
   })
 
-  it('falls back from catalog selection for scenarios whose workbook checks are not fully transferred yet', () => {
-    expect(supportsCraneBeamCatalogSelection({ ...defaultCraneBeamInput, dutyGroup: '8\u041a' })).toBe(false)
-    expect(selectCraneBeamCandidate({ ...defaultCraneBeamInput, dutyGroup: '8\u041a' })).toBeUndefined()
+  it('matches the workbook special-duty 8K case', () => {
+    expect(supportsCraneBeamCatalogSelection({ ...defaultCraneBeamInput, dutyGroup: '8\u041a' })).toBe(true)
+
+    const result = calculateCraneBeam({
+      ...defaultCraneBeamInput,
+      dutyGroup: '8\u041a',
+    })
+
+    expect(result.derived.gammaLocal).toBeCloseTo(1.7, 10)
+    expect(result.derived.fatigueNvyn).toBeCloseTo(0.7, 10)
+    expect(result.derived.alpha).toBeCloseTo(0.77, 10)
+    expect(result.selection.profile).toBe('70\u04111')
+    expect(result.selection.weightKg).toBeCloseTo(775.80046, 10)
+    expect(result.selection.utilization).toBeCloseTo(0.6718456029563901, 10)
+    expect(result.selection.maxUtilizationPercent).toBeCloseTo(85, 10)
+  })
+
+  it('uses manually entered passport data in manual lookup mode', () => {
+    const result = calculateCraneBeam({
+      ...defaultCraneBeamInput,
+      lookupMode: 'manual',
+      wheelLoadKn: 77,
+      trolleyMassT: 3.1,
+      craneBaseMm: 4200,
+      craneGaugeMm: 5600,
+      railFootWidthM: 0.145,
+      railHeightM: 0.165,
+    })
+
+    expect(result.lookup.wheelLoadKn).toBeCloseTo(77, 10)
+    expect(result.lookup.trolleyMassT).toBeCloseTo(3.1, 10)
+    expect(result.lookup.craneBaseMm).toBeCloseTo(4200, 10)
+    expect(result.lookup.craneGaugeMm).toBeCloseTo(5600, 10)
+    expect(result.lookup.railFootWidthM).toBeCloseTo(0.145, 10)
+    expect(result.lookup.railHeightM).toBeCloseTo(0.165, 10)
   })
 })

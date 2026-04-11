@@ -1,5 +1,6 @@
 import { CalculatorPage } from '@/pages/calculator/ui/calculator-page'
 import { CraneBeamDemoPage } from '@/pages/crane-beam-demo/ui/crane-beam-demo-page'
+import { CraneBeamMethodologyPage } from '@/pages/crane-beam-methodology/ui/crane-beam-methodology-page'
 import { WindowRigelDemoPage } from '@/pages/window-rigel-demo/ui/window-rigel-demo-page'
 
 export type DomainTab =
@@ -19,7 +20,15 @@ function isCraneBeamDemoRoute(pathname: string): boolean {
   return pathname === '/crane-beam-demo' || pathname.endsWith('/crane-beam-demo')
 }
 
+function isCraneBeamMethodologyRoute(pathname: string): boolean {
+  return pathname === '/crane-beam-methodology' || pathname.endsWith('/crane-beam-methodology')
+}
+
 export function App() {
+  if (typeof window !== 'undefined' && isCraneBeamMethodologyRoute(window.location.pathname)) {
+    return <CraneBeamMethodologyPage />
+  }
+
   if (typeof window !== 'undefined' && isCraneBeamDemoRoute(window.location.pathname)) {
     return <CraneBeamDemoPage />
   }

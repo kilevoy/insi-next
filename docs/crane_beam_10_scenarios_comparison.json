@@ -1,0 +1,908 @@
+{
+  "preset": "control",
+  "workbook": "C:\\insi_next\\подбор прокатной подкрановой балки v2.0.xlsx",
+  "scenarios": [
+    {
+      "id": "S1",
+      "loadCapacityT": 5,
+      "craneSpanM": 24,
+      "suspensionType": "гибкий",
+      "dutyGroup": "3К",
+      "craneCountInSpan": "один",
+      "craneRail": "Р50",
+      "beamSpanM": 6,
+      "brakeStructure": "нет"
+    },
+    {
+      "id": "S2",
+      "loadCapacityT": 5,
+      "craneSpanM": 12,
+      "suspensionType": "гибкий",
+      "dutyGroup": "3К",
+      "craneCountInSpan": "один",
+      "craneRail": "Р50",
+      "beamSpanM": 6,
+      "brakeStructure": "нет"
+    },
+    {
+      "id": "S3",
+      "loadCapacityT": 5,
+      "craneSpanM": 30,
+      "suspensionType": "гибкий",
+      "dutyGroup": "3К",
+      "craneCountInSpan": "один",
+      "craneRail": "Р50",
+      "beamSpanM": 6,
+      "brakeStructure": "нет"
+    },
+    {
+      "id": "S4",
+      "loadCapacityT": 8,
+      "craneSpanM": 24,
+      "suspensionType": "гибкий",
+      "dutyGroup": "3К",
+      "craneCountInSpan": "один",
+      "craneRail": "Р50",
+      "beamSpanM": 6,
+      "brakeStructure": "нет"
+    },
+    {
+      "id": "S5",
+      "loadCapacityT": 10,
+      "craneSpanM": 36,
+      "suspensionType": "гибкий",
+      "dutyGroup": "3К",
+      "craneCountInSpan": "один",
+      "craneRail": "Р50",
+      "beamSpanM": 6,
+      "brakeStructure": "нет"
+    },
+    {
+      "id": "S6",
+      "loadCapacityT": 5,
+      "craneSpanM": 24,
+      "suspensionType": "жесткий",
+      "dutyGroup": "3К",
+      "craneCountInSpan": "один",
+      "craneRail": "Р50",
+      "beamSpanM": 6,
+      "brakeStructure": "нет"
+    },
+    {
+      "id": "S7",
+      "loadCapacityT": 5,
+      "craneSpanM": 24,
+      "suspensionType": "гибкий",
+      "dutyGroup": "7К",
+      "craneCountInSpan": "один",
+      "craneRail": "Р50",
+      "beamSpanM": 6,
+      "brakeStructure": "нет"
+    },
+    {
+      "id": "S8",
+      "loadCapacityT": 5,
+      "craneSpanM": 24,
+      "suspensionType": "гибкий",
+      "dutyGroup": "3К",
+      "craneCountInSpan": "два",
+      "craneRail": "Р50",
+      "beamSpanM": 6,
+      "brakeStructure": "нет"
+    },
+    {
+      "id": "S9",
+      "loadCapacityT": 5,
+      "craneSpanM": 24,
+      "suspensionType": "гибкий",
+      "dutyGroup": "3К",
+      "craneCountInSpan": "один",
+      "craneRail": "КР70",
+      "beamSpanM": 6,
+      "brakeStructure": "нет"
+    },
+    {
+      "id": "S10",
+      "loadCapacityT": 5,
+      "craneSpanM": 24,
+      "suspensionType": "гибкий",
+      "dutyGroup": "3К",
+      "craneCountInSpan": "один",
+      "craneRail": "Р50",
+      "beamSpanM": 12,
+      "brakeStructure": "есть"
+    }
+  ],
+  "report": [
+    {
+      "id": "S1",
+      "name": "Базовый случай",
+      "scenario": {
+        "id": "S1",
+        "loadCapacityT": 5,
+        "craneSpanM": 24,
+        "suspensionType": "гибкий",
+        "dutyGroup": "3К",
+        "craneCountInSpan": "один",
+        "craneRail": "Р50",
+        "beamSpanM": 6,
+        "brakeStructure": "нет"
+      },
+      "excel": {
+        "id": "S1",
+        "profile": "35Ш1",
+        "weightKg": 391.80071,
+        "utilization": 0.5464725962825525,
+        "maxUtilizationPercent": 85.0,
+        "mx": 137.37599999999998,
+        "my": 3.5999999999999996,
+        "q": 1.2,
+        "qop": 119.51999999999998,
+        "lookup": {
+          "wheelLoadKn": 60.0,
+          "trolleyMassT": 2.0,
+          "craneBaseMm": 3700.0,
+          "craneGaugeMm": 4700.0,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 6.0,
+          "qbnKn": 2.0,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "app": {
+        "id": "S1",
+        "profile": "35Ш1",
+        "weightKg": 391.80071,
+        "utilization": 0.5464725962825525,
+        "maxUtilizationPercent": 85,
+        "mx": 137.37599999999998,
+        "my": 3.5999999999999996,
+        "q": 1.2,
+        "qop": 119.51999999999998,
+        "lookup": {
+          "wheelLoadKn": 60,
+          "trolleyMassT": 2,
+          "craneBaseMm": 3700,
+          "craneGaugeMm": 4700,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 6,
+          "qbnKn": 2,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "matches": {
+        "profile": true,
+        "weightKg": true,
+        "utilization": true,
+        "maxUtilizationPercent": true,
+        "mx": true,
+        "my": true,
+        "q": true,
+        "qop": true
+      }
+    },
+    {
+      "id": "S2",
+      "name": "5 т, пролет крана 12 м",
+      "scenario": {
+        "id": "S2",
+        "loadCapacityT": 5,
+        "craneSpanM": 12,
+        "suspensionType": "гибкий",
+        "dutyGroup": "3К",
+        "craneCountInSpan": "один",
+        "craneRail": "Р50",
+        "beamSpanM": 6,
+        "brakeStructure": "нет"
+      },
+      "excel": {
+        "id": "S2",
+        "profile": "40Б1",
+        "weightKg": 339.60025,
+        "utilization": 0.7433378901094819,
+        "maxUtilizationPercent": 85.0,
+        "mx": 114.48000000000002,
+        "my": 3.1500000000000004,
+        "q": 1.05,
+        "qop": 99.6,
+        "lookup": {
+          "wheelLoadKn": 50.0,
+          "trolleyMassT": 2.0,
+          "craneBaseMm": 3700.0,
+          "craneGaugeMm": 4700.0,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 5.0,
+          "qbnKn": 1.75,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "app": {
+        "id": "S2",
+        "profile": "40Б1",
+        "weightKg": 339.60025,
+        "utilization": 0.7433378901094819,
+        "maxUtilizationPercent": 85,
+        "mx": 114.48000000000002,
+        "my": 3.1500000000000004,
+        "q": 1.05,
+        "qop": 99.6,
+        "lookup": {
+          "wheelLoadKn": 50,
+          "trolleyMassT": 2,
+          "craneBaseMm": 3700,
+          "craneGaugeMm": 4700,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 5,
+          "qbnKn": 1.75,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "matches": {
+        "profile": true,
+        "weightKg": true,
+        "utilization": true,
+        "maxUtilizationPercent": true,
+        "mx": true,
+        "my": true,
+        "q": true,
+        "qop": true
+      }
+    },
+    {
+      "id": "S3",
+      "name": "5 т, пролет крана 30 м",
+      "scenario": {
+        "id": "S3",
+        "loadCapacityT": 5,
+        "craneSpanM": 30,
+        "suspensionType": "гибкий",
+        "dutyGroup": "3К",
+        "craneCountInSpan": "один",
+        "craneRail": "Р50",
+        "beamSpanM": 6,
+        "brakeStructure": "нет"
+      },
+      "excel": {
+        "id": "S3",
+        "profile": "25К1",
+        "weightKg": 375.60137000000003,
+        "utilization": 0.8061917861860983,
+        "maxUtilizationPercent": 85.0,
+        "mx": 171.72,
+        "my": 4.275,
+        "q": 1.425,
+        "qop": 126.00000000000001,
+        "lookup": {
+          "wheelLoadKn": 75.0,
+          "trolleyMassT": 2.0,
+          "craneBaseMm": 5000.0,
+          "craneGaugeMm": 6000.0,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 7.5,
+          "qbnKn": 2.375,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "app": {
+        "id": "S3",
+        "profile": "25К1",
+        "weightKg": 375.60137000000003,
+        "utilization": 0.8061917861860983,
+        "maxUtilizationPercent": 85,
+        "mx": 171.72,
+        "my": 4.275,
+        "q": 1.425,
+        "qop": 126.00000000000001,
+        "lookup": {
+          "wheelLoadKn": 75,
+          "trolleyMassT": 2,
+          "craneBaseMm": 5000,
+          "craneGaugeMm": 6000,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 7.5,
+          "qbnKn": 2.375,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "matches": {
+        "profile": true,
+        "weightKg": true,
+        "utilization": true,
+        "maxUtilizationPercent": true,
+        "mx": true,
+        "my": true,
+        "q": true,
+        "qop": true
+      }
+    },
+    {
+      "id": "S4",
+      "name": "8 т, пролет крана 24 м",
+      "scenario": {
+        "id": "S4",
+        "loadCapacityT": 8,
+        "craneSpanM": 24,
+        "suspensionType": "гибкий",
+        "dutyGroup": "3К",
+        "craneCountInSpan": "один",
+        "craneRail": "Р50",
+        "beamSpanM": 6,
+        "brakeStructure": "нет"
+      },
+      "excel": {
+        "id": "S4",
+        "profile": "35Ш1",
+        "weightKg": 391.80071,
+        "utilization": 0.7705498308205987,
+        "maxUtilizationPercent": 85.0,
+        "mx": 194.61599999999999,
+        "my": 4.815,
+        "q": 1.6050000000000002,
+        "qop": 155.04,
+        "lookup": {
+          "wheelLoadKn": 85.0,
+          "trolleyMassT": 2.2,
+          "craneBaseMm": 4400.0,
+          "craneGaugeMm": 5400.0,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 8.5,
+          "qbnKn": 2.6750000000000003,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "app": {
+        "id": "S4",
+        "profile": "35Ш1",
+        "weightKg": 391.80071,
+        "utilization": 0.7705498308205987,
+        "maxUtilizationPercent": 85,
+        "mx": 194.61599999999999,
+        "my": 4.815,
+        "q": 1.6050000000000002,
+        "qop": 155.04,
+        "lookup": {
+          "wheelLoadKn": 85,
+          "trolleyMassT": 2.2,
+          "craneBaseMm": 4400,
+          "craneGaugeMm": 5400,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 8.5,
+          "qbnKn": 2.6750000000000003,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "matches": {
+        "profile": true,
+        "weightKg": true,
+        "utilization": true,
+        "maxUtilizationPercent": true,
+        "mx": true,
+        "my": true,
+        "q": true,
+        "qop": true
+      }
+    },
+    {
+      "id": "S5",
+      "name": "10 т, пролет крана 36 м",
+      "scenario": {
+        "id": "S5",
+        "loadCapacityT": 10,
+        "craneSpanM": 36,
+        "suspensionType": "гибкий",
+        "dutyGroup": "3К",
+        "craneCountInSpan": "один",
+        "craneRail": "Р50",
+        "beamSpanM": 6,
+        "brakeStructure": "нет"
+      },
+      "excel": {
+        "id": "S5",
+        "profile": "35Ш2",
+        "weightKg": 478.20072000000005,
+        "utilization": 0.820171462051368,
+        "maxUtilizationPercent": 85.0,
+        "mx": 286.20000000000005,
+        "my": 6.705,
+        "q": 2.235,
+        "qop": 192.0,
+        "lookup": {
+          "wheelLoadKn": 125.0,
+          "trolleyMassT": 2.4,
+          "craneBaseMm": 5600.0,
+          "craneGaugeMm": 6600.0,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 12.5,
+          "qbnKn": 3.725,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "app": {
+        "id": "S5",
+        "profile": "35Ш2",
+        "weightKg": 478.20072000000005,
+        "utilization": 0.820171462051368,
+        "maxUtilizationPercent": 85,
+        "mx": 286.20000000000005,
+        "my": 6.705,
+        "q": 2.235,
+        "qop": 192,
+        "lookup": {
+          "wheelLoadKn": 125,
+          "trolleyMassT": 2.4,
+          "craneBaseMm": 5600,
+          "craneGaugeMm": 6600,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 12.5,
+          "qbnKn": 3.725,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "matches": {
+        "profile": true,
+        "weightKg": true,
+        "utilization": true,
+        "maxUtilizationPercent": true,
+        "mx": true,
+        "my": true,
+        "q": true,
+        "qop": true
+      }
+    },
+    {
+      "id": "S6",
+      "name": "Жесткий подвес",
+      "scenario": {
+        "id": "S6",
+        "loadCapacityT": 5,
+        "craneSpanM": 24,
+        "suspensionType": "жесткий",
+        "dutyGroup": "3К",
+        "craneCountInSpan": "один",
+        "craneRail": "Р50",
+        "beamSpanM": 6,
+        "brakeStructure": "нет"
+      },
+      "excel": {
+        "id": "S6",
+        "profile": "35Ш1",
+        "weightKg": 391.80071,
+        "utilization": 0.5921948772890895,
+        "maxUtilizationPercent": 85.0,
+        "mx": 137.37599999999998,
+        "my": 7.199999999999999,
+        "q": 2.4,
+        "qop": 119.51999999999998,
+        "lookup": {
+          "wheelLoadKn": 60.0,
+          "trolleyMassT": 2.0,
+          "craneBaseMm": 3700.0,
+          "craneGaugeMm": 4700.0,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 6.0,
+          "qbnKn": 4.0,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "app": {
+        "id": "S6",
+        "profile": "35Ш1",
+        "weightKg": 391.80071,
+        "utilization": 0.5921948772890895,
+        "maxUtilizationPercent": 85,
+        "mx": 137.37599999999998,
+        "my": 7.199999999999999,
+        "q": 2.4,
+        "qop": 119.51999999999998,
+        "lookup": {
+          "wheelLoadKn": 60,
+          "trolleyMassT": 2,
+          "craneBaseMm": 3700,
+          "craneGaugeMm": 4700,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 6,
+          "qbnKn": 4,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "matches": {
+        "profile": true,
+        "weightKg": true,
+        "utilization": true,
+        "maxUtilizationPercent": true,
+        "mx": true,
+        "my": true,
+        "q": true,
+        "qop": true
+      }
+    },
+    {
+      "id": "S7",
+      "name": "Режим работы 7К",
+      "scenario": {
+        "id": "S7",
+        "loadCapacityT": 5,
+        "craneSpanM": 24,
+        "suspensionType": "гибкий",
+        "dutyGroup": "7К",
+        "craneCountInSpan": "один",
+        "craneRail": "Р50",
+        "beamSpanM": 6,
+        "brakeStructure": "нет"
+      },
+      "excel": {
+        "id": "S7",
+        "profile": "70Б1",
+        "weightKg": 775.80046,
+        "utilization": 0.6714700232560525,
+        "maxUtilizationPercent": 85.0,
+        "mx": 137.37599999999998,
+        "my": 3.5999999999999996,
+        "q": 1.2,
+        "qop": 119.51999999999998,
+        "lookup": {
+          "wheelLoadKn": 60.0,
+          "trolleyMassT": 2.0,
+          "craneBaseMm": 3700.0,
+          "craneGaugeMm": 4700.0,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 6.0,
+          "qbnKn": 2.0,
+          "gammaLocal": 1.6,
+          "fatigueNvyn": 0.7,
+          "alpha": 0.77,
+          "caseForTwoCranes": 3
+        }
+      },
+      "app": {
+        "id": "S7",
+        "profile": "70Б1",
+        "weightKg": 775.80046,
+        "utilization": 0.6714700232560525,
+        "maxUtilizationPercent": 85,
+        "mx": 137.37599999999998,
+        "my": 3.5999999999999996,
+        "q": 1.2,
+        "qop": 119.51999999999998,
+        "lookup": {
+          "wheelLoadKn": 60,
+          "trolleyMassT": 2,
+          "craneBaseMm": 3700,
+          "craneGaugeMm": 4700,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 6,
+          "qbnKn": 2,
+          "gammaLocal": 1.6,
+          "fatigueNvyn": 0.7,
+          "alpha": 0.77,
+          "caseForTwoCranes": 3
+        }
+      },
+      "matches": {
+        "profile": true,
+        "weightKg": true,
+        "utilization": true,
+        "maxUtilizationPercent": true,
+        "mx": true,
+        "my": true,
+        "q": true,
+        "qop": true
+      }
+    },
+    {
+      "id": "S8",
+      "name": "Два крана в пролете",
+      "scenario": {
+        "id": "S8",
+        "loadCapacityT": 5,
+        "craneSpanM": 24,
+        "suspensionType": "гибкий",
+        "dutyGroup": "3К",
+        "craneCountInSpan": "два",
+        "craneRail": "Р50",
+        "beamSpanM": 6,
+        "brakeStructure": "нет"
+      },
+      "excel": {
+        "id": "S8",
+        "profile": "35Ш1",
+        "weightKg": 391.80071,
+        "utilization": 0.7741695114002829,
+        "maxUtilizationPercent": 85.0,
+        "mx": 194.61599999999999,
+        "my": 5.1,
+        "q": 2.04,
+        "qop": 150.552,
+        "lookup": {
+          "wheelLoadKn": 60.0,
+          "trolleyMassT": 2.0,
+          "craneBaseMm": 3700.0,
+          "craneGaugeMm": 4700.0,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 6.0,
+          "qbnKn": 2.0,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "app": {
+        "id": "S8",
+        "profile": "35Ш1",
+        "weightKg": 391.80071,
+        "utilization": 0.7741695114002829,
+        "maxUtilizationPercent": 85,
+        "mx": 194.61599999999999,
+        "my": 5.1,
+        "q": 2.04,
+        "qop": 150.552,
+        "lookup": {
+          "wheelLoadKn": 60,
+          "trolleyMassT": 2,
+          "craneBaseMm": 3700,
+          "craneGaugeMm": 4700,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 6,
+          "qbnKn": 2,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "matches": {
+        "profile": true,
+        "weightKg": true,
+        "utilization": true,
+        "maxUtilizationPercent": true,
+        "mx": true,
+        "my": true,
+        "q": true,
+        "qop": true
+      }
+    },
+    {
+      "id": "S9",
+      "name": "Рельс КР70",
+      "scenario": {
+        "id": "S9",
+        "loadCapacityT": 5,
+        "craneSpanM": 24,
+        "suspensionType": "гибкий",
+        "dutyGroup": "3К",
+        "craneCountInSpan": "один",
+        "craneRail": "КР70",
+        "beamSpanM": 6,
+        "brakeStructure": "нет"
+      },
+      "excel": {
+        "id": "S9",
+        "profile": "30К2",
+        "weightKg": 564.00148,
+        "utilization": 0.4174952167833495,
+        "maxUtilizationPercent": 85.0,
+        "mx": 137.37599999999998,
+        "my": 3.5999999999999996,
+        "q": 1.2,
+        "qop": 119.51999999999998,
+        "lookup": {
+          "wheelLoadKn": 60.0,
+          "trolleyMassT": 2.0,
+          "craneBaseMm": 3700.0,
+          "craneGaugeMm": 4700.0,
+          "railFootWidthM": 0.12,
+          "railHeightM": 0.12
+        },
+        "derived": {
+          "tbnKn": 6.0,
+          "qbnKn": 2.0,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "app": {
+        "id": "S9",
+        "profile": "30К2",
+        "weightKg": 564.00148,
+        "utilization": 0.4174952167833495,
+        "maxUtilizationPercent": 85,
+        "mx": 137.37599999999998,
+        "my": 3.5999999999999996,
+        "q": 1.2,
+        "qop": 119.51999999999998,
+        "lookup": {
+          "wheelLoadKn": 60,
+          "trolleyMassT": 2,
+          "craneBaseMm": 3700,
+          "craneGaugeMm": 4700,
+          "railFootWidthM": 0.12,
+          "railHeightM": 0.12
+        },
+        "derived": {
+          "tbnKn": 6,
+          "qbnKn": 2,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 3
+        }
+      },
+      "matches": {
+        "profile": true,
+        "weightKg": true,
+        "utilization": true,
+        "maxUtilizationPercent": true,
+        "mx": true,
+        "my": true,
+        "q": true,
+        "qop": true
+      }
+    },
+    {
+      "id": "S10",
+      "name": "Балка 12 м с тормозной конструкцией",
+      "scenario": {
+        "id": "S10",
+        "loadCapacityT": 5,
+        "craneSpanM": 24,
+        "suspensionType": "гибкий",
+        "dutyGroup": "3К",
+        "craneCountInSpan": "один",
+        "craneRail": "Р50",
+        "beamSpanM": 12,
+        "brakeStructure": "есть"
+      },
+      "excel": {
+        "id": "S10",
+        "profile": "60Б2",
+        "weightKg": 1266.00043,
+        "utilization": 0.7922040456675139,
+        "maxUtilizationPercent": 85.0,
+        "mx": 380.0736,
+        "my": 9.96,
+        "q": 2.4,
+        "qop": 146.16,
+        "lookup": {
+          "wheelLoadKn": 60.0,
+          "trolleyMassT": 2.0,
+          "craneBaseMm": 3700.0,
+          "craneGaugeMm": 4700.0,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 6.0,
+          "qbnKn": 2.0,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 1
+        }
+      },
+      "app": {
+        "id": "S10",
+        "profile": "60Б2",
+        "weightKg": 1266.00043,
+        "utilization": 0.7922040456675139,
+        "maxUtilizationPercent": 85,
+        "mx": 380.0736,
+        "my": 9.96,
+        "q": 2.4,
+        "qop": 146.16,
+        "lookup": {
+          "wheelLoadKn": 60,
+          "trolleyMassT": 2,
+          "craneBaseMm": 3700,
+          "craneGaugeMm": 4700,
+          "railFootWidthM": 0.132,
+          "railHeightM": 0.152
+        },
+        "derived": {
+          "tbnKn": 6,
+          "qbnKn": 2,
+          "gammaLocal": 1.2,
+          "fatigueNvyn": 0.4,
+          "alpha": 1.1,
+          "caseForTwoCranes": 1
+        }
+      },
+      "matches": {
+        "profile": true,
+        "weightKg": true,
+        "utilization": true,
+        "maxUtilizationPercent": true,
+        "mx": true,
+        "my": true,
+        "q": true,
+        "qop": true
+      }
+    }
+  ]
+}

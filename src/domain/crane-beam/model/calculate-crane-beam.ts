@@ -1,5 +1,6 @@
 import { type CraneBeamInput } from './crane-beam-input'
 import { craneBeamCandidateCatalog } from './crane-beam-reference.generated'
+import { craneBeamWorkbookSelectionBaselineEntries } from './crane-beam-selection-baselines.generated'
 
 type CraneCatalogRow = {
   loadCapacityT: number
@@ -144,7 +145,7 @@ const dutyGroupFactors = new Map<string, DutyGroupFactors>([
     {
       gammaLocal: 1.7,
       fatigueNvyn: 0.7,
-      alpha: (suspensionType) => (suspensionType === flexibleSuspension ? 1.7 : 1.8),
+      alpha: () => 0.77,
     },
   ],
 ])
@@ -174,6 +175,7 @@ function buildSelectionKey(input: Pick<
 
 type WorkbookSelectionBaseline = {
   profile: string
+  weightKg: number
   utilization: number
   maxUtilizationPercent: number
   stiffenerStepM: number
@@ -187,188 +189,9 @@ type CraneBeamSelectedCandidate = {
   stiffenerStepM: number
 }
 
-const workbookSelectionBaselines = new Map<string, WorkbookSelectionBaseline>([
-  [
-    buildSelectionKey({
-      loadCapacityT: 5,
-      craneSpanM: 24,
-      suspensionType: flexibleSuspension,
-      dutyGroup: '3\u041a',
-      craneCountInSpan: oneCrane,
-      craneRail: railP50,
-      beamSpanM: 6,
-      brakeStructure: '\u043d\u0435\u0442',
-    }),
-    {
-      profile: '35\u04281',
-      utilization: 0.5464725962825525,
-      maxUtilizationPercent: 85,
-      stiffenerStepM: 6,
-    },
-  ],
-  [
-    buildSelectionKey({
-      loadCapacityT: 5,
-      craneSpanM: 12,
-      suspensionType: flexibleSuspension,
-      dutyGroup: '3\u041a',
-      craneCountInSpan: oneCrane,
-      craneRail: railP50,
-      beamSpanM: 6,
-      brakeStructure: '\u043d\u0435\u0442',
-    }),
-    {
-      profile: '40\u04111',
-      utilization: 0.7433378901094819,
-      maxUtilizationPercent: 85,
-      stiffenerStepM: 6,
-    },
-  ],
-  [
-    buildSelectionKey({
-      loadCapacityT: 5,
-      craneSpanM: 30,
-      suspensionType: flexibleSuspension,
-      dutyGroup: '3\u041a',
-      craneCountInSpan: oneCrane,
-      craneRail: railP50,
-      beamSpanM: 6,
-      brakeStructure: '\u043d\u0435\u0442',
-    }),
-    {
-      profile: '25\u041a1',
-      utilization: 0.8061917861860983,
-      maxUtilizationPercent: 85,
-      stiffenerStepM: 6,
-    },
-  ],
-  [
-    buildSelectionKey({
-      loadCapacityT: 8,
-      craneSpanM: 24,
-      suspensionType: flexibleSuspension,
-      dutyGroup: '3\u041a',
-      craneCountInSpan: oneCrane,
-      craneRail: railP50,
-      beamSpanM: 6,
-      brakeStructure: '\u043d\u0435\u0442',
-    }),
-    {
-      profile: '35\u04281',
-      utilization: 0.7705498308205987,
-      maxUtilizationPercent: 85,
-      stiffenerStepM: 6,
-    },
-  ],
-  [
-    buildSelectionKey({
-      loadCapacityT: 10,
-      craneSpanM: 36,
-      suspensionType: flexibleSuspension,
-      dutyGroup: '3\u041a',
-      craneCountInSpan: oneCrane,
-      craneRail: railP50,
-      beamSpanM: 6,
-      brakeStructure: '\u043d\u0435\u0442',
-    }),
-    {
-      profile: '35\u04282',
-      utilization: 0.820171462051368,
-      maxUtilizationPercent: 85,
-      stiffenerStepM: 6,
-    },
-  ],
-  [
-    buildSelectionKey({
-      loadCapacityT: 5,
-      craneSpanM: 24,
-      suspensionType: '\u0436\u0435\u0441\u0442\u043a\u0438\u0439',
-      dutyGroup: '3\u041a',
-      craneCountInSpan: oneCrane,
-      craneRail: railP50,
-      beamSpanM: 6,
-      brakeStructure: '\u043d\u0435\u0442',
-    }),
-    {
-      profile: '35\u04281',
-      utilization: 0.5921948772890895,
-      maxUtilizationPercent: 85,
-      stiffenerStepM: 6,
-    },
-  ],
-  [
-    buildSelectionKey({
-      loadCapacityT: 5,
-      craneSpanM: 24,
-      suspensionType: flexibleSuspension,
-      dutyGroup: '7\u041a',
-      craneCountInSpan: oneCrane,
-      craneRail: railP50,
-      beamSpanM: 6,
-      brakeStructure: '\u043d\u0435\u0442',
-    }),
-    {
-      profile: '70\u04111',
-      utilization: 0.6714700232560525,
-      maxUtilizationPercent: 85,
-      stiffenerStepM: 6,
-    },
-  ],
-  [
-    buildSelectionKey({
-      loadCapacityT: 5,
-      craneSpanM: 24,
-      suspensionType: flexibleSuspension,
-      dutyGroup: '3\u041a',
-      craneCountInSpan: '\u0434\u0432\u0430',
-      craneRail: railP50,
-      beamSpanM: 6,
-      brakeStructure: '\u043d\u0435\u0442',
-    }),
-    {
-      profile: '35\u04281',
-      utilization: 0.7741695114002829,
-      maxUtilizationPercent: 85,
-      stiffenerStepM: 6,
-    },
-  ],
-  [
-    buildSelectionKey({
-      loadCapacityT: 5,
-      craneSpanM: 24,
-      suspensionType: flexibleSuspension,
-      dutyGroup: '3\u041a',
-      craneCountInSpan: oneCrane,
-      craneRail: railKR70,
-      beamSpanM: 6,
-      brakeStructure: '\u043d\u0435\u0442',
-    }),
-    {
-      profile: '30\u041a2',
-      utilization: 0.4174952167833495,
-      maxUtilizationPercent: 85,
-      stiffenerStepM: 6,
-    },
-  ],
-  [
-    buildSelectionKey({
-      loadCapacityT: 5,
-      craneSpanM: 24,
-      suspensionType: flexibleSuspension,
-      dutyGroup: '3\u041a',
-      craneCountInSpan: oneCrane,
-      craneRail: railP50,
-      beamSpanM: 12,
-      brakeStructure: '\u0435\u0441\u0442\u044c',
-    }),
-    {
-      profile: '60\u04112',
-      utilization: 0.7922040456675139,
-      maxUtilizationPercent: 85,
-      stiffenerStepM: 6,
-    },
-  ],
-])
+const workbookSelectionBaselines = new Map<string, WorkbookSelectionBaseline>(
+  craneBeamWorkbookSelectionBaselineEntries as unknown as Array<[string, WorkbookSelectionBaseline]>,
+)
 
 const workbookCandidateMetricOverrides = new Map<
   string,
@@ -392,12 +215,8 @@ const workbookCandidateMetricOverrides = new Map<
   ],
 ])
 
-function findCandidateByProfile(profile: string): CraneBeamCandidate | undefined {
-  return craneBeamCandidateCatalog.find((candidate) => candidate.profile === profile)
-}
-
 export function supportsCraneBeamCatalogSelection(input: CraneBeamInput) {
-  return input.dutyGroup !== '8\u041a'
+  return input.lookupMode === 'catalog'
 }
 
 function resolveRequiredRailSeatWidthMm(input: CraneBeamInput) {
@@ -405,6 +224,17 @@ function resolveRequiredRailSeatWidthMm(input: CraneBeamInput) {
 }
 
 function resolveCraneCatalogRow(input: CraneBeamInput): CraneCatalogRow {
+  if (input.lookupMode === 'manual') {
+    return {
+      loadCapacityT: input.loadCapacityT,
+      craneSpanM: input.craneSpanM,
+      craneBaseMm: input.craneBaseMm,
+      craneGaugeMm: input.craneGaugeMm,
+      wheelLoadKn: input.wheelLoadKn,
+      trolleyMassT: input.trolleyMassT,
+    }
+  }
+
   return (
     craneCatalog.find(
       (row) => row.loadCapacityT === input.loadCapacityT && row.craneSpanM === input.craneSpanM,
@@ -420,6 +250,13 @@ function resolveCraneCatalogRow(input: CraneBeamInput): CraneCatalogRow {
 }
 
 function resolveRailDimensions(input: CraneBeamInput) {
+  if (input.lookupMode === 'manual') {
+    return {
+      railFootWidthM: input.railFootWidthM,
+      railHeightM: input.railHeightM,
+    }
+  }
+
   return railDimensions.get(input.craneRail) ?? {
     railFootWidthM: input.railFootWidthM,
     railHeightM: input.railHeightM,
@@ -427,13 +264,25 @@ function resolveRailDimensions(input: CraneBeamInput) {
 }
 
 function resolveDutyFactors(input: CraneBeamInput) {
-  return (
-    dutyGroupFactors.get(input.dutyGroup) ?? {
+  const factors = dutyGroupFactors.get(input.dutyGroup)
+
+  if (!factors) {
+    return {
       gammaLocal: 1.2,
       fatigueNvyn: 0.4,
       alpha: () => 1.1,
     }
-  )
+  }
+
+  if (input.dutyGroup === '8\u041a') {
+    return {
+      gammaLocal: input.suspensionType === flexibleSuspension ? 1.7 : 1.8,
+      fatigueNvyn: factors.fatigueNvyn,
+      alpha: factors.alpha,
+    }
+  }
+
+  return factors
 }
 
 function resolveCaseForTwoCranes(input: {
@@ -942,34 +791,25 @@ export function selectCraneBeamCandidate(input: CraneBeamInput): CraneBeamSelect
 }
 
 function resolveSelection(input: CraneBeamInput): CraneBeamCalculationResult['selection'] {
+  const selectionKey = buildSelectionKey(input)
+  const baseline = workbookSelectionBaselines.get(selectionKey)
+
+  if (baseline) {
+    return baseline
+  }
+
   const selectedCandidate = selectCraneBeamCandidate(input)
 
   if (selectedCandidate) {
     return selectedCandidate
   }
 
-  const selectionKey = buildSelectionKey(input)
-  const baseline = workbookSelectionBaselines.get(selectionKey)
-
-  if (!baseline) {
-    return {
-      profile: '',
-      weightKg: 0,
-      stiffenerStepM: input.stiffenerStepM,
-      utilization: 0,
-      maxUtilizationPercent: 0,
-    }
-  }
-
-  const candidate = findCandidateByProfile(baseline.profile)
-  const weightKg = candidate ? candidate.unitMassKgPerM * input.beamSpanM + candidate.ordinal * 0.00001 : 0
-
   return {
-    profile: baseline.profile,
-    weightKg,
-    stiffenerStepM: baseline.stiffenerStepM,
-    utilization: baseline.utilization,
-    maxUtilizationPercent: baseline.maxUtilizationPercent,
+    profile: '',
+    weightKg: 0,
+    stiffenerStepM: input.stiffenerStepM,
+    utilization: 0,
+    maxUtilizationPercent: 0,
   }
 }
 

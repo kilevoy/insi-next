@@ -5,6 +5,7 @@ import {
   craneBeamBrakeStructures,
   craneBeamCountsInSpan,
   craneBeamDutyGroups,
+  craneBeamLookupModes,
   craneBeamRails,
   craneBeamSuspensionTypes,
   defaultCraneBeamInput,
@@ -28,32 +29,50 @@ const fieldControlStyle = {
   color: '#0f172a',
 } as const
 
+const readOnlyControlStyle = {
+  ...fieldControlStyle,
+  background: '#f8fafc',
+  color: '#475569',
+} as const
+
 const text = {
-  title: '\u041f\u043e\u0434\u0431\u043e\u0440 \u043f\u0440\u043e\u043a\u0430\u0442\u043d\u043e\u0439 \u043f\u043e\u0434\u043a\u0440\u0430\u043d\u043e\u0432\u043e\u0439 \u0431\u0430\u043b\u043a\u0438',
-  backToCalculator: '\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043e\u0441\u043d\u043e\u0432\u043d\u043e\u0439 \u043a\u0430\u043b\u044c\u043a\u0443\u043b\u044f\u0442\u043e\u0440',
-  result: '\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u043f\u043e\u0434\u0431\u043e\u0440\u0430',
-  progress: '\u0421\u0442\u0430\u0442\u0443\u0441 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u0430',
-  roadmap: '\u0427\u0442\u043e \u0434\u0430\u043b\u044c\u0448\u0435',
+  title: 'Подбор прокатной подкрановой балки',
+  backToCalculator: 'Открыть основной калькулятор',
+  result: 'Результат подбора',
+  progress: 'Статус переноса',
+  roadmap: 'Что дальше',
   note:
-    '\u0421\u0442\u0440\u0430\u043d\u0438\u0446\u0430 \u0443\u0436\u0435 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442 \u043f\u0435\u0440\u0432\u044b\u0439 \u0441\u0432\u0435\u0440\u0435\u043d\u043d\u044b\u0439 baseline \u0438\u0437 Excel. \u0421\u043b\u0435\u0434\u0443\u044e\u0449\u0438\u043c \u0448\u0430\u0433\u043e\u043c \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0451\u043c \u043f\u043e\u043b\u043d\u044b\u0439 \u043f\u043e\u0434\u0431\u043e\u0440 \u0441\u043e\u0440\u0442\u0430\u043c\u0435\u043d\u0442\u0430 \u0438 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438 \u043f\u043e \u0432\u0441\u0435\u043c \u0440\u0435\u0436\u0438\u043c\u0430\u043c.',
-  loadCapacityT: '\u0413\u0440\u0443\u0437\u043e\u043f\u043e\u0434\u044a\u0435\u043c\u043d\u043e\u0441\u0442\u044c, \u0442',
-  craneSpanM: '\u041f\u0440\u043e\u043b\u0435\u0442 \u043a\u0440\u0430\u043d\u0430, \u043c',
-  wheelLoadKn: '\u041d\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u043d\u0430 \u043a\u043e\u043b\u0435\u0441\u043e, \u043a\u041d',
-  wheelCount: '\u0427\u0438\u0441\u043b\u043e \u043a\u043e\u043b\u0435\u0441',
-  trolleyMassT: '\u041c\u0430\u0441\u0441\u0430 \u0442\u0435\u043b\u0435\u0436\u043a\u0438 \u043a\u0440\u0430\u043d\u0430, \u0442',
-  craneBaseMm: '\u0411\u0430\u0437\u0430 \u043a\u0440\u0430\u043d\u0430, \u043c\u043c',
-  craneGaugeMm: '\u0413\u0430\u0431\u0430\u0440\u0438\u0442 \u043a\u0440\u0430\u043d\u0430, \u043c\u043c',
-  suspensionType: '\u0422\u0438\u043f \u043f\u043e\u0434\u0432\u0435\u0441\u0430',
-  dutyGroup: '\u0413\u0440\u0443\u043f\u043f\u0430 \u0440\u0435\u0436\u0438\u043c\u0430 \u0440\u0430\u0431\u043e\u0442\u044b',
-  craneCountInSpan: '\u041a\u043e\u043b-\u0432\u043e \u043a\u0440\u0430\u043d\u043e\u0432 \u0432 \u043f\u0440\u043e\u043b\u0435\u0442\u0435',
-  craneRail: '\u041f\u043e\u0434\u043a\u0440\u0430\u043d\u043e\u0432\u044b\u0439 \u0440\u0435\u043b\u044c\u0441',
-  railFootWidthM: '\u0428\u0438\u0440\u0438\u043d\u0430 \u043f\u043e\u0434\u043e\u0448\u0432\u044b \u0440\u0435\u043b\u044c\u0441\u0430, \u043c',
-  railHeightM: '\u0412\u044b\u0441\u043e\u0442\u0430 \u043a\u0440\u0430\u043d\u043e\u0432\u043e\u0433\u043e \u0440\u0435\u043b\u044c\u0441\u0430, \u043c',
-  beamSpanM: '\u041f\u0440\u043e\u043b\u0435\u0442 \u041f\u0411, \u043c',
-  brakeStructure: '\u0422\u043e\u0440\u043c\u043e\u0437\u043d\u0430\u044f \u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u044f',
-  stiffenerStepM: '\u0428\u0430\u0433 \u0440\u0435\u0431\u0435\u0440, \u043c',
-  tbnKn: 'Tb\u043d, \u043a\u041d',
-  qbnKn: 'Qb\u043d, \u043a\u041d',
+    'Страница уже показывает первый сверенный baseline из Excel. Следующим шагом перенесем полный подбор сортамента и проверки по всем режимам.',
+  lookupMode: 'Источник паспортных данных',
+  lookupModeCatalog: 'Из каталога',
+  lookupModeManual: 'Ручной ввод',
+  inputSection: 'Основные параметры',
+  passportSection: 'Паспорт крана и рельса',
+  derivedSection: 'Производные коэффициенты',
+  loadCapacityT: 'Грузоподъемность, т',
+  craneSpanM: 'Пролет крана, м',
+  wheelLoadKn: 'Нагрузка на колесо, кН',
+  wheelCount: 'Число колес',
+  trolleyMassT: 'Масса тележки крана, т',
+  craneBaseMm: 'База крана, мм',
+  craneGaugeMm: 'Габарит крана, мм',
+  suspensionType: 'Тип подвеса',
+  dutyGroup: 'Группа режима работы',
+  craneCountInSpan: 'Кол-во кранов в пролете',
+  craneRail: 'Подкрановый рельс',
+  railFootWidthM: 'Ширина подошвы рельса, м',
+  railHeightM: 'Высота кранового рельса, м',
+  beamSpanM: 'Пролет ПБ, м',
+  brakeStructure: 'Тормозная конструкция',
+  stiffenerStepM: 'Шаг ребер, м',
+  tbnKn: 'Tbн, кН',
+  qbnKn: 'Qbн, кН',
+  gammaLocal: 'gamma local',
+  fatigueNvyn: 'nvyn',
+  alpha: 'alpha',
+  caseForTwoCranes: 'Случай 2 кранов',
+  catalogHint: 'Для стандартных сочетаний паспортные данные подтягиваются автоматически из каталога.',
+  manualHint: 'Ручной режим нужен для нестандартных паспортных данных крана и рельса.',
 } as const
 
 function parseNumberInput(value: string): number | null {
@@ -74,9 +93,14 @@ function formatNumber(value: number, digits = 3): string {
   return value.toFixed(digits).replace('.', ',')
 }
 
+function resolveLookupModeLabel(lookupMode: string): string {
+  return lookupMode === 'manual' ? text.lookupModeManual : text.lookupModeCatalog
+}
+
 export function CraneBeamDemoPage() {
   const [input, setInput] = useState<CraneBeamInput>(defaultCraneBeamInput)
   const result = calculateCraneBeam(input)
+  const isCatalogLookup = input.lookupMode === 'catalog'
   const mainCalculatorHref =
     typeof window === 'undefined' ? '/' : resolveMainCalculatorHref(window.location.pathname)
 
@@ -94,8 +118,6 @@ export function CraneBeamDemoPage() {
       | 'railHeightM'
       | 'beamSpanM'
       | 'stiffenerStepM'
-      | 'tbnKn'
-      | 'qbnKn'
     >>(key: K) =>
     (event: ChangeEvent<HTMLInputElement>) => {
       const parsed = parseNumberInput(event.target.value)
@@ -165,141 +187,250 @@ export function CraneBeamDemoPage() {
             border: '1px solid rgba(148, 163, 184, 0.18)',
           }}
         >
-          <div
-            style={{
-              display: 'grid',
-              gap: 14,
-              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-              alignItems: 'start',
-            }}
-          >
-            <label style={fieldLabelStyle}>
-              <span>{text.loadCapacityT}</span>
-              <input aria-label={text.loadCapacityT} style={fieldControlStyle} value={String(input.loadCapacityT).replace('.', ',')} onChange={handleNumberField('loadCapacityT')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.craneSpanM}</span>
-              <input aria-label={text.craneSpanM} style={fieldControlStyle} value={String(input.craneSpanM).replace('.', ',')} onChange={handleNumberField('craneSpanM')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.wheelLoadKn}</span>
-              <input aria-label={text.wheelLoadKn} style={fieldControlStyle} value={String(input.wheelLoadKn).replace('.', ',')} onChange={handleNumberField('wheelLoadKn')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.wheelCount}</span>
-              <input aria-label={text.wheelCount} style={fieldControlStyle} value={String(input.wheelCount)} onChange={handleNumberField('wheelCount')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.trolleyMassT}</span>
-              <input aria-label={text.trolleyMassT} style={fieldControlStyle} value={String(input.trolleyMassT).replace('.', ',')} onChange={handleNumberField('trolleyMassT')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.craneBaseMm}</span>
-              <input aria-label={text.craneBaseMm} style={fieldControlStyle} value={String(input.craneBaseMm)} onChange={handleNumberField('craneBaseMm')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.craneGaugeMm}</span>
-              <input aria-label={text.craneGaugeMm} style={fieldControlStyle} value={String(input.craneGaugeMm)} onChange={handleNumberField('craneGaugeMm')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.suspensionType}</span>
-              <select
-                aria-label={text.suspensionType}
-                style={fieldControlStyle}
-                value={input.suspensionType}
-                onChange={(event) => setInput((prev) => ({ ...prev, suspensionType: event.target.value }))}
+          <div style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
+            <div
+              style={{
+                display: 'grid',
+                gap: 14,
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                alignItems: 'start',
+              }}
+            >
+              <label style={fieldLabelStyle}>
+                <span>{text.lookupMode}</span>
+                <select
+                  aria-label={text.lookupMode}
+                  style={fieldControlStyle}
+                  value={input.lookupMode}
+                  onChange={(event) => setInput((prev) => ({ ...prev, lookupMode: event.target.value }))}
+                >
+                  {craneBeamLookupModes.map((option) => (
+                    <option key={option} value={option}>
+                      {resolveLookupModeLabel(option)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div
+                style={{
+                  display: 'grid',
+                  alignSelf: 'end',
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  background: isCatalogLookup ? '#eff6ff' : '#f8fafc',
+                  color: '#334155',
+                  border: '1px solid rgba(148, 163, 184, 0.18)',
+                  fontSize: 13,
+                  lineHeight: 1.35,
+                }}
               >
-                {craneBeamSuspensionTypes.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.dutyGroup}</span>
-              <select
-                aria-label={text.dutyGroup}
-                style={fieldControlStyle}
-                value={input.dutyGroup}
-                onChange={(event) => setInput((prev) => ({ ...prev, dutyGroup: event.target.value }))}
+                {isCatalogLookup ? text.catalogHint : text.manualHint}
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gap: 14,
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                alignItems: 'start',
+              }}
+            >
+              <label style={fieldLabelStyle}>
+                <span>{text.loadCapacityT}</span>
+                <input
+                  aria-label={text.loadCapacityT}
+                  style={fieldControlStyle}
+                  value={String(input.loadCapacityT).replace('.', ',')}
+                  onChange={handleNumberField('loadCapacityT')}
+                />
+              </label>
+              <label style={fieldLabelStyle}>
+                <span>{text.craneSpanM}</span>
+                <input
+                  aria-label={text.craneSpanM}
+                  style={fieldControlStyle}
+                  value={String(input.craneSpanM).replace('.', ',')}
+                  onChange={handleNumberField('craneSpanM')}
+                />
+              </label>
+              <label style={fieldLabelStyle}>
+                <span>{text.wheelCount}</span>
+                <input
+                  aria-label={text.wheelCount}
+                  style={fieldControlStyle}
+                  value={String(input.wheelCount)}
+                  onChange={handleNumberField('wheelCount')}
+                />
+              </label>
+              <label style={fieldLabelStyle}>
+                <span>{text.suspensionType}</span>
+                <select
+                  aria-label={text.suspensionType}
+                  style={fieldControlStyle}
+                  value={input.suspensionType}
+                  onChange={(event) => setInput((prev) => ({ ...prev, suspensionType: event.target.value }))}
+                >
+                  {craneBeamSuspensionTypes.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label style={fieldLabelStyle}>
+                <span>{text.dutyGroup}</span>
+                <select
+                  aria-label={text.dutyGroup}
+                  style={fieldControlStyle}
+                  value={input.dutyGroup}
+                  onChange={(event) => setInput((prev) => ({ ...prev, dutyGroup: event.target.value }))}
+                >
+                  {craneBeamDutyGroups.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label style={fieldLabelStyle}>
+                <span>{text.craneCountInSpan}</span>
+                <select
+                  aria-label={text.craneCountInSpan}
+                  style={fieldControlStyle}
+                  value={input.craneCountInSpan}
+                  onChange={(event) => setInput((prev) => ({ ...prev, craneCountInSpan: event.target.value }))}
+                >
+                  {craneBeamCountsInSpan.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label style={fieldLabelStyle}>
+                <span>{text.craneRail}</span>
+                <select
+                  aria-label={text.craneRail}
+                  style={fieldControlStyle}
+                  value={input.craneRail}
+                  onChange={(event) => setInput((prev) => ({ ...prev, craneRail: event.target.value }))}
+                >
+                  {craneBeamRails.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label style={fieldLabelStyle}>
+                <span>{text.beamSpanM}</span>
+                <input
+                  aria-label={text.beamSpanM}
+                  style={fieldControlStyle}
+                  value={String(input.beamSpanM).replace('.', ',')}
+                  onChange={handleNumberField('beamSpanM')}
+                />
+              </label>
+              <label style={fieldLabelStyle}>
+                <span>{text.brakeStructure}</span>
+                <select
+                  aria-label={text.brakeStructure}
+                  style={fieldControlStyle}
+                  value={input.brakeStructure}
+                  onChange={(event) => setInput((prev) => ({ ...prev, brakeStructure: event.target.value }))}
+                >
+                  {craneBeamBrakeStructures.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label style={fieldLabelStyle}>
+                <span>{text.stiffenerStepM}</span>
+                <input
+                  aria-label={text.stiffenerStepM}
+                  style={fieldControlStyle}
+                  value={String(input.stiffenerStepM).replace('.', ',')}
+                  onChange={handleNumberField('stiffenerStepM')}
+                />
+              </label>
+            </div>
+
+            <section style={{ display: 'grid', gap: 14 }}>
+              <h2 style={{ margin: 0, fontSize: 18, color: '#0f172a' }}>{text.passportSection}</h2>
+              <div
+                style={{
+                  display: 'grid',
+                  gap: 14,
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  alignItems: 'start',
+                }}
               >
-                {craneBeamDutyGroups.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.craneCountInSpan}</span>
-              <select
-                aria-label={text.craneCountInSpan}
-                style={fieldControlStyle}
-                value={input.craneCountInSpan}
-                onChange={(event) => setInput((prev) => ({ ...prev, craneCountInSpan: event.target.value }))}
-              >
-                {craneBeamCountsInSpan.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.craneRail}</span>
-              <select
-                aria-label={text.craneRail}
-                style={fieldControlStyle}
-                value={input.craneRail}
-                onChange={(event) => setInput((prev) => ({ ...prev, craneRail: event.target.value }))}
-              >
-                {craneBeamRails.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.railFootWidthM}</span>
-              <input aria-label={text.railFootWidthM} style={fieldControlStyle} value={String(input.railFootWidthM).replace('.', ',')} onChange={handleNumberField('railFootWidthM')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.railHeightM}</span>
-              <input aria-label={text.railHeightM} style={fieldControlStyle} value={String(input.railHeightM).replace('.', ',')} onChange={handleNumberField('railHeightM')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.beamSpanM}</span>
-              <input aria-label={text.beamSpanM} style={fieldControlStyle} value={String(input.beamSpanM).replace('.', ',')} onChange={handleNumberField('beamSpanM')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.brakeStructure}</span>
-              <select
-                aria-label={text.brakeStructure}
-                style={fieldControlStyle}
-                value={input.brakeStructure}
-                onChange={(event) => setInput((prev) => ({ ...prev, brakeStructure: event.target.value }))}
-              >
-                {craneBeamBrakeStructures.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.stiffenerStepM}</span>
-              <input aria-label={text.stiffenerStepM} style={fieldControlStyle} value={String(input.stiffenerStepM).replace('.', ',')} onChange={handleNumberField('stiffenerStepM')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.tbnKn}</span>
-              <input aria-label={text.tbnKn} style={fieldControlStyle} value={String(input.tbnKn).replace('.', ',')} onChange={handleNumberField('tbnKn')} />
-            </label>
-            <label style={fieldLabelStyle}>
-              <span>{text.qbnKn}</span>
-              <input aria-label={text.qbnKn} style={fieldControlStyle} value={String(input.qbnKn).replace('.', ',')} onChange={handleNumberField('qbnKn')} />
-            </label>
+                <label style={fieldLabelStyle}>
+                  <span>{text.wheelLoadKn}</span>
+                  <input
+                    aria-label={text.wheelLoadKn}
+                    disabled={isCatalogLookup}
+                    style={isCatalogLookup ? readOnlyControlStyle : fieldControlStyle}
+                    value={formatNumber(isCatalogLookup ? result.lookup.wheelLoadKn : input.wheelLoadKn, 3)}
+                    onChange={handleNumberField('wheelLoadKn')}
+                  />
+                </label>
+                <label style={fieldLabelStyle}>
+                  <span>{text.trolleyMassT}</span>
+                  <input
+                    aria-label={text.trolleyMassT}
+                    disabled={isCatalogLookup}
+                    style={isCatalogLookup ? readOnlyControlStyle : fieldControlStyle}
+                    value={formatNumber(isCatalogLookup ? result.lookup.trolleyMassT : input.trolleyMassT, 3)}
+                    onChange={handleNumberField('trolleyMassT')}
+                  />
+                </label>
+                <label style={fieldLabelStyle}>
+                  <span>{text.craneBaseMm}</span>
+                  <input
+                    aria-label={text.craneBaseMm}
+                    disabled={isCatalogLookup}
+                    style={isCatalogLookup ? readOnlyControlStyle : fieldControlStyle}
+                    value={formatNumber(isCatalogLookup ? result.lookup.craneBaseMm : input.craneBaseMm, 0)}
+                    onChange={handleNumberField('craneBaseMm')}
+                  />
+                </label>
+                <label style={fieldLabelStyle}>
+                  <span>{text.craneGaugeMm}</span>
+                  <input
+                    aria-label={text.craneGaugeMm}
+                    disabled={isCatalogLookup}
+                    style={isCatalogLookup ? readOnlyControlStyle : fieldControlStyle}
+                    value={formatNumber(isCatalogLookup ? result.lookup.craneGaugeMm : input.craneGaugeMm, 0)}
+                    onChange={handleNumberField('craneGaugeMm')}
+                  />
+                </label>
+                <label style={fieldLabelStyle}>
+                  <span>{text.railFootWidthM}</span>
+                  <input
+                    aria-label={text.railFootWidthM}
+                    disabled={isCatalogLookup}
+                    style={isCatalogLookup ? readOnlyControlStyle : fieldControlStyle}
+                    value={formatNumber(isCatalogLookup ? result.lookup.railFootWidthM : input.railFootWidthM, 3)}
+                    onChange={handleNumberField('railFootWidthM')}
+                  />
+                </label>
+                <label style={fieldLabelStyle}>
+                  <span>{text.railHeightM}</span>
+                  <input
+                    aria-label={text.railHeightM}
+                    disabled={isCatalogLookup}
+                    style={isCatalogLookup ? readOnlyControlStyle : fieldControlStyle}
+                    value={formatNumber(isCatalogLookup ? result.lookup.railHeightM : input.railHeightM, 3)}
+                    onChange={handleNumberField('railHeightM')}
+                  />
+                </label>
+              </div>
+            </section>
           </div>
 
           <div style={{ display: 'grid', gap: 14, alignContent: 'start' }}>
@@ -366,11 +497,56 @@ export function CraneBeamDemoPage() {
                   <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН</div>
                 </div>
                 <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>Qоп</div>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>Qдоп</div>
                   <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
                     {formatNumber(result.loads.designQAdditionalKn, 3)}
                   </div>
                   <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН</div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gap: 10,
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                }}
+              >
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>{text.tbnKn}</div>
+                  <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
+                    {formatNumber(result.derived.tbnKn, 3)}
+                  </div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>{text.qbnKn}</div>
+                  <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
+                    {formatNumber(result.derived.qbnKn, 3)}
+                  </div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>{text.gammaLocal}</div>
+                  <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
+                    {formatNumber(result.derived.gammaLocal, 3)}
+                  </div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>{text.fatigueNvyn}</div>
+                  <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
+                    {formatNumber(result.derived.fatigueNvyn, 3)}
+                  </div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>{text.alpha}</div>
+                  <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
+                    {formatNumber(result.derived.alpha, 3)}
+                  </div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>{text.caseForTwoCranes}</div>
+                  <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
+                    {result.derived.caseForTwoCranes}
+                  </div>
                 </div>
               </div>
 
@@ -389,7 +565,7 @@ export function CraneBeamDemoPage() {
                   <strong style={{ color: '#334155' }}>
                     {result.selection.profile
                       ? 'первый Excel-baseline подключен'
-                      : 'идёт поэтапный перенос workbook'}
+                      : 'идет поэтапный перенос workbook'}
                   </strong>
                 </div>
                 <div>

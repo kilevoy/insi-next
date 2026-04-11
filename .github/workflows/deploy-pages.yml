@@ -2,7 +2,7 @@ name: Deploy Pages
 
 on:
   push:
-    branches: ['main', 'codex/window-rigel-v1']
+    branches: ['main', 'codex/window-rigel-v1', 'codex/crane-beam-dev']
   workflow_dispatch:
 
 permissions:

@@ -15,6 +15,7 @@
     "window-rigel:demo": "tsx --tsconfig tsconfig.app.json scripts/window_rigel_demo.ts",
     "window-rigel:compare": "python scripts/window_rigel_compare_workbook.py",
     "crane-beam:compare": "python scripts/crane_beam_compare_workbook.py",
+    "crane-beam:compare:expanded": "python scripts/crane_beam_compare_workbook.py --preset expanded",
     "generate:column-ref": "python scripts/extract_column_reference.py",
     "generate:truss-ref": "python scripts/extract_truss_reference.py",
     "generate:acceptance-excel": "python scripts/generate_engineering_acceptance_excel_snapshot.py",
