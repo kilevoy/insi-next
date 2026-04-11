@@ -29,6 +29,12 @@ function resolveRoutePath(): string {
     return '/'
   }
 
+  const searchParams = new URLSearchParams(window.location.search)
+  const routeParam = searchParams.get('route')?.trim()
+  if (routeParam) {
+    return routeParam.startsWith('/') ? routeParam : `/${routeParam}`
+  }
+
   const hash = window.location.hash.trim()
   if (hash.startsWith('#/')) {
     return hash.slice(1)
