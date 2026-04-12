@@ -193,8 +193,8 @@ export function CraneBeamDemoPage() {
 
     return (
       <div style={{ display: 'grid', gap: 6 }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          <span>{label}</span>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+          <span style={{ flex: '1 1 auto', minWidth: 0 }}>{label}</span>
           {help ? (
             <button
               type="button"
@@ -202,7 +202,7 @@ export function CraneBeamDemoPage() {
               aria-expanded={isOpen}
               aria-controls={helpId}
               title={help}
-              style={helpBadgeStyle}
+              style={{ ...helpBadgeStyle, flex: '0 0 auto', marginTop: 1 }}
               onClick={(event) => {
                 event.preventDefault()
                 setOpenHelpField((prev) => (prev === String(key) ? null : String(key)))
@@ -270,7 +270,7 @@ export function CraneBeamDemoPage() {
           style={{
             display: 'grid',
             gap: 18,
-            gridTemplateColumns: 'minmax(0, 1.2fr) minmax(320px, 0.9fr)',
+            gridTemplateColumns: 'minmax(0, 1.35fr) minmax(320px, 0.85fr)',
             padding: 20,
             borderRadius: 16,
             background: '#ffffff',
