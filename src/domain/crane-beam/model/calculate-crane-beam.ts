@@ -52,7 +52,7 @@ export type CraneBeamCalculationResult = {
       profileSeries: string
       nominalHeightMm: number | null
       assortmentStandard: string
-      steelGrade: string
+      materialNote: string
       steelStandard: string
       designResistanceRyMpa: number | null
     }
@@ -370,14 +370,6 @@ function resolveProfileSeries(profile: string) {
   }
 }
 
-function resolveSteelGradeByRy(ryMpa: number | null) {
-  if (ryMpa === null) {
-    return 'Не определен'
-  }
-
-  return ryMpa >= 340 ? 'С355' : 'С345'
-}
-
 function buildProfileDetails(profile: string) {
   if (!profile) {
     return {
@@ -385,7 +377,7 @@ function buildProfileDetails(profile: string) {
       profileSeries: '',
       nominalHeightMm: null,
       assortmentStandard: '',
-      steelGrade: '',
+      materialNote: '',
       steelStandard: '',
       designResistanceRyMpa: null,
     }
@@ -400,7 +392,7 @@ function buildProfileDetails(profile: string) {
     profileSeries: series.profileSeries,
     nominalHeightMm: series.nominalHeightMm,
     assortmentStandard: 'ГОСТ Р 57837-2017',
-    steelGrade: resolveSteelGradeByRy(designResistanceRyMpa),
+    materialNote: 'Материал принят по расчетному сопротивлению Ry',
     steelStandard: 'ГОСТ 27772-2021',
     designResistanceRyMpa,
   }

@@ -73,9 +73,9 @@ const text = {
   profileSeries: 'Серия',
   nominalHeight: 'Номинальная высота',
   assortmentStandard: 'Сортамент',
-  steelGrade: 'Расчетный класс стали',
+  materialNote: 'Материал',
   steelStandard: 'Норматив по стали',
-  designResistanceRy: 'Принятое Ry',
+  designResistanceRy: 'Принятое расчетное сопротивление стали',
   progress: 'Статус сверки',
   roadmap: 'Что дальше',
   note:
@@ -308,14 +308,14 @@ export function CraneBeamDemoPage() {
           style={{
             display: 'grid',
             gap: 18,
-            gridTemplateColumns: 'minmax(0, 1.35fr) minmax(320px, 0.85fr)',
+            gridTemplateColumns: 'minmax(0, 1fr)',
             padding: 20,
             borderRadius: 16,
             background: '#ffffff',
             border: '1px solid rgba(148, 163, 184, 0.18)',
           }}
         >
-          <div style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
+          <div style={{ display: 'grid', gap: 18, alignContent: 'start' }}>
             <div
               style={{
                 display: 'grid',
@@ -573,7 +573,18 @@ export function CraneBeamDemoPage() {
               </div>
             </section>
           </div>
+        </section>
 
+        <section
+          style={{
+            display: 'grid',
+            gap: 14,
+            padding: 20,
+            borderRadius: 16,
+            background: '#ffffff',
+            border: '1px solid rgba(148, 163, 184, 0.18)',
+          }}
+        >
           <div style={{ display: 'grid', gap: 14, alignContent: 'start' }}>
             <article
               style={{
@@ -634,7 +645,7 @@ export function CraneBeamDemoPage() {
                       </strong>
                     </div>
                     <div>{text.assortmentStandard}: <strong>{result.selection.profileDetails.assortmentStandard}</strong></div>
-                    <div>{text.steelGrade}: <strong>{result.selection.profileDetails.steelGrade}</strong></div>
+                    <div>{text.materialNote}: <strong>{result.selection.profileDetails.materialNote}</strong></div>
                     <div>{text.steelStandard}: <strong>{result.selection.profileDetails.steelStandard}</strong></div>
                     <div>
                       {text.designResistanceRy}: <strong>
@@ -752,21 +763,21 @@ export function CraneBeamDemoPage() {
                 </div>
               </div>
             </article>
-
-            <article
-              style={{
-                display: 'grid',
-                gap: 10,
-                padding: 18,
-                borderRadius: 14,
-                background: '#ffffff',
-                border: '1px solid rgba(148, 163, 184, 0.18)',
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: 17, color: '#0f172a' }}>{text.roadmap}</h3>
-              <div style={{ color: '#475569', lineHeight: 1.5 }}>{text.note}</div>
-            </article>
           </div>
+        </section>
+
+        <section
+          style={{
+            display: 'grid',
+            gap: 10,
+            padding: 18,
+            borderRadius: 16,
+            background: '#ffffff',
+            border: '1px solid rgba(148, 163, 184, 0.18)',
+          }}
+        >
+          <h3 style={{ margin: 0, fontSize: 17, color: '#0f172a' }}>{text.roadmap}</h3>
+          <div style={{ color: '#475569', lineHeight: 1.5 }}>{text.note}</div>
         </section>
       </main>
     </div>

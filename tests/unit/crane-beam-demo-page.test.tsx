@@ -13,6 +13,7 @@ const text = {
   lookupMode: 'Источник паспортных данных',
   result: 'Результат подбора',
   profileInfo: 'Расшифровка профиля',
+  designResistanceRy: 'Принятое расчетное сопротивление стали',
 } as const
 
 describe('CraneBeamDemoPage', () => {
@@ -29,6 +30,7 @@ describe('CraneBeamDemoPage', () => {
     expect(screen.getByText(text.result)).toBeInTheDocument()
     expect(screen.getByText(text.profileInfo)).toBeInTheDocument()
     expect(screen.getByText(/ГОСТ Р 57837-2017/)).toBeInTheDocument()
+    expect(screen.getByText(/Принятое расчетное сопротивление стали:/)).toBeInTheDocument()
   })
 
   it('allows changing core inputs', () => {
