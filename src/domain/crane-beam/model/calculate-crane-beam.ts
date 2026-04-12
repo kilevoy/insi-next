@@ -47,6 +47,15 @@ export type CraneBeamCalculationResult = {
     stiffenerStepM: number
     utilization: number
     maxUtilizationPercent: number
+    profileDetails: {
+      sectionType: string
+      profileSeries: string
+      nominalHeightMm: number | null
+      assortmentStandard: string
+      steelGrade: string
+      steelStandard: string
+      designResistanceRyMpa: number | null
+    }
   }
 }
 
@@ -217,6 +226,7 @@ type CraneBeamSelectedCandidate = {
   utilization: number
   maxUtilizationPercent: number
   stiffenerStepM: number
+  profileDetails: CraneBeamCalculationResult['selection']['profileDetails']
 }
 
 const workbookSelectionBaselines = new Map<string, WorkbookSelectionBaseline>(
@@ -336,6 +346,64 @@ function resolveCaseForTwoCranes(input: {
   }
 
   return 3
+}
+
+function resolveProfileSeries(profile: string) {
+  const match = profile.match(/^(\d+)(Б|Ш|К)/u)
+
+  if (!match) {
+    return {
+      sectionType: 'Стальной двутавр',
+      profileSeries: 'Не определена',
+      nominalHeightMm: null,
+    }
+  }
+
+  const seriesCode = match[2]
+  const seriesLabel =
+    seriesCode === 'Б' ? 'Б, нормальная балочная серия' : seriesCode === 'Ш' ? 'Ш, широкополочная серия' : 'К, колонная серия'
+
+  return {
+    sectionType: 'Стальной горячекатаный двутавр',
+    profileSeries: seriesLabel,
+    nominalHeightMm: Number(match[1]) * 10,
+  }
+}
+
+function resolveSteelGradeByRy(ryMpa: number | null) {
+  if (ryMpa === null) {
+    return 'Не определен'
+  }
+
+  return ryMpa >= 340 ? 'С355' : 'С345'
+}
+
+function buildProfileDetails(profile: string) {
+  if (!profile) {
+    return {
+      sectionType: '',
+      profileSeries: '',
+      nominalHeightMm: null,
+      assortmentStandard: '',
+      steelGrade: '',
+      steelStandard: '',
+      designResistanceRyMpa: null,
+    }
+  }
+
+  const candidate = craneBeamCandidateCatalog.find((item) => item.profile === profile)
+  const series = resolveProfileSeries(profile)
+  const designResistanceRyMpa = candidate?.ryMpa ?? null
+
+  return {
+    sectionType: series.sectionType,
+    profileSeries: series.profileSeries,
+    nominalHeightMm: series.nominalHeightMm,
+    assortmentStandard: 'ГОСТ Р 57837-2017',
+    steelGrade: resolveSteelGradeByRy(designResistanceRyMpa),
+    steelStandard: 'ГОСТ 27772-2021',
+    designResistanceRyMpa,
+  }
 }
 
 type InfluenceCoefficients = {
@@ -817,6 +885,7 @@ export function selectCraneBeamCandidate(input: CraneBeamInput): CraneBeamSelect
     utilization: selected.utilization,
     maxUtilizationPercent,
     stiffenerStepM: input.beamSpanM,
+    profileDetails: buildProfileDetails(selected.candidate.profile),
   }
 }
 
@@ -825,7 +894,10 @@ function resolveSelection(input: CraneBeamInput): CraneBeamCalculationResult['se
   const baseline = workbookSelectionBaselines.get(selectionKey)
 
   if (baseline) {
-    return baseline
+    return {
+      ...baseline,
+      profileDetails: buildProfileDetails(baseline.profile),
+    }
   }
 
   const selectedCandidate = selectCraneBeamCandidate(input)
@@ -840,6 +912,7 @@ function resolveSelection(input: CraneBeamInput): CraneBeamCalculationResult['se
     stiffenerStepM: input.stiffenerStepM,
     utilization: 0,
     maxUtilizationPercent: 0,
+    profileDetails: buildProfileDetails(''),
   }
 }
 

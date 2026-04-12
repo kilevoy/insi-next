@@ -12,6 +12,7 @@ const text = {
   suspensionType: 'Тип подвеса',
   lookupMode: 'Источник паспортных данных',
   result: 'Результат подбора',
+  profileInfo: 'Расшифровка профиля',
 } as const
 
 describe('CraneBeamDemoPage', () => {
@@ -26,6 +27,8 @@ describe('CraneBeamDemoPage', () => {
       '/?route=crane-beam-methodology',
     )
     expect(screen.getByText(text.result)).toBeInTheDocument()
+    expect(screen.getByText(text.profileInfo)).toBeInTheDocument()
+    expect(screen.getByText(/ГОСТ Р 57837-2017/)).toBeInTheDocument()
   })
 
   it('allows changing core inputs', () => {

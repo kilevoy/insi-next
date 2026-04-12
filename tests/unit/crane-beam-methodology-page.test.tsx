@@ -9,7 +9,9 @@ describe('CraneBeamMethodologyPage', () => {
     expect(screen.getByTestId('crane-beam-methodology-page')).toBeInTheDocument()
     expect(screen.getByText('Методика расчета и подбора профиля подкрановой балки')).toBeInTheDocument()
     expect(screen.getByText('Расчетные воздействия')).toBeInTheDocument()
+    expect(screen.getByText('Расчетная схема балки')).toBeInTheDocument()
     expect(screen.getByText('Проверка и подбор профиля')).toBeInTheDocument()
+    expect(screen.getByText('Критерии подбора и проверки')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Открыть модуль подкрановой балки' })).toHaveAttribute(
       'href',
       '/?route=crane-beam-demo',

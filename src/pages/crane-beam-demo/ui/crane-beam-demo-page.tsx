@@ -68,6 +68,14 @@ const text = {
   backToCalculator: 'Открыть основной калькулятор',
   methodology: 'Методика расчета и подбора профиля',
   result: 'Результат подбора',
+  profileInfo: 'Расшифровка профиля',
+  sectionType: 'Тип сечения',
+  profileSeries: 'Серия',
+  nominalHeight: 'Номинальная высота',
+  assortmentStandard: 'Сортамент',
+  steelGrade: 'Расчетный класс стали',
+  steelStandard: 'Норматив по стали',
+  designResistanceRy: 'Принятое Ry',
   progress: 'Статус сверки',
   roadmap: 'Что дальше',
   note:
@@ -600,6 +608,44 @@ export function CraneBeamDemoPage() {
                   <span>К-т использования: <strong>{formatNumber(result.selection.utilization, 3)}</strong></span>
                 </div>
               </div>
+
+              {result.selection.profile ? (
+                <div
+                  style={{
+                    display: 'grid',
+                    gap: 10,
+                    padding: 14,
+                    borderRadius: 12,
+                    background: '#ffffff',
+                    border: '1px solid rgba(148, 163, 184, 0.16)',
+                  }}
+                >
+                  <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
+                    {text.profileInfo}
+                  </div>
+                  <div style={{ display: 'grid', gap: 8, color: '#334155', lineHeight: 1.45 }}>
+                    <div>{text.sectionType}: <strong>{result.selection.profileDetails.sectionType}</strong></div>
+                    <div>{text.profileSeries}: <strong>{result.selection.profileDetails.profileSeries}</strong></div>
+                    <div>
+                      {text.nominalHeight}: <strong>
+                        {result.selection.profileDetails.nominalHeightMm === null
+                          ? '—'
+                          : `${formatNumber(result.selection.profileDetails.nominalHeightMm, 0)} мм`}
+                      </strong>
+                    </div>
+                    <div>{text.assortmentStandard}: <strong>{result.selection.profileDetails.assortmentStandard}</strong></div>
+                    <div>{text.steelGrade}: <strong>{result.selection.profileDetails.steelGrade}</strong></div>
+                    <div>{text.steelStandard}: <strong>{result.selection.profileDetails.steelStandard}</strong></div>
+                    <div>
+                      {text.designResistanceRy}: <strong>
+                        {result.selection.profileDetails.designResistanceRyMpa === null
+                          ? '—'
+                          : `${formatNumber(result.selection.profileDetails.designResistanceRyMpa, 1)} МПа`}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
               <div
                 style={{
