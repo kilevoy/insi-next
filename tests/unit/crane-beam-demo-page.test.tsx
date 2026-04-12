@@ -5,6 +5,7 @@ import { CraneBeamDemoPage } from '../../src/pages/crane-beam-demo/ui/crane-beam
 const text = {
   title: 'Подбор прокатной подкрановой балки',
   backToCalculator: 'Открыть основной калькулятор',
+  methodology: 'Методика расчета и подбора профиля',
   loadCapacityT: 'Грузоподъемность, т',
   craneSpanM: 'Пролет крана, м',
   wheelLoadKn: 'Нагрузка на колесо, кН',
@@ -20,6 +21,10 @@ describe('CraneBeamDemoPage', () => {
     expect(screen.getByTestId('crane-beam-demo-page')).toBeInTheDocument()
     expect(screen.getByText(text.title)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: text.backToCalculator })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: text.methodology })).toHaveAttribute(
+      'href',
+      '/?route=crane-beam-methodology',
+    )
     expect(screen.getByText(text.result)).toBeInTheDocument()
   })
 

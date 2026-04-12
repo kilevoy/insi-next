@@ -66,6 +66,7 @@ const helpPopoverStyle = {
 const text = {
   title: 'Подбор прокатной подкрановой балки',
   backToCalculator: 'Открыть основной калькулятор',
+  methodology: 'Методика расчета и подбора профиля',
   result: 'Результат подбора',
   progress: 'Статус сверки',
   roadmap: 'Что дальше',
@@ -145,6 +146,12 @@ function resolveMainCalculatorHref(pathname: string): string {
   return pathname.startsWith('/insi-next/') ? '/insi-next/' : '/'
 }
 
+function resolveMethodologyHref(pathname: string): string {
+  return pathname.startsWith('/insi-next/')
+    ? '/insi-next/?route=crane-beam-methodology'
+    : '/?route=crane-beam-methodology'
+}
+
 function formatNumber(value: number, digits = 3): string {
   return value.toFixed(digits).replace('.', ',')
 }
@@ -160,6 +167,8 @@ export function CraneBeamDemoPage() {
   const isCatalogLookup = input.lookupMode === 'catalog'
   const mainCalculatorHref =
     typeof window === 'undefined' ? '/' : resolveMainCalculatorHref(window.location.pathname)
+  const methodologyHref =
+    typeof window === 'undefined' ? '/?route=crane-beam-methodology' : resolveMethodologyHref(window.location.pathname)
 
   const handleNumberField =
     <K extends keyof Pick<
@@ -245,25 +254,46 @@ export function CraneBeamDemoPage() {
             <img src={insiLogo} alt="INSI" style={{ width: 100, height: 100, objectFit: 'contain' }} />
             <h1 style={{ margin: 0, fontSize: 28, lineHeight: 1.05, color: '#0f172a' }}>{text.title}</h1>
           </div>
-          <a
-            href={mainCalculatorHref}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: 44,
-              padding: '0 18px',
-              borderRadius: 10,
-              background: '#eef2f6',
-              color: '#334155',
-              border: '1px solid rgba(148, 163, 184, 0.35)',
-              fontSize: 14,
-              fontWeight: 700,
-              textDecoration: 'none',
-            }}
-          >
-            {text.backToCalculator}
-          </a>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <a
+              href={methodologyHref}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 44,
+                padding: '0 18px',
+                borderRadius: 10,
+                background: '#fff7ed',
+                color: '#9a3412',
+                border: '1px solid rgba(249, 115, 22, 0.28)',
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: 'none',
+              }}
+            >
+              {text.methodology}
+            </a>
+            <a
+              href={mainCalculatorHref}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 44,
+                padding: '0 18px',
+                borderRadius: 10,
+                background: '#eef2f6',
+                color: '#334155',
+                border: '1px solid rgba(148, 163, 184, 0.35)',
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: 'none',
+              }}
+            >
+              {text.backToCalculator}
+            </a>
+          </div>
         </section>
 
         <section
