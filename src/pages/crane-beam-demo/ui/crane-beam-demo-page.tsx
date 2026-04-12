@@ -45,19 +45,6 @@ const sectionCardStyle = {
   border: '1px solid rgba(148, 163, 184, 0.18)',
 } as const
 
-const formGridStyle = {
-  display: 'grid',
-  gap: 12,
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-  alignItems: 'start',
-} as const
-
-const metricGridStyle = {
-  display: 'grid',
-  gap: 10,
-  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-} as const
-
 const helpBadgeStyle = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -334,12 +321,7 @@ export function CraneBeamDemoPage() {
           }}
         >
           <div style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
-            <div
-              style={{
-                ...formGridStyle,
-                gridTemplateColumns: 'minmax(240px, 1.1fr) minmax(260px, 0.9fr)',
-              }}
-            >
+            <div className="crane-beam-lookup-grid">
               <label style={fieldLabelStyle}>
                 {renderFieldLabel('lookupMode', text.lookupMode, fieldHelpText.lookupMode)}
                 <select
@@ -373,11 +355,7 @@ export function CraneBeamDemoPage() {
               </div>
             </div>
 
-            <div
-              style={{
-                ...formGridStyle,
-              }}
-            >
+            <div className="crane-beam-form-grid">
               <label style={fieldLabelStyle}>
                 {renderFieldLabel('loadCapacityT', text.loadCapacityT, fieldHelpText.loadCapacityT)}
                 <select
@@ -515,11 +493,7 @@ export function CraneBeamDemoPage() {
 
             <section style={{ display: 'grid', gap: 12 }}>
               <h2 style={{ margin: 0, fontSize: 18, color: '#0f172a' }}>{text.passportSection}</h2>
-              <div
-                style={{
-                  ...formGridStyle,
-                }}
-              >
+              <div className="crane-beam-form-grid">
                 <label style={fieldLabelStyle}>
                   {renderFieldLabel('wheelLoadKn', text.wheelLoadKn, fieldHelpText.wheelLoadKn)}
                   <input
@@ -640,7 +614,7 @@ export function CraneBeamDemoPage() {
                   <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
                     {text.profileInfo}
                   </div>
-                  <div style={{ display: 'grid', gap: 6, color: '#334155', lineHeight: 1.35, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                  <div className="crane-beam-profile-grid" style={{ color: '#334155', lineHeight: 1.35 }}>
                     <div>{text.sectionType}: <strong>{result.selection.profileDetails.sectionType}</strong></div>
                     <div>{text.profileSeries}: <strong>{result.selection.profileDetails.profileSeries}</strong></div>
                     <div>
@@ -671,11 +645,7 @@ export function CraneBeamDemoPage() {
                 </div>
               ) : null}
 
-              <div
-                style={{
-                  ...metricGridStyle,
-                }}
-              >
+              <div className="crane-beam-metric-grid">
                 <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
                   <div style={{ fontSize: 12, color: '#64748b' }}>Mx</div>
                   <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>
@@ -706,11 +676,7 @@ export function CraneBeamDemoPage() {
                 </div>
               </div>
 
-              <div
-                style={{
-                  ...metricGridStyle,
-                }}
-              >
+              <div className="crane-beam-metric-grid">
                 <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
                   <div style={{ fontSize: 12, color: '#64748b' }}>{text.tbnKn}</div>
                   <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>

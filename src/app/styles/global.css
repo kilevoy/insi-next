@@ -3299,3 +3299,52 @@ textarea {
 .summary-metric-card strong {
   color: var(--ink);
 }
+
+.crane-beam-lookup-grid,
+.crane-beam-form-grid,
+.crane-beam-profile-grid,
+.crane-beam-metric-grid {
+  display: grid;
+  align-items: start;
+}
+
+.crane-beam-lookup-grid {
+  gap: 12px;
+  grid-template-columns: minmax(320px, 1.1fr) minmax(320px, 0.9fr);
+}
+
+.crane-beam-form-grid {
+  gap: 12px 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.crane-beam-profile-grid {
+  gap: 6px 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.crane-beam-metric-grid {
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .crane-beam-form-grid,
+  .crane-beam-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .crane-beam-lookup-grid,
+  .crane-beam-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .crane-beam-form-grid,
+  .crane-beam-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}
