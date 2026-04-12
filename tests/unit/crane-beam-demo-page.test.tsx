@@ -26,20 +26,20 @@ describe('CraneBeamDemoPage', () => {
   it('allows changing core inputs', () => {
     render(<CraneBeamDemoPage />)
 
-    const capacityInput = screen.getByLabelText(text.loadCapacityT)
+    const capacityInput = screen.getByRole('combobox', { name: text.loadCapacityT })
     fireEvent.change(capacityInput, { target: { value: '10' } })
-    fireEvent.change(screen.getByLabelText(text.craneSpanM), { target: { value: '30' } })
+    fireEvent.change(screen.getByRole('textbox', { name: text.craneSpanM }), { target: { value: '30' } })
 
-    expect(screen.getByLabelText(text.loadCapacityT)).toHaveValue('10')
-    expect(screen.getByLabelText(text.craneSpanM)).toHaveValue('30')
+    expect(screen.getByRole('combobox', { name: text.loadCapacityT })).toHaveValue('10')
+    expect(screen.getByRole('textbox', { name: text.craneSpanM })).toHaveValue('30')
     expect(screen.getByText(text.result)).toBeInTheDocument()
   })
 
   it('keeps catalog passport fields read-only until manual mode is enabled', () => {
     render(<CraneBeamDemoPage />)
 
-    const lookupModeSelect = screen.getByLabelText(text.lookupMode)
-    const wheelLoadInput = screen.getByLabelText(text.wheelLoadKn)
+    const lookupModeSelect = screen.getByRole('combobox', { name: text.lookupMode })
+    const wheelLoadInput = screen.getByRole('textbox', { name: text.wheelLoadKn })
 
     expect(lookupModeSelect).toHaveValue('catalog')
     expect(wheelLoadInput).toBeDisabled()
@@ -53,12 +53,30 @@ describe('CraneBeamDemoPage', () => {
   it('allows changing crane mode fields', () => {
     render(<CraneBeamDemoPage />)
 
-    const suspensionSelect = screen.getByLabelText(text.suspensionType)
+    const suspensionSelect = screen.getByRole('combobox', { name: text.suspensionType })
 
     fireEvent.change(suspensionSelect, { target: { value: 'жесткий' } })
-    fireEvent.change(screen.getByLabelText(text.craneSpanM), { target: { value: '30' } })
+    fireEvent.change(screen.getByRole('textbox', { name: text.craneSpanM }), { target: { value: '30' } })
 
     expect(suspensionSelect).toHaveValue('жесткий')
-    expect(screen.getByLabelText(text.craneSpanM)).toHaveValue('30')
+    expect(screen.getByRole('textbox', { name: text.craneSpanM })).toHaveValue('30')
+  })
+
+  it('shows and hides field help on click', () => {
+    render(<CraneBeamDemoPage />)
+
+    const helpButton = screen.getByRole('button', { name: `${text.lookupMode}: подсказка` })
+
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
+
+    fireEvent.click(helpButton)
+
+    expect(screen.getByRole('note')).toHaveTextContent(
+      'Показывает, откуда брать паспортные данные крана и рельса.',
+    )
+
+    fireEvent.click(helpButton)
+
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
   })
 })

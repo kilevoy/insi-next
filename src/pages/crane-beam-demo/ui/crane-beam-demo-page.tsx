@@ -49,7 +49,18 @@ const helpBadgeStyle = {
   fontSize: 11,
   fontWeight: 700,
   lineHeight: 1,
-  cursor: 'help',
+  cursor: 'pointer',
+} as const
+
+const helpPopoverStyle = {
+  marginTop: 8,
+  padding: '10px 12px',
+  borderRadius: 10,
+  background: '#fff7ed',
+  border: '1px solid rgba(249, 115, 22, 0.22)',
+  color: '#7c2d12',
+  fontSize: 13,
+  lineHeight: 1.4,
 } as const
 
 const text = {
@@ -142,21 +153,9 @@ function resolveLookupModeLabel(lookupMode: string): string {
   return lookupMode === 'manual' ? text.lookupModeManual : text.lookupModeCatalog
 }
 
-function renderFieldLabel(label: string, help?: string) {
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-      <span>{label}</span>
-      {help ? (
-        <span aria-label={`${label}: подсказка`} title={help} style={helpBadgeStyle}>
-          ?
-        </span>
-      ) : null}
-    </span>
-  )
-}
-
 export function CraneBeamDemoPage() {
   const [input, setInput] = useState<CraneBeamInput>(defaultCraneBeamInput)
+  const [openHelpField, setOpenHelpField] = useState<string | null>(null)
   const result = calculateCraneBeam(input)
   const isCatalogLookup = input.lookupMode === 'catalog'
   const mainCalculatorHref =
@@ -187,6 +186,40 @@ export function CraneBeamDemoPage() {
         [key]: key === 'wheelCount' ? Math.max(1, Math.trunc(parsed)) : parsed,
       }))
     }
+
+  const renderFieldLabel = (key: keyof typeof text, label: string, help?: string) => {
+    const helpId = `field-help-${String(key)}`
+    const isOpen = openHelpField === String(key)
+
+    return (
+      <div style={{ display: 'grid', gap: 6 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <span>{label}</span>
+          {help ? (
+            <button
+              type="button"
+              aria-label={`${label}: подсказка`}
+              aria-expanded={isOpen}
+              aria-controls={helpId}
+              title={help}
+              style={helpBadgeStyle}
+              onClick={(event) => {
+                event.preventDefault()
+                setOpenHelpField((prev) => (prev === String(key) ? null : String(key)))
+              }}
+            >
+              ?
+            </button>
+          ) : null}
+        </div>
+        {help && isOpen ? (
+          <div id={helpId} role="note" style={helpPopoverStyle}>
+            {help}
+          </div>
+        ) : null}
+      </div>
+    )
+  }
 
   return (
     <div className="app-shell">
@@ -254,7 +287,7 @@ export function CraneBeamDemoPage() {
               }}
             >
               <label style={fieldLabelStyle}>
-                {renderFieldLabel(text.lookupMode, fieldHelpText.lookupMode)}
+                {renderFieldLabel('lookupMode', text.lookupMode, fieldHelpText.lookupMode)}
                 <select
                   aria-label={text.lookupMode}
                   style={fieldControlStyle}
@@ -295,7 +328,7 @@ export function CraneBeamDemoPage() {
               }}
             >
               <label style={fieldLabelStyle}>
-                {renderFieldLabel(text.loadCapacityT, fieldHelpText.loadCapacityT)}
+                {renderFieldLabel('loadCapacityT', text.loadCapacityT, fieldHelpText.loadCapacityT)}
                 <select
                   aria-label={text.loadCapacityT}
                   style={fieldControlStyle}
@@ -317,7 +350,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                {renderFieldLabel(text.craneSpanM, fieldHelpText.craneSpanM)}
+                {renderFieldLabel('craneSpanM', text.craneSpanM, fieldHelpText.craneSpanM)}
                 <input
                   aria-label={text.craneSpanM}
                   style={fieldControlStyle}
@@ -326,7 +359,7 @@ export function CraneBeamDemoPage() {
                 />
               </label>
               <label style={fieldLabelStyle}>
-                {renderFieldLabel(text.wheelCount, fieldHelpText.wheelCount)}
+                {renderFieldLabel('wheelCount', text.wheelCount, fieldHelpText.wheelCount)}
                 <input
                   aria-label={text.wheelCount}
                   style={fieldControlStyle}
@@ -335,7 +368,7 @@ export function CraneBeamDemoPage() {
                 />
               </label>
               <label style={fieldLabelStyle}>
-                {renderFieldLabel(text.suspensionType, fieldHelpText.suspensionType)}
+                {renderFieldLabel('suspensionType', text.suspensionType, fieldHelpText.suspensionType)}
                 <select
                   aria-label={text.suspensionType}
                   style={fieldControlStyle}
@@ -350,7 +383,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                {renderFieldLabel(text.dutyGroup, fieldHelpText.dutyGroup)}
+                {renderFieldLabel('dutyGroup', text.dutyGroup, fieldHelpText.dutyGroup)}
                 <select
                   aria-label={text.dutyGroup}
                   style={fieldControlStyle}
@@ -365,7 +398,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                {renderFieldLabel(text.craneCountInSpan, fieldHelpText.craneCountInSpan)}
+                {renderFieldLabel('craneCountInSpan', text.craneCountInSpan, fieldHelpText.craneCountInSpan)}
                 <select
                   aria-label={text.craneCountInSpan}
                   style={fieldControlStyle}
@@ -380,7 +413,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                {renderFieldLabel(text.craneRail, fieldHelpText.craneRail)}
+                {renderFieldLabel('craneRail', text.craneRail, fieldHelpText.craneRail)}
                 <select
                   aria-label={text.craneRail}
                   style={fieldControlStyle}
@@ -395,7 +428,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                {renderFieldLabel(text.beamSpanM, fieldHelpText.beamSpanM)}
+                {renderFieldLabel('beamSpanM', text.beamSpanM, fieldHelpText.beamSpanM)}
                 <input
                   aria-label={text.beamSpanM}
                   style={fieldControlStyle}
@@ -404,7 +437,7 @@ export function CraneBeamDemoPage() {
                 />
               </label>
               <label style={fieldLabelStyle}>
-                {renderFieldLabel(text.brakeStructure, fieldHelpText.brakeStructure)}
+                {renderFieldLabel('brakeStructure', text.brakeStructure, fieldHelpText.brakeStructure)}
                 <select
                   aria-label={text.brakeStructure}
                   style={fieldControlStyle}
@@ -419,7 +452,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                {renderFieldLabel(text.stiffenerStepM, fieldHelpText.stiffenerStepM)}
+                {renderFieldLabel('stiffenerStepM', text.stiffenerStepM, fieldHelpText.stiffenerStepM)}
                 <input
                   aria-label={text.stiffenerStepM}
                   style={fieldControlStyle}
@@ -440,7 +473,7 @@ export function CraneBeamDemoPage() {
                 }}
               >
                 <label style={fieldLabelStyle}>
-                  {renderFieldLabel(text.wheelLoadKn, fieldHelpText.wheelLoadKn)}
+                  {renderFieldLabel('wheelLoadKn', text.wheelLoadKn, fieldHelpText.wheelLoadKn)}
                   <input
                     aria-label={text.wheelLoadKn}
                     disabled={isCatalogLookup}
@@ -450,7 +483,7 @@ export function CraneBeamDemoPage() {
                   />
                 </label>
                 <label style={fieldLabelStyle}>
-                  {renderFieldLabel(text.trolleyMassT, fieldHelpText.trolleyMassT)}
+                  {renderFieldLabel('trolleyMassT', text.trolleyMassT, fieldHelpText.trolleyMassT)}
                   <input
                     aria-label={text.trolleyMassT}
                     disabled={isCatalogLookup}
@@ -460,7 +493,7 @@ export function CraneBeamDemoPage() {
                   />
                 </label>
                 <label style={fieldLabelStyle}>
-                  {renderFieldLabel(text.craneBaseMm, fieldHelpText.craneBaseMm)}
+                  {renderFieldLabel('craneBaseMm', text.craneBaseMm, fieldHelpText.craneBaseMm)}
                   <input
                     aria-label={text.craneBaseMm}
                     disabled={isCatalogLookup}
@@ -470,7 +503,7 @@ export function CraneBeamDemoPage() {
                   />
                 </label>
                 <label style={fieldLabelStyle}>
-                  {renderFieldLabel(text.craneGaugeMm, fieldHelpText.craneGaugeMm)}
+                  {renderFieldLabel('craneGaugeMm', text.craneGaugeMm, fieldHelpText.craneGaugeMm)}
                   <input
                     aria-label={text.craneGaugeMm}
                     disabled={isCatalogLookup}
@@ -480,7 +513,7 @@ export function CraneBeamDemoPage() {
                   />
                 </label>
                 <label style={fieldLabelStyle}>
-                  {renderFieldLabel(text.railFootWidthM, fieldHelpText.railFootWidthM)}
+                  {renderFieldLabel('railFootWidthM', text.railFootWidthM, fieldHelpText.railFootWidthM)}
                   <input
                     aria-label={text.railFootWidthM}
                     disabled={isCatalogLookup}
@@ -490,7 +523,7 @@ export function CraneBeamDemoPage() {
                   />
                 </label>
                 <label style={fieldLabelStyle}>
-                  {renderFieldLabel(text.railHeightM, fieldHelpText.railHeightM)}
+                  {renderFieldLabel('railHeightM', text.railHeightM, fieldHelpText.railHeightM)}
                   <input
                     aria-label={text.railHeightM}
                     disabled={isCatalogLookup}
