@@ -777,23 +777,6 @@ export function CraneBeamDemoPage() {
                       </div>
                     </section>
 
-                    <section style={{ ...resultSectionStyle, gridColumn: '1 / -1' }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
-                        Принятые нормативы и допущения
-                      </div>
-                      {renderResultRow('Расчетный сортамент', result.selection.profileDetails.assortmentStandard || '—')}
-                      {renderResultRow('Норматив по стали', result.selection.profileDetails.steelStandard || '—')}
-                      {renderResultRow('Режим расчета поставки', 'Показан для одной подкрановой балки')}
-                      {renderResultRow(
-                        'Стоимостная оценка',
-                        result.selection.profile ? `Рассчитана по цене ${formatNumber(priceRubPerKg, 2)} ₽/кг` : '—',
-                      )}
-                      {renderResultRow(
-                        'Источник паспортных данных',
-                        isCatalogLookup ? 'Каталожные значения модуля' : 'Ручной ввод пользователя',
-                        { accent: true },
-                      )}
-                    </section>
                   </div>
 
                   <section style={resultSectionStyle}>
