@@ -72,6 +72,26 @@ const helpPopoverStyle = {
   lineHeight: 1.4,
 } as const
 
+const resultSectionStyle = {
+  display: 'grid',
+  gap: 8,
+  padding: 12,
+  borderRadius: 12,
+  background: '#ffffff',
+  border: '1px solid rgba(148, 163, 184, 0.16)',
+} as const
+
+const resultRowStyle = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  gap: 16,
+  padding: '4px 0',
+  borderBottom: '1px solid rgba(226, 232, 240, 0.85)',
+} as const
+
+const craneBeamDemoPriceTonRub = 155_880
+
 const text = {
   title: 'Подбор прокатной подкрановой балки',
   backToCalculator: 'Открыть основной калькулятор',
@@ -174,6 +194,12 @@ function formatNumber(value: number, digits = 3): string {
   return value.toFixed(digits).replace('.', ',')
 }
 
+function formatRub(value: number): string {
+  return new Intl.NumberFormat('ru-RU', {
+    maximumFractionDigits: 0,
+  }).format(Math.round(value))
+}
+
 function resolveLookupModeLabel(lookupMode: string): string {
   return lookupMode === 'manual' ? text.lookupModeManual : text.lookupModeCatalog
 }
@@ -187,6 +213,17 @@ export function CraneBeamDemoPage() {
     typeof window === 'undefined' ? '/' : resolveMainCalculatorHref(window.location.pathname)
   const methodologyHref =
     typeof window === 'undefined' ? '/?route=crane-beam-methodology' : resolveMethodologyHref(window.location.pathname)
+  const beamQuantity = 1
+  const unitMassKgPerM =
+    result.selection.profileDetails.unitMassKgPerM ??
+    (input.beamSpanM > 0 ? result.selection.weightKg / input.beamSpanM : null)
+  const totalLengthM = input.beamSpanM * beamQuantity
+  const totalMassKg = result.selection.weightKg * beamQuantity
+  const priceTonRub = result.selection.profile ? craneBeamDemoPriceTonRub : null
+  const estimatedCostRub = priceTonRub === null ? null : (totalMassKg / 1000) * priceTonRub
+  const designationLabel = result.selection.profile
+    ? `Двутавр ${result.selection.profile}-${result.selection.profileDetails.assortmentStandard}`
+    : '—'
 
   const handleNumberField =
     <K extends keyof Pick<
@@ -247,6 +284,26 @@ export function CraneBeamDemoPage() {
       </div>
     )
   }
+
+  const renderResultRow = (label: string, value: string, options?: { highlight?: boolean; accent?: boolean }) => (
+    <div
+      style={{
+        ...resultRowStyle,
+        borderBottom: options?.accent ? '0' : resultRowStyle.borderBottom,
+      }}
+    >
+      <span style={{ color: '#64748b' }}>{label}</span>
+      <span
+        style={{
+          color: options?.accent ? '#9a3412' : '#0f172a',
+          fontWeight: options?.highlight || options?.accent ? 700 : 600,
+          textAlign: 'right',
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  )
 
   return (
     <div className="app-shell">
@@ -601,6 +658,175 @@ export function CraneBeamDemoPage() {
               </div>
 
               {result.selection.profile ? (
+                <>
+                  <div className="crane-beam-profile-grid">
+                    <section style={resultSectionStyle}>
+                      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
+                        Параметры профиля
+                      </div>
+                      {renderResultRow('Тип', result.selection.profileDetails.sectionType || '—')}
+                      {renderResultRow('Размер', result.selection.profile, { highlight: true })}
+                      {renderResultRow('Материал', result.selection.profileDetails.materialNote || '—')}
+                      {renderResultRow('Стандарт сортамента', result.selection.profileDetails.assortmentStandard || '—')}
+                      {renderResultRow('Норматив по стали', result.selection.profileDetails.steelStandard || '—')}
+                      {renderResultRow('Масса 1 м', unitMassKgPerM === null ? '—' : `${formatNumber(unitMassKgPerM, 2)} кг`)}
+                      {renderResultRow(
+                        'Ry',
+                        result.selection.profileDetails.designResistanceRyMpa === null
+                          ? '—'
+                          : `${formatNumber(result.selection.profileDetails.designResistanceRyMpa, 1)} МПа`,
+                        { accent: true },
+                      )}
+                    </section>
+
+                    <section style={resultSectionStyle}>
+                      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
+                        Геометрия профиля
+                      </div>
+                      {renderResultRow(
+                        'Высота h',
+                        result.selection.profileDetails.actualHeightMm === null
+                          ? '—'
+                          : `${formatNumber(result.selection.profileDetails.actualHeightMm, 0)} мм`,
+                      )}
+                      {renderResultRow(
+                        'Ширина полки b',
+                        result.selection.profileDetails.flangeWidthMm === null
+                          ? '—'
+                          : `${formatNumber(result.selection.profileDetails.flangeWidthMm, 0)} мм`,
+                      )}
+                      {renderResultRow(
+                        'Толщина стенки tw',
+                        result.selection.profileDetails.webThicknessMm === null
+                          ? '—'
+                          : `${formatNumber(result.selection.profileDetails.webThicknessMm, 1)} мм`,
+                      )}
+                      {renderResultRow(
+                        'Толщина полки tf',
+                        result.selection.profileDetails.flangeThicknessMm === null
+                          ? '—'
+                          : `${formatNumber(result.selection.profileDetails.flangeThicknessMm, 1)} мм`,
+                      )}
+                      {renderResultRow('Серия', result.selection.profileDetails.profileSeries || '—')}
+                      {renderResultRow(
+                        'Условная высота серии',
+                        result.selection.profileDetails.nominalSeriesHeightMm === null
+                          ? '—'
+                          : `${formatNumber(result.selection.profileDetails.nominalSeriesHeightMm, 0)} мм`,
+                      )}
+                    </section>
+
+                    <section style={resultSectionStyle}>
+                      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
+                        Объем поставки
+                      </div>
+                      {renderResultRow('Длина балки', `${formatNumber(input.beamSpanM, 1)} м`)}
+                      {renderResultRow('Количество', `${formatNumber(beamQuantity, 0)} шт.`)}
+                      {renderResultRow('Общая длина', `${formatNumber(totalLengthM, 1)} м.п.`)}
+                      {renderResultRow('Общая масса', `${formatNumber(totalMassKg, 1)} кг`, { highlight: true })}
+                    </section>
+
+                    <section style={resultSectionStyle}>
+                      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
+                        Стоимость
+                      </div>
+                      {renderResultRow(
+                        'Ориентировочная цена за тонну',
+                        priceTonRub === null ? '—' : `${formatRub(priceTonRub)} ₽/т`,
+                      )}
+                      {renderResultRow(
+                        'Ориентировочная стоимость',
+                        estimatedCostRub === null ? '—' : `${formatRub(estimatedCostRub)} ₽`,
+                        { accent: true },
+                      )}
+                    </section>
+
+                    <section style={{ ...resultSectionStyle, gridColumn: '1 / -1' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
+                        Условное обозначение
+                      </div>
+                      <div
+                        style={{
+                          padding: '10px 12px',
+                          borderRadius: 10,
+                          background: '#f8fafc',
+                          border: '1px solid rgba(148, 163, 184, 0.18)',
+                          color: '#0f172a',
+                          fontWeight: 700,
+                          lineHeight: 1.4,
+                          wordBreak: 'break-word',
+                        }}
+                      >
+                        {designationLabel}
+                      </div>
+                    </section>
+                  </div>
+
+                  <section style={resultSectionStyle}>
+                    <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
+                      Расчетные усилия
+                    </div>
+                    <div className="crane-beam-metric-grid">
+                      <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>Mx</div>
+                        <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.loads.designMxGeneralKnM, 3)}</div>
+                        <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН·м</div>
+                      </div>
+                      <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>My</div>
+                        <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.loads.designMyGeneralKnM, 3)}</div>
+                        <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН·м</div>
+                      </div>
+                      <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>Q</div>
+                        <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.loads.designQGeneralKn, 3)}</div>
+                        <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН</div>
+                      </div>
+                      <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>Qдоп</div>
+                        <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.loads.designQAdditionalKn, 3)}</div>
+                        <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН</div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section style={resultSectionStyle}>
+                    <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
+                      Производные коэффициенты
+                    </div>
+                    <div className="crane-beam-metric-grid">
+                      <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>{text.tbnKn}</div>
+                        <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.derived.tbnKn, 3)}</div>
+                      </div>
+                      <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>{text.qbnKn}</div>
+                        <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.derived.qbnKn, 3)}</div>
+                      </div>
+                      <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>{text.gammaLocal}</div>
+                        <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.derived.gammaLocal, 3)}</div>
+                      </div>
+                      <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>{text.fatigueNvyn}</div>
+                        <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.derived.fatigueNvyn, 3)}</div>
+                      </div>
+                      <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>{text.alpha}</div>
+                        <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.derived.alpha, 3)}</div>
+                      </div>
+                      <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>{text.caseForTwoCranes}</div>
+                        <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{result.derived.caseForTwoCranes}</div>
+                      </div>
+                    </div>
+                  </section>
+
+                </>
+              ) : null}
+
+              <div style={{ display: 'none' }}>
+                {result.selection.profile ? (
                 <div
                   style={{
                     display: 'grid',
@@ -713,6 +939,8 @@ export function CraneBeamDemoPage() {
                     {result.derived.caseForTwoCranes}
                   </div>
                 </div>
+              </div>
+
               </div>
 
               <div

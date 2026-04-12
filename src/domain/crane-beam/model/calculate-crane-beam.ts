@@ -52,6 +52,10 @@ export type CraneBeamCalculationResult = {
       profileSeries: string
       nominalSeriesHeightMm: number | null
       actualHeightMm: number | null
+      flangeWidthMm: number | null
+      webThicknessMm: number | null
+      flangeThicknessMm: number | null
+      unitMassKgPerM: number | null
       assortmentStandard: string
       materialNote: string
       steelStandard: string
@@ -378,6 +382,10 @@ function buildProfileDetails(profile: string) {
       profileSeries: '',
       nominalSeriesHeightMm: null,
       actualHeightMm: null,
+      flangeWidthMm: null,
+      webThicknessMm: null,
+      flangeThicknessMm: null,
+      unitMassKgPerM: null,
       assortmentStandard: '',
       materialNote: '',
       steelStandard: '',
@@ -394,6 +402,10 @@ function buildProfileDetails(profile: string) {
     profileSeries: series.profileSeries,
     nominalSeriesHeightMm: series.nominalHeightMm,
     actualHeightMm: candidate?.hMm ?? null,
+    flangeWidthMm: candidate?.bMm ?? null,
+    webThicknessMm: candidate?.webThicknessMm ?? null,
+    flangeThicknessMm: candidate?.flangeThicknessMm ?? null,
+    unitMassKgPerM: candidate?.unitMassKgPerM ?? null,
     assortmentStandard: 'ГОСТ Р 57837-2017',
     materialNote: 'Материал принят по расчетному сопротивлению Ry',
     steelStandard: 'ГОСТ 27772-2021',
