@@ -36,6 +36,22 @@ const readOnlyControlStyle = {
   color: '#475569',
 } as const
 
+const helpBadgeStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 18,
+  height: 18,
+  borderRadius: '999px',
+  border: '1px solid rgba(100, 116, 139, 0.35)',
+  background: '#f8fafc',
+  color: '#475569',
+  fontSize: 11,
+  fontWeight: 700,
+  lineHeight: 1,
+  cursor: 'help',
+} as const
+
 const text = {
   title: 'Подбор прокатной подкрановой балки',
   backToCalculator: 'Открыть основной калькулятор',
@@ -76,6 +92,34 @@ const text = {
   manualHint: 'Ручной режим нужен для нестандартных паспортных данных крана и рельса.',
 } as const
 
+const fieldHelpText: Partial<Record<keyof typeof text, string>> = {
+  lookupMode:
+    'Показывает, откуда брать паспортные данные крана и рельса. В режиме "Из каталога" они подставляются по Excel-таблице, в ручном режиме задаются пользователем.',
+  loadCapacityT:
+    'Грузоподъемность крана. В списке оставлены только те значения, которые есть в Excel для этого модуля.',
+  craneSpanM: 'Пролет мостового крана. По нему вместе с грузоподъемностью подбираются паспортные данные из каталога.',
+  wheelCount: 'Общее число колес крана, через которое распределяется колесная нагрузка.',
+  suspensionType:
+    'Как подвешен груз у крана: гибко или жестко. Этот параметр влияет на коэффициенты и итоговые усилия.',
+  dutyGroup:
+    'Класс интенсивности работы крана. Чем тяжелее режим, тем выше расчетные воздействия и требовательнее подбор балки.',
+  craneCountInSpan:
+    'Сколько кранов одновременно работает в пролете. Для двух кранов расчет учитывает более неблагоприятный случай.',
+  craneRail: 'Тип подкранового рельса, который опирается на балку.',
+  beamSpanM: 'Пролет самой подкрановой балки между опорами.',
+  brakeStructure:
+    'Есть ли тормозная конструкция. Она влияет на подбор сечения и расчетные усилия.',
+  stiffenerStepM: 'Шаг ребер жесткости подкрановой балки.',
+  wheelLoadKn:
+    'Вертикальная нагрузка на одно колесо крана. В каталожном режиме берется из Excel, в ручном вводится пользователем.',
+  trolleyMassT:
+    'Масса тележки крана. Нужна для определения расчетных воздействий.',
+  craneBaseMm: 'База крана: расстояние между осями колес вдоль пути.',
+  craneGaugeMm: 'Габарит крана поперек пути, используемый в расчетной схеме.',
+  railFootWidthM: 'Ширина подошвы подкранового рельса.',
+  railHeightM: 'Высота подкранового рельса.',
+}
+
 function parseNumberInput(value: string): number | null {
   const normalized = value.trim().replace(',', '.')
   if (!normalized) {
@@ -96,6 +140,19 @@ function formatNumber(value: number, digits = 3): string {
 
 function resolveLookupModeLabel(lookupMode: string): string {
   return lookupMode === 'manual' ? text.lookupModeManual : text.lookupModeCatalog
+}
+
+function renderFieldLabel(label: string, help?: string) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+      <span>{label}</span>
+      {help ? (
+        <span aria-label={`${label}: подсказка`} title={help} style={helpBadgeStyle}>
+          ?
+        </span>
+      ) : null}
+    </span>
+  )
 }
 
 export function CraneBeamDemoPage() {
@@ -197,7 +254,7 @@ export function CraneBeamDemoPage() {
               }}
             >
               <label style={fieldLabelStyle}>
-                <span>{text.lookupMode}</span>
+                {renderFieldLabel(text.lookupMode, fieldHelpText.lookupMode)}
                 <select
                   aria-label={text.lookupMode}
                   style={fieldControlStyle}
@@ -238,7 +295,7 @@ export function CraneBeamDemoPage() {
               }}
             >
               <label style={fieldLabelStyle}>
-                <span>{text.loadCapacityT}</span>
+                {renderFieldLabel(text.loadCapacityT, fieldHelpText.loadCapacityT)}
                 <select
                   aria-label={text.loadCapacityT}
                   style={fieldControlStyle}
@@ -260,7 +317,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                <span>{text.craneSpanM}</span>
+                {renderFieldLabel(text.craneSpanM, fieldHelpText.craneSpanM)}
                 <input
                   aria-label={text.craneSpanM}
                   style={fieldControlStyle}
@@ -269,7 +326,7 @@ export function CraneBeamDemoPage() {
                 />
               </label>
               <label style={fieldLabelStyle}>
-                <span>{text.wheelCount}</span>
+                {renderFieldLabel(text.wheelCount, fieldHelpText.wheelCount)}
                 <input
                   aria-label={text.wheelCount}
                   style={fieldControlStyle}
@@ -278,7 +335,7 @@ export function CraneBeamDemoPage() {
                 />
               </label>
               <label style={fieldLabelStyle}>
-                <span>{text.suspensionType}</span>
+                {renderFieldLabel(text.suspensionType, fieldHelpText.suspensionType)}
                 <select
                   aria-label={text.suspensionType}
                   style={fieldControlStyle}
@@ -293,7 +350,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                <span>{text.dutyGroup}</span>
+                {renderFieldLabel(text.dutyGroup, fieldHelpText.dutyGroup)}
                 <select
                   aria-label={text.dutyGroup}
                   style={fieldControlStyle}
@@ -308,7 +365,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                <span>{text.craneCountInSpan}</span>
+                {renderFieldLabel(text.craneCountInSpan, fieldHelpText.craneCountInSpan)}
                 <select
                   aria-label={text.craneCountInSpan}
                   style={fieldControlStyle}
@@ -323,7 +380,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                <span>{text.craneRail}</span>
+                {renderFieldLabel(text.craneRail, fieldHelpText.craneRail)}
                 <select
                   aria-label={text.craneRail}
                   style={fieldControlStyle}
@@ -338,7 +395,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                <span>{text.beamSpanM}</span>
+                {renderFieldLabel(text.beamSpanM, fieldHelpText.beamSpanM)}
                 <input
                   aria-label={text.beamSpanM}
                   style={fieldControlStyle}
@@ -347,7 +404,7 @@ export function CraneBeamDemoPage() {
                 />
               </label>
               <label style={fieldLabelStyle}>
-                <span>{text.brakeStructure}</span>
+                {renderFieldLabel(text.brakeStructure, fieldHelpText.brakeStructure)}
                 <select
                   aria-label={text.brakeStructure}
                   style={fieldControlStyle}
@@ -362,7 +419,7 @@ export function CraneBeamDemoPage() {
                 </select>
               </label>
               <label style={fieldLabelStyle}>
-                <span>{text.stiffenerStepM}</span>
+                {renderFieldLabel(text.stiffenerStepM, fieldHelpText.stiffenerStepM)}
                 <input
                   aria-label={text.stiffenerStepM}
                   style={fieldControlStyle}
@@ -383,7 +440,7 @@ export function CraneBeamDemoPage() {
                 }}
               >
                 <label style={fieldLabelStyle}>
-                  <span>{text.wheelLoadKn}</span>
+                  {renderFieldLabel(text.wheelLoadKn, fieldHelpText.wheelLoadKn)}
                   <input
                     aria-label={text.wheelLoadKn}
                     disabled={isCatalogLookup}
@@ -393,7 +450,7 @@ export function CraneBeamDemoPage() {
                   />
                 </label>
                 <label style={fieldLabelStyle}>
-                  <span>{text.trolleyMassT}</span>
+                  {renderFieldLabel(text.trolleyMassT, fieldHelpText.trolleyMassT)}
                   <input
                     aria-label={text.trolleyMassT}
                     disabled={isCatalogLookup}
@@ -403,7 +460,7 @@ export function CraneBeamDemoPage() {
                   />
                 </label>
                 <label style={fieldLabelStyle}>
-                  <span>{text.craneBaseMm}</span>
+                  {renderFieldLabel(text.craneBaseMm, fieldHelpText.craneBaseMm)}
                   <input
                     aria-label={text.craneBaseMm}
                     disabled={isCatalogLookup}
@@ -413,7 +470,7 @@ export function CraneBeamDemoPage() {
                   />
                 </label>
                 <label style={fieldLabelStyle}>
-                  <span>{text.craneGaugeMm}</span>
+                  {renderFieldLabel(text.craneGaugeMm, fieldHelpText.craneGaugeMm)}
                   <input
                     aria-label={text.craneGaugeMm}
                     disabled={isCatalogLookup}
@@ -423,7 +480,7 @@ export function CraneBeamDemoPage() {
                   />
                 </label>
                 <label style={fieldLabelStyle}>
-                  <span>{text.railFootWidthM}</span>
+                  {renderFieldLabel(text.railFootWidthM, fieldHelpText.railFootWidthM)}
                   <input
                     aria-label={text.railFootWidthM}
                     disabled={isCatalogLookup}
@@ -433,7 +490,7 @@ export function CraneBeamDemoPage() {
                   />
                 </label>
                 <label style={fieldLabelStyle}>
-                  <span>{text.railHeightM}</span>
+                  {renderFieldLabel(text.railHeightM, fieldHelpText.railHeightM)}
                   <input
                     aria-label={text.railHeightM}
                     disabled={isCatalogLookup}
