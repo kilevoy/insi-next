@@ -36,6 +36,28 @@ const readOnlyControlStyle = {
   color: '#475569',
 } as const
 
+const sectionCardStyle = {
+  display: 'grid',
+  gap: 14,
+  padding: 18,
+  borderRadius: 16,
+  background: '#ffffff',
+  border: '1px solid rgba(148, 163, 184, 0.18)',
+} as const
+
+const formGridStyle = {
+  display: 'grid',
+  gap: 12,
+  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+  alignItems: 'start',
+} as const
+
+const metricGridStyle = {
+  display: 'grid',
+  gap: 10,
+  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+} as const
+
 const helpBadgeStyle = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -244,16 +266,16 @@ export function CraneBeamDemoPage() {
       <main
         data-testid="crane-beam-demo-page"
         className="page"
-        style={{ display: 'grid', gap: 16, maxWidth: 'none', padding: '28px 0 64px' }}
+        style={{ display: 'grid', gap: 12, maxWidth: 'none', padding: '22px 0 48px' }}
       >
         <section
           style={{
             display: 'flex',
-            gap: 18,
+            gap: 14,
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            padding: '12px 18px',
+            padding: '12px 16px',
             borderRadius: 16,
             background: '#ffffff',
             border: '1px solid rgba(148, 163, 184, 0.18)',
@@ -307,22 +329,15 @@ export function CraneBeamDemoPage() {
 
         <section
           style={{
-            display: 'grid',
-            gap: 18,
-            gridTemplateColumns: 'minmax(0, 1fr)',
-            padding: 20,
-            borderRadius: 16,
-            background: '#ffffff',
-            border: '1px solid rgba(148, 163, 184, 0.18)',
+            ...sectionCardStyle,
+            gap: 16,
           }}
         >
-          <div style={{ display: 'grid', gap: 18, alignContent: 'start' }}>
+          <div style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
             <div
               style={{
-                display: 'grid',
-                gap: 14,
-                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                alignItems: 'start',
+                ...formGridStyle,
+                gridTemplateColumns: 'minmax(240px, 1.1fr) minmax(260px, 0.9fr)',
               }}
             >
               <label style={fieldLabelStyle}>
@@ -345,13 +360,13 @@ export function CraneBeamDemoPage() {
                 style={{
                   display: 'grid',
                   alignSelf: 'end',
-                  padding: '10px 12px',
+                  padding: '9px 11px',
                   borderRadius: 10,
                   background: isCatalogLookup ? '#eff6ff' : '#f8fafc',
                   color: '#334155',
                   border: '1px solid rgba(148, 163, 184, 0.18)',
-                  fontSize: 13,
-                  lineHeight: 1.35,
+                  fontSize: 12,
+                  lineHeight: 1.3,
                 }}
               >
                 {isCatalogLookup ? text.catalogHint : text.manualHint}
@@ -360,10 +375,7 @@ export function CraneBeamDemoPage() {
 
             <div
               style={{
-                display: 'grid',
-                gap: 14,
-                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                alignItems: 'start',
+                ...formGridStyle,
               }}
             >
               <label style={fieldLabelStyle}>
@@ -501,14 +513,11 @@ export function CraneBeamDemoPage() {
               </label>
             </div>
 
-            <section style={{ display: 'grid', gap: 14 }}>
+            <section style={{ display: 'grid', gap: 12 }}>
               <h2 style={{ margin: 0, fontSize: 18, color: '#0f172a' }}>{text.passportSection}</h2>
               <div
                 style={{
-                  display: 'grid',
-                  gap: 14,
-                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                  alignItems: 'start',
+                  ...formGridStyle,
                 }}
               >
                 <label style={fieldLabelStyle}>
@@ -578,20 +587,16 @@ export function CraneBeamDemoPage() {
 
         <section
           style={{
-            display: 'grid',
-            gap: 14,
-            padding: 20,
-            borderRadius: 16,
-            background: '#ffffff',
-            border: '1px solid rgba(148, 163, 184, 0.18)',
+            ...sectionCardStyle,
+            gap: 12,
           }}
         >
           <div style={{ display: 'grid', gap: 14, alignContent: 'start' }}>
             <article
               style={{
                 display: 'grid',
-                gap: 16,
-                padding: 18,
+                gap: 14,
+                padding: 16,
                 borderRadius: 14,
                 background: 'linear-gradient(180deg, #f8fafc 0%, #f2f6fa 100%)',
                 border: '1px solid rgba(148, 163, 184, 0.22)',
@@ -602,8 +607,8 @@ export function CraneBeamDemoPage() {
               <div
                 style={{
                   display: 'grid',
-                  gap: 10,
-                  padding: 14,
+                  gap: 8,
+                  padding: 12,
                   borderRadius: 12,
                   background: '#ffffff',
                   border: '1px solid rgba(148, 163, 184, 0.16)',
@@ -615,7 +620,7 @@ export function CraneBeamDemoPage() {
                 <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1, color: '#0f172a' }}>
                   {result.selection.profile || '—'}
                 </div>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', color: '#334155' }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', color: '#334155' }}>
                   <span>Вес: <strong>{formatNumber(result.selection.weightKg, 3)}</strong> кг</span>
                   <span>К-т использования: <strong>{formatNumber(result.selection.utilization, 3)}</strong></span>
                 </div>
@@ -625,8 +630,8 @@ export function CraneBeamDemoPage() {
                 <div
                   style={{
                     display: 'grid',
-                    gap: 10,
-                    padding: 14,
+                    gap: 8,
+                    padding: 12,
                     borderRadius: 12,
                     background: '#ffffff',
                     border: '1px solid rgba(148, 163, 184, 0.16)',
@@ -635,7 +640,7 @@ export function CraneBeamDemoPage() {
                   <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
                     {text.profileInfo}
                   </div>
-                  <div style={{ display: 'grid', gap: 8, color: '#334155', lineHeight: 1.45 }}>
+                  <div style={{ display: 'grid', gap: 6, color: '#334155', lineHeight: 1.35, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
                     <div>{text.sectionType}: <strong>{result.selection.profileDetails.sectionType}</strong></div>
                     <div>{text.profileSeries}: <strong>{result.selection.profileDetails.profileSeries}</strong></div>
                     <div>
@@ -668,9 +673,7 @@ export function CraneBeamDemoPage() {
 
               <div
                 style={{
-                  display: 'grid',
-                  gap: 10,
-                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  ...metricGridStyle,
                 }}
               >
                 <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
@@ -705,9 +708,7 @@ export function CraneBeamDemoPage() {
 
               <div
                 style={{
-                  display: 'grid',
-                  gap: 10,
-                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  ...metricGridStyle,
                 }}
               >
                 <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
@@ -776,12 +777,8 @@ export function CraneBeamDemoPage() {
 
         <section
           style={{
-            display: 'grid',
-            gap: 10,
-            padding: 18,
-            borderRadius: 16,
-            background: '#ffffff',
-            border: '1px solid rgba(148, 163, 184, 0.18)',
+            ...sectionCardStyle,
+            gap: 8,
           }}
         >
           <h3 style={{ margin: 0, fontSize: 17, color: '#0f172a' }}>{text.roadmap}</h3>
