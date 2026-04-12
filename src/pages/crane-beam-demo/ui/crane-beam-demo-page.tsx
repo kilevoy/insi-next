@@ -90,8 +90,6 @@ const resultRowStyle = {
   borderBottom: '1px solid rgba(226, 232, 240, 0.85)',
 } as const
 
-const craneBeamDemoPriceTonRub = 155_880
-
 const text = {
   title: 'Подбор прокатной подкрановой балки',
   backToCalculator: 'Открыть основной калькулятор',
@@ -132,6 +130,7 @@ const text = {
   beamSpanM: 'Пролет ПБ, м',
   brakeStructure: 'Тормозная конструкция',
   stiffenerStepM: 'Шаг ребер, м',
+  priceRubPerKg: 'Цена за кг, ₽',
   tbnKn: 'Tbн, кН',
   qbnKn: 'Qbн, кН',
   gammaLocal: 'gamma local',
@@ -160,6 +159,7 @@ const fieldHelpText: Partial<Record<keyof typeof text, string>> = {
   brakeStructure:
     'Есть ли тормозная конструкция. Она влияет на подбор сечения и расчетные усилия.',
   stiffenerStepM: 'Шаг ребер жесткости подкрановой балки.',
+  priceRubPerKg: 'Здесь можно задать свою цену стали за 1 кг для расчета ориентировочной стоимости.',
   wheelLoadKn:
     'Вертикальная нагрузка на одно колесо крана. В каталожном режиме берется из Excel, в ручном вводится пользователем.',
   trolleyMassT:
@@ -207,6 +207,7 @@ function resolveLookupModeLabel(lookupMode: string): string {
 export function CraneBeamDemoPage() {
   const [input, setInput] = useState<CraneBeamInput>(defaultCraneBeamInput)
   const [openHelpField, setOpenHelpField] = useState<string | null>(null)
+  const [priceRubPerKg, setPriceRubPerKg] = useState(155.88)
   const result = calculateCraneBeam(input)
   const isCatalogLookup = input.lookupMode === 'catalog'
   const mainCalculatorHref =
@@ -219,8 +220,8 @@ export function CraneBeamDemoPage() {
     (input.beamSpanM > 0 ? result.selection.weightKg / input.beamSpanM : null)
   const totalLengthM = input.beamSpanM * beamQuantity
   const totalMassKg = result.selection.weightKg * beamQuantity
-  const priceTonRub = result.selection.profile ? craneBeamDemoPriceTonRub : null
-  const estimatedCostRub = priceTonRub === null ? null : (totalMassKg / 1000) * priceTonRub
+  const priceTonRub = result.selection.profile ? priceRubPerKg * 1000 : null
+  const estimatedCostRub = result.selection.profile ? totalMassKg * priceRubPerKg : null
   const designationLabel = result.selection.profile
     ? `Двутавр ${result.selection.profile}-${result.selection.profileDetails.assortmentStandard}`
     : '—'
@@ -250,6 +251,15 @@ export function CraneBeamDemoPage() {
         [key]: key === 'wheelCount' ? Math.max(1, Math.trunc(parsed)) : parsed,
       }))
     }
+
+  const handlePriceField = (event: ChangeEvent<HTMLInputElement>) => {
+    const parsed = parseNumberInput(event.target.value)
+    if (parsed === null || parsed < 0) {
+      return
+    }
+
+    setPriceRubPerKg(parsed)
+  }
 
   const renderFieldLabel = (key: keyof typeof text, label: string, help?: string) => {
     const helpId = `field-help-${String(key)}`
@@ -544,6 +554,15 @@ export function CraneBeamDemoPage() {
                   style={fieldControlStyle}
                   value={String(input.stiffenerStepM).replace('.', ',')}
                   onChange={handleNumberField('stiffenerStepM')}
+                />
+              </label>
+              <label style={fieldLabelStyle}>
+                {renderFieldLabel('priceRubPerKg', text.priceRubPerKg, fieldHelpText.priceRubPerKg)}
+                <input
+                  aria-label={text.priceRubPerKg}
+                  style={fieldControlStyle}
+                  value={String(priceRubPerKg).replace('.', ',')}
+                  onChange={handlePriceField}
                 />
               </label>
             </div>
