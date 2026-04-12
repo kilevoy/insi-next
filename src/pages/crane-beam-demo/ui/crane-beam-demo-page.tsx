@@ -804,22 +804,22 @@ export function CraneBeamDemoPage() {
                     </div>
                     <div className="crane-beam-loads-grid">
                       <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
-                        <div style={{ fontSize: 12, color: '#64748b' }}>Mx</div>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>Mx • основной изгибающий момент</div>
                         <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.loads.designMxGeneralKnM, 3)}</div>
                         <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН·м</div>
                       </div>
                       <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
-                        <div style={{ fontSize: 12, color: '#64748b' }}>My</div>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>My • поперечный изгибающий момент</div>
                         <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.loads.designMyGeneralKnM, 3)}</div>
                         <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН·м</div>
                       </div>
                       <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
-                        <div style={{ fontSize: 12, color: '#64748b' }}>Q</div>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>Q • поперечная сила</div>
                         <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.loads.designQGeneralKn, 3)}</div>
                         <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН</div>
                       </div>
                       <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
-                        <div style={{ fontSize: 12, color: '#64748b' }}>Qдоп</div>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>Qдоп • дополнительная поперечная сила</div>
                         <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.loads.designQAdditionalKn, 3)}</div>
                         <div style={{ marginTop: 2, fontSize: 12, color: '#64748b' }}>кН</div>
                       </div>
