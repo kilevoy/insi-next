@@ -3303,7 +3303,8 @@ textarea {
 .crane-beam-lookup-grid,
 .crane-beam-form-grid,
 .crane-beam-profile-grid,
-.crane-beam-metric-grid {
+.crane-beam-metric-grid,
+.crane-beam-loads-grid {
   display: grid;
   align-items: start;
 }
@@ -3328,9 +3329,15 @@ textarea {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.crane-beam-loads-grid {
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 @media (max-width: 1100px) {
   .crane-beam-form-grid,
-  .crane-beam-metric-grid {
+  .crane-beam-metric-grid,
+  .crane-beam-loads-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -3344,7 +3351,8 @@ textarea {
 
 @media (max-width: 720px) {
   .crane-beam-form-grid,
-  .crane-beam-metric-grid {
+  .crane-beam-metric-grid,
+  .crane-beam-loads-grid {
     grid-template-columns: 1fr;
   }
 }

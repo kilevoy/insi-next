@@ -784,7 +784,7 @@ export function CraneBeamDemoPage() {
                     <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
                       Расчетные усилия
                     </div>
-                    <div className="crane-beam-metric-grid">
+                    <div className="crane-beam-loads-grid">
                       <div style={{ padding: '12px 14px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
                         <div style={{ fontSize: 12, color: '#64748b' }}>Mx</div>
                         <div style={{ marginTop: 4, fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{formatNumber(result.loads.designMxGeneralKnM, 3)}</div>
