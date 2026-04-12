@@ -50,7 +50,8 @@ export type CraneBeamCalculationResult = {
     profileDetails: {
       sectionType: string
       profileSeries: string
-      nominalHeightMm: number | null
+      nominalSeriesHeightMm: number | null
+      actualHeightMm: number | null
       assortmentStandard: string
       materialNote: string
       steelStandard: string
@@ -375,7 +376,8 @@ function buildProfileDetails(profile: string) {
     return {
       sectionType: '',
       profileSeries: '',
-      nominalHeightMm: null,
+      nominalSeriesHeightMm: null,
+      actualHeightMm: null,
       assortmentStandard: '',
       materialNote: '',
       steelStandard: '',
@@ -390,7 +392,8 @@ function buildProfileDetails(profile: string) {
   return {
     sectionType: series.sectionType,
     profileSeries: series.profileSeries,
-    nominalHeightMm: series.nominalHeightMm,
+    nominalSeriesHeightMm: series.nominalHeightMm,
+    actualHeightMm: candidate?.hMm ?? null,
     assortmentStandard: 'ГОСТ Р 57837-2017',
     materialNote: 'Материал принят по расчетному сопротивлению Ry',
     steelStandard: 'ГОСТ 27772-2021',

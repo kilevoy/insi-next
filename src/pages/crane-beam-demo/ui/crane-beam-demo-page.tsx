@@ -71,7 +71,8 @@ const text = {
   profileInfo: 'Расшифровка профиля',
   sectionType: 'Тип сечения',
   profileSeries: 'Серия',
-  nominalHeight: 'Номинальная высота',
+  actualHeight: 'Фактическая высота профиля',
+  nominalHeight: 'Условная высота серии',
   assortmentStandard: 'Сортамент',
   materialNote: 'Материал',
   steelStandard: 'Норматив по стали',
@@ -638,10 +639,17 @@ export function CraneBeamDemoPage() {
                     <div>{text.sectionType}: <strong>{result.selection.profileDetails.sectionType}</strong></div>
                     <div>{text.profileSeries}: <strong>{result.selection.profileDetails.profileSeries}</strong></div>
                     <div>
-                      {text.nominalHeight}: <strong>
-                        {result.selection.profileDetails.nominalHeightMm === null
+                      {text.actualHeight}: <strong>
+                        {result.selection.profileDetails.actualHeightMm === null
                           ? '—'
-                          : `${formatNumber(result.selection.profileDetails.nominalHeightMm, 0)} мм`}
+                          : `${formatNumber(result.selection.profileDetails.actualHeightMm, 0)} мм`}
+                      </strong>
+                    </div>
+                    <div>
+                      {text.nominalHeight}: <strong>
+                        {result.selection.profileDetails.nominalSeriesHeightMm === null
+                          ? '—'
+                          : `${formatNumber(result.selection.profileDetails.nominalSeriesHeightMm, 0)} мм`}
                       </strong>
                     </div>
                     <div>{text.assortmentStandard}: <strong>{result.selection.profileDetails.assortmentStandard}</strong></div>

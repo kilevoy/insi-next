@@ -14,6 +14,7 @@ const text = {
   result: 'Результат подбора',
   profileInfo: 'Расшифровка профиля',
   designResistanceRy: 'Принятое расчетное сопротивление стали',
+  actualHeight: 'Фактическая высота профиля',
 } as const
 
 describe('CraneBeamDemoPage', () => {
@@ -31,6 +32,7 @@ describe('CraneBeamDemoPage', () => {
     expect(screen.getByText(text.profileInfo)).toBeInTheDocument()
     expect(screen.getByText(/ГОСТ Р 57837-2017/)).toBeInTheDocument()
     expect(screen.getByText(/Принятое расчетное сопротивление стали:/)).toBeInTheDocument()
+    expect(screen.getByText(/Фактическая высота профиля:/)).toBeInTheDocument()
   })
 
   it('allows changing core inputs', () => {
