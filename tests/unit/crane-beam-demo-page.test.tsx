@@ -30,7 +30,7 @@ describe('CraneBeamDemoPage', () => {
     expect(screen.getByText('Объем поставки')).toBeInTheDocument()
     expect(screen.getByText('Условное обозначение')).toBeInTheDocument()
     expect(screen.getAllByText(/ГОСТ Р 57837-2017/).length).toBeGreaterThan(0)
-    expect(screen.getByText('Ориентировочная цена за тонну')).toBeInTheDocument()
+    expect(screen.getByText('Цена за кг')).toBeInTheDocument()
     expect(screen.getByText('Высота h')).toBeInTheDocument()
   })
 

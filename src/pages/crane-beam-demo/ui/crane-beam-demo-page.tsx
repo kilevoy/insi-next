@@ -220,7 +220,6 @@ export function CraneBeamDemoPage() {
     (input.beamSpanM > 0 ? result.selection.weightKg / input.beamSpanM : null)
   const totalLengthM = input.beamSpanM * beamQuantity
   const totalMassKg = result.selection.weightKg * beamQuantity
-  const priceTonRub = result.selection.profile ? priceRubPerKg * 1000 : null
   const estimatedCostRub = result.selection.profile ? totalMassKg * priceRubPerKg : null
   const designationLabel = result.selection.profile
     ? `Двутавр ${result.selection.profile}-${result.selection.profileDetails.assortmentStandard}`
@@ -750,11 +749,11 @@ export function CraneBeamDemoPage() {
                         Стоимость
                       </div>
                       {renderResultRow(
-                        'Ориентировочная цена за тонну',
-                        priceTonRub === null ? '—' : `${formatRub(priceTonRub)} ₽/т`,
+                        'Цена за кг',
+                        result.selection.profile ? `${formatNumber(priceRubPerKg, 2)} ₽/кг` : '—',
                       )}
                       {renderResultRow(
-                        'Ориентировочная стоимость',
+                        'Общая стоимость',
                         estimatedCostRub === null ? '—' : `${formatRub(estimatedCostRub)} ₽`,
                         { accent: true },
                       )}
@@ -789,7 +788,7 @@ export function CraneBeamDemoPage() {
                       {renderResultRow('Режим расчета поставки', 'Показан для одной подкрановой балки')}
                       {renderResultRow(
                         'Стоимостная оценка',
-                        priceTonRub === null ? '—' : `Ориентировочно по ${formatRub(priceTonRub)} ₽/т`,
+                        result.selection.profile ? `Рассчитана по цене ${formatNumber(priceRubPerKg, 2)} ₽/кг` : '—',
                       )}
                       {renderResultRow(
                         'Источник паспортных данных',
