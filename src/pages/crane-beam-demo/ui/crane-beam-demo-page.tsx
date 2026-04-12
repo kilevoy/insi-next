@@ -666,12 +666,12 @@ export function CraneBeamDemoPage() {
                       </div>
                       {renderResultRow('Тип', result.selection.profileDetails.sectionType || '—')}
                       {renderResultRow('Размер', result.selection.profile, { highlight: true })}
-                      {renderResultRow('Материал', result.selection.profileDetails.materialNote || '—')}
+                      {renderResultRow('Принятая расчетная модель стали', result.selection.profileDetails.materialNote || '—')}
                       {renderResultRow('Стандарт сортамента', result.selection.profileDetails.assortmentStandard || '—')}
                       {renderResultRow('Норматив по стали', result.selection.profileDetails.steelStandard || '—')}
                       {renderResultRow('Масса 1 м', unitMassKgPerM === null ? '—' : `${formatNumber(unitMassKgPerM, 2)} кг`)}
                       {renderResultRow(
-                        'Ry',
+                        'Принятое расчетное сопротивление Ry',
                         result.selection.profileDetails.designResistanceRyMpa === null
                           ? '—'
                           : `${formatNumber(result.selection.profileDetails.designResistanceRyMpa, 1)} МПа`,
@@ -759,6 +759,24 @@ export function CraneBeamDemoPage() {
                       >
                         {designationLabel}
                       </div>
+                    </section>
+
+                    <section style={{ ...resultSectionStyle, gridColumn: '1 / -1' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b' }}>
+                        Принятые нормативы и допущения
+                      </div>
+                      {renderResultRow('Расчетный сортамент', result.selection.profileDetails.assortmentStandard || '—')}
+                      {renderResultRow('Норматив по стали', result.selection.profileDetails.steelStandard || '—')}
+                      {renderResultRow('Режим расчета поставки', 'Показан для одной подкрановой балки')}
+                      {renderResultRow(
+                        'Стоимостная оценка',
+                        priceTonRub === null ? '—' : `Ориентировочно по ${formatRub(priceTonRub)} ₽/т`,
+                      )}
+                      {renderResultRow(
+                        'Источник паспортных данных',
+                        isCatalogLookup ? 'Каталожные значения модуля' : 'Ручной ввод пользователя',
+                        { accent: true },
+                      )}
                     </section>
                   </div>
 
