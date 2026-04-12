@@ -684,12 +684,10 @@ export function CraneBeamDemoPage() {
                       </div>
                       {renderResultRow('Тип', result.selection.profileDetails.sectionType || '—')}
                       {renderResultRow('Размер', result.selection.profile, { highlight: true })}
-                      {renderResultRow('Принятая расчетная модель стали', result.selection.profileDetails.materialNote || '—')}
                       {renderResultRow('Стандарт сортамента', result.selection.profileDetails.assortmentStandard || '—')}
-                      {renderResultRow('Норматив по стали', result.selection.profileDetails.steelStandard || '—')}
                       {renderResultRow('Масса 1 м', unitMassKgPerM === null ? '—' : `${formatNumber(unitMassKgPerM, 2)} кг`)}
                       {renderResultRow(
-                        'Принятое расчетное сопротивление Ry',
+                        'Ry',
                         result.selection.profileDetails.designResistanceRyMpa === null
                           ? '—'
                           : `${formatNumber(result.selection.profileDetails.designResistanceRyMpa, 1)} МПа`,
