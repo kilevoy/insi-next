@@ -1,160 +1,58 @@
-# MetalCalc
+# 🏭 MetalCalc — подбор металлокаркаса и ограждающих конструкций
 
-MetalCalc transfers Excel-based purlin and column calculators into a testable TypeScript application with workbook-backed reference data.
+> Подбор и расчёт элементов металлокаркаса — колонны, прогоны, фермы, ограждающие конструкции — по параметрам объекта. Перенос проверенных Excel-калькуляторов ИНСИ в тестируемое веб-приложение, результат которого **сверяется с эталоном из исходных книг Excel**.
 
-## Stack
+[![CI](https://github.com/kilevoy/insi-next/actions/workflows/ci.yml/badge.svg)](https://github.com/kilevoy/insi-next/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-- React 19
-- TypeScript 5
-- Vite 8
-- Zod 4
-- Vitest
-- Playwright
+**▶️ Живое демо:** https://kilevoy.github.io/insi-next/
 
-## Main Commands
+---
+
+## Зачем
+
+Подбор металлокаркаса раньше жил в больших Excel-калькуляторах: их тяжело поддерживать, легко сломать формулу и невозможно проверить автоматически. MetalCalc переносит эту логику в строгий TypeScript-код, **сохраняя точное соответствие исходным расчётам**: эталонные данные генерируются из тех же книг Excel, а тесты проверяют, что приложение не «уехало» от проверенного результата.
+
+## Что считает
+
+- **Колонны** — подбор сечения по нагрузкам и геометрии, ранжирование вариантов.
+- **Прогоны** — расчёт и подбор по пролёту и нагрузке.
+- **Фермы** — параметры стропильных ферм.
+- **Ограждающие конструкции** — подбор с импортом цен из PDF-прайса и ценовыми переопределениями.
+
+## Инженерная строгость (то, чем кейс силён)
+
+- **Паритет с Excel** — эталонные модули (`*-reference.generated.ts`) генерируются из исходных книг; расхождение валит сборку.
+- **89 юнит-тестов** + **e2e-тесты Playwright** на реальном UI.
+- **Пайплайн `verify`** — единый релизный цикл: пересборка эталонов и проверка дрейфа → линт → юнит-тесты → production-сборка → e2e.
+- **Валидация входных данных** через Zod.
+
+```bash
+npm run verify   # эталоны → линт → тесты → сборка → e2e
+```
+
+## Технологии
+
+React 19 · TypeScript 5 · Vite · Zod · Vitest · Playwright · GitHub Actions
+
+## Команды
 
 ```bash
 npm install
-npm run generate:purlin-ref
-npm run generate:column-ref
-npm run generate:acceptance-excel
-npm run generate:acceptance-cases
-npm run generate:acceptance-report
-npm run generate:acceptance-pack
-npm run lint
-npm test
-npm run build
-npm run test:e2e
-npm run verify
+npm test                       # юнит-тесты
+npm run test:e2e               # Playwright e2e
+npm run build                  # production build
+npm run generate:column-ref    # перегенерировать эталон колонн из Excel
+npm run generate:purlin-ref    # перегенерировать эталон прогонов из Excel
+npm run verify                 # полный релизный цикл
 ```
 
-## Reference Data
-
-Generated reference modules live here:
-
-- `src/domain/purlin/model/purlin-reference.generated.ts`
-- `src/domain/column/model/column-reference.generated.ts`
-
-Workbook-backed generators:
-
-- `npm run generate:purlin-ref`
-- `npm run generate:column-ref`
-
-Workbook lookup order:
-
-- `PURLIN_REFERENCE_WORKBOOK` or `COLUMN_REFERENCE_WORKBOOK`
-- workbook in the repository root
-- workbook in the parent directory
-- `C:\calculator_final_release.xlsx`
-- `C:\column_calculator_final_release.xlsx`
-
-If no workbook is found, generators rebuild from the checked-in snapshot instead of failing.
-
-## Verification
-
-`npm run verify` runs the project release sanity cycle:
-
-1. regenerate both reference modules and fail on drift
-2. lint
-3. unit tests
-4. production build
-5. Playwright e2e tests
-
-Reference stability can be checked separately with:
-
-```bash
-npm run check:references
-```
+Эталонные данные: `src/domain/{column,purlin}/model/*-reference.generated.ts` (из книг Excel; при отсутствии книги — из зафиксированного снапшота).
 
 ## CI
 
-GitHub Actions workflow:
+`.github/workflows/ci.yml` гоняет проверку дрейфа эталонов, линт, юнит-тесты, сборку и e2e на каждый push. Деплой демо — `deploy-pages.yml`.
 
-- `.github/workflows/ci.yml`
-- `.github/workflows/deploy-pages.yml`
+## Лицензия
 
-It runs:
-
-- reference drift check
-- lint
-- unit tests
-- build
-- Playwright e2e
-
-## GitHub Pages
-
-This Vite app is ready for free GitHub Pages deployment.
-
-Notes:
-
-- for a public repository, GitHub Pages is free
-- the Vite `base` path is resolved automatically in GitHub Actions
-- pushing to `main` triggers `.github/workflows/deploy-pages.yml`
-
-Recommended repository setup:
-
-- visibility: `Public`
-- `Add README`: `Off`
-- `Add .gitignore`: `Off`
-- `Add license`: optional
-
-After creating the repository, initialize git locally and push:
-
-```bash
-git init
-git branch -M main
-git add .
-git commit -m "Initial import"
-git remote add origin https://github.com/<owner>/<repo>.git
-git push -u origin main
-```
-
-Then in GitHub:
-
-1. open `Settings -> Pages`
-2. set `Source` to `GitHub Actions`
-3. wait for the `Deploy Pages` workflow
-
-Resulting URL:
-
-- `https://<owner>.github.io/<repo>/`
-
-## Layout
-
-- `src/app` application shell
-- `src/pages` UI screens
-- `src/domain` pure calculation logic and contracts
-- `src/shared` helpers and config
-- `scripts` workbook extraction and maintenance utilities
-- `tests/unit` unit and parity-smoke tests
-- `tests/e2e` browser smoke tests
-
-## Current Status
-
-The repository currently has:
-
-- workbook-backed generators for both `purlin` and `column`
-- parity-smoke coverage against source workbooks
-- extra unit coverage for derived reference fields such as `requiredPanelThicknessMm`
-
-What still remains outside the codebase itself is final engineering acceptance on a fixed set of business-approved Excel scenarios.
-
-Template for that final step:
-
-- `docs/ENGINEERING_ACCEPTANCE_TEMPLATE.md`
-- `docs/ENGINEERING_ACCEPTANCE_CASES.md`
-- `docs/ENGINEERING_ACCEPTANCE_AUTO_REPORT.md`
-
-The working acceptance sheet can be refreshed in two stages:
-
-```bash
-npm run generate:acceptance-excel
-npm run generate:acceptance-cases
-npm run generate:acceptance-report
-```
-
-Or in one combined step:
-
-```bash
-npm run generate:acceptance-pack
-```
+[MIT](LICENSE) © 2026 Andrey Rykunov

@@ -264,6 +264,14 @@ export function CalculatorPage({ initialDomain, onBack }: CalculatorPageProps) {
   return (
     <div className="app-shell dark-mode-ready" data-testid="calculator-page" data-theme={themeMode}>
       <header className="topbar">
+        <a
+          className="btn-back"
+          href="https://kilevoy.github.io/"
+          title="Вернуться в портфолио"
+          style={{ textDecoration: 'none' }}
+        >
+          ← Портфолио
+        </a>
         {onBack && (
           <button className="btn-back" data-testid="back-to-home" onClick={onBack}>
             ← Назад
