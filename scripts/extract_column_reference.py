@@ -254,19 +254,12 @@ def extract_column_exports(workbook_path: Path, snapshot_exports: dict[str, Any]
 
 
 def render_module(exports_map: dict[str, Any], workbook_path: Path | None, mapped_export_names: list[str]) -> str:
-    if workbook_path is None:
-        header = [
-            '// Rebuilt from the checked-in column reference snapshot.',
-            '// Workbook-backed extraction was skipped because no source workbook was found.',
-            '',
-        ]
-    else:
-        mapped_list = ', '.join(mapped_export_names)
-        header = [
-            f'// Rebuilt fully from workbook-backed column references ({workbook_path.name}).',
-            f'// Workbook-backed exports: {mapped_list}.',
-            '',
-        ]
+    # Стабильный заголовок (не зависит от наличия книги), чтобы не было ложного дрейфа в CI.
+    header = [
+        '// Generated column reference module — do not edit by hand.',
+        '// Update via: npm run generate:column-ref, then commit.',
+        '',
+    ]
 
     lines = header
     for export_name, value in exports_map.items():

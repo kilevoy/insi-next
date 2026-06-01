@@ -228,18 +228,12 @@ def extract_exports(workbook_path: Path) -> dict[str, Any]:
 
 
 def render_module(exports_map: dict[str, Any], workbook_path: Path | None) -> str:
-    if workbook_path is None:
-        header = [
-            '// Rebuilt from the checked-in truss reference snapshot.',
-            '// Workbook-backed extraction was skipped because no source workbook was found.',
-            '',
-        ]
-    else:
-        header = [
-            f'// Rebuilt from {workbook_path.name}.',
-            '// Source workbook path can be overridden via TRUSS_REFERENCE_WORKBOOK.',
-            '',
-        ]
+    # Стабильный заголовок (не зависит от наличия книги), чтобы не было ложного дрейфа в CI.
+    header = [
+        '// Generated truss reference module — do not edit by hand.',
+        '// Update via: npm run generate:truss-ref, then commit.',
+        '',
+    ]
 
     body: list[str] = []
     for export_name, value in exports_map.items():

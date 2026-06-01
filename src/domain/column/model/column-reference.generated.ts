@@ -1,5 +1,5 @@
-// Rebuilt fully from workbook-backed column references (column_calculator_final_release.xlsx).
-// Workbook-backed exports: columnBraceUnitMassKgPerM, columnCandidateCatalog, columnCityLoads, columnCoveringCatalog, columnSupportCraneCatalog.
+// Generated column reference module — do not edit by hand.
+// Update via: npm run generate:column-ref, then commit.
 
 export const columnBraceUnitMassKgPerM = 9.6 as const;
 

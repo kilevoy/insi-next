@@ -1,5 +1,5 @@
-// Rebuilt from Калькулятор ферм типа Молодечно v1.0.xlsx.
-// Source workbook path can be overridden via TRUSS_REFERENCE_WORKBOOK.
+// Generated truss reference module — do not edit by hand.
+// Update via: npm run generate:truss-ref, then commit.
 
 export const trussMemberKeys = [
   "vpN",

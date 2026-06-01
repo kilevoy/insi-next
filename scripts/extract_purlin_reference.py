@@ -525,26 +525,12 @@ def extract_purlin_exports(workbook_path: Path, snapshot_exports: dict[str, Any]
 
 
 def render_module(exports_map: dict[str, Any], workbook_path: Path | None, mapped_export_names: list[str]) -> str:
-    if workbook_path is None:
-        header = [
-            '// Rebuilt from the checked-in purlin reference snapshot.',
-            '// Workbook-backed extraction was skipped because no source workbook was found.',
-            '',
-        ]
-    else:
-        mapped_list = ', '.join(mapped_export_names)
-        if len(mapped_export_names) == len(exports_map):
-            header = [
-                f'// Rebuilt fully from workbook-backed purlin references ({workbook_path.name}).',
-                f'// Workbook-backed exports: {mapped_list}.',
-                '',
-            ]
-        else:
-            header = [
-                f'// Rebuilt from workbook-backed purlin references ({workbook_path.name}) with snapshot fallback for unmapped slices.',
-                f'// Workbook-backed exports: {mapped_list}.',
-                '',
-            ]
+    # Стабильный заголовок (не зависит от наличия книги), чтобы не было ложного дрейфа в CI.
+    header = [
+        '// Generated purlin reference module — do not edit by hand.',
+        '// Update via: npm run generate:purlin-ref, then commit.',
+        '',
+    ]
 
     lines = header
     for export_name, value in exports_map.items():
